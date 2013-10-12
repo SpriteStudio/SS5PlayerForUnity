@@ -1055,7 +1055,7 @@ public static partial class LibraryEditor_SpriteStudio
 					return(false);
 				}
 
-				FrameNoStart = ((DataTrunk.ListInformationPlay[CountAnimation].FrameEnd / 10) + 1) * 10;
+				FrameNoStart = (((DataTrunk.ListInformationPlay[CountAnimation].FrameEnd + 9) / 10) + 1) * 10;
 				CountAnimation++;
 			}
 
@@ -1181,29 +1181,32 @@ public static partial class LibraryEditor_SpriteStudio
 				case "self":
 					{
 						DataParts.DataAnimation.Inheritance = Library_SpriteStudio.KindInheritance.SELF;
+#if false
 						DataParts.DataAnimation.FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.PRESET;
 						DataParts.DataAnimation.FlagInheritance &= ~Library_SpriteStudio.FlagAttributeKeyInherit.OPACITY_RATE;
-
+#else
+						DataParts.DataAnimation.FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.CLEAR;
+#endif
 						XmlNode NodeAttribute = null;
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheriteRates/ALPH", ManagerNameSpace);
+						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
 							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.OPACITY_RATE;
 						}
 
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheriteRates/FLPH", ManagerNameSpace);
+						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
 							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.FLIP_X;
 						}
 
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheriteRates/FLPV", ManagerNameSpace);
+						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
 							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.FLIP_Y;
 						}
 
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheriteRates/HIDE", ManagerNameSpace);
+						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
 							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.SHOW_HIDE;

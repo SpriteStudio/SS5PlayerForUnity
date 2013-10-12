@@ -152,7 +152,8 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 			}
 			else
 			{
-				Vector3[] VertexCoordinate = (0 != (Status & BitStatus.UPDATE_COORDINATE)) ? ArrayCreateCoordinateVertex() : null;
+//				Vector3[] VertexCoordinate = (0 != (Status & BitStatus.UPDATE_COORDINATE)) ? ArrayCreateCoordinateVertex() : null;
+				Vector3[] VertexCoordinate = ArrayCreateCoordinateVertex();
 				Color32[] VertexColor = (0 != (Status & BitStatus.UPDATE_COLOR)) ? ArrayCreateColorVertex() : null;
 				Vector3[] VertexUV0 = (0 != (Status & BitStatus.UPDATE_MAPPING)) ? Library_SpriteStudio.ArrayUVMappingUV0_Triangle4 : null;
 				Vector2[] VertexUV1 = (0 != (Status & BitStatus.UPDATE_EFFECT)) ? ArrayCreateUV2Vertex() : null;
@@ -229,23 +230,26 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 																		ref CoordinateLDRD
 																	);
 
+		float RateX = (true == SpriteStudioData.CompositedGetFlipX()) ? -1.0f : 1.0f;
+		float RateY = (true == SpriteStudioData.CompositedGetFlipY()) ? -1.0f : 1.0f;
+
 		int	VertexNo = -1;
 		Vector3[] PositionVertex = new Vector3[(int)Library_SpriteStudio.VertexNo.TERMINATOR4];
 
 		VertexNo = (int)Library_SpriteStudio.VertexNo.LU;
-		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3(vertexCoordinateLU.x - planePivot.x, vertexCoordinateLU.y + planePivot.y, 0.0f);
+		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3((vertexCoordinateLU.x - planePivot.x) * RateX, (vertexCoordinateLU.y + planePivot.y) * RateY, 0.0f);
 
 		VertexNo = (int)Library_SpriteStudio.VertexNo.RU;
-		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3(vertexCoordinateRU.x - planePivot.x, vertexCoordinateRU.y + planePivot.y, 0.0f);
+		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3((vertexCoordinateRU.x - planePivot.x) * RateX, (vertexCoordinateRU.y + planePivot.y) * RateY, 0.0f);
 
 		VertexNo = (int)Library_SpriteStudio.VertexNo.RD;
-		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3(vertexCoordinateRD.x - planePivot.x, vertexCoordinateRD.y + planePivot.y, 0.0f);
+		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3((vertexCoordinateRD.x - planePivot.x) * RateX, (vertexCoordinateRD.y + planePivot.y) * RateY, 0.0f);
 
 		VertexNo = (int)Library_SpriteStudio.VertexNo.LD;
-		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3(vertexCoordinateLD.x - planePivot.x, vertexCoordinateLD.y + planePivot.y, 0.0f);
+		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3((vertexCoordinateLD.x - planePivot.x) * RateX, (vertexCoordinateLD.y + planePivot.y) * RateY, 0.0f);
 
 		VertexNo = (int)Library_SpriteStudio.VertexNo.C;
-		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3(VertexCoordinateC.x - planePivot.x, VertexCoordinateC.y + planePivot.y, 0.0f);
+		PositionVertex[VertexArrayIndex[VertexNo]] = new Vector3((VertexCoordinateC.x - planePivot.x) * RateX, (VertexCoordinateC.y + planePivot.y) * RateY, 0.0f);
 
 		return(PositionVertex);
 	}

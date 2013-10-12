@@ -119,6 +119,10 @@ public static class Library_SpriteStudio
 				| ROTATE_Z
 				| SCALE_X
 				| SCALE_Y
+				| OPACITY_RATE
+				| FLIP_X
+				| FLIP_Y
+				| SHOW_HIDE
 	};
 
 	public enum KindTypeKey
@@ -1981,7 +1985,6 @@ public static class Library_SpriteStudio
 			Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, textureRotate);
 			MatrixTexture = Matrix4x4.TRS(Translation, Rotation, Scaling);
 		}
-
 	}
 
 	[System.Serializable]
@@ -2023,7 +2026,7 @@ public static class Library_SpriteStudio
 			CHANGE_CELL = 0x010000,
 			CHANGE_COLLISION = 0x020000,
 
-			FRAMEOVER		 = 0x100000,
+			FRAMEOVER = 0x100000,
 			LOOP = 0x200000,
 			PAUSING = 0x400000,
 			PLAYING = 0x800000,
@@ -2043,6 +2046,7 @@ public static class Library_SpriteStudio
 
 		protected	bool	CompositionedFlipX;
 		protected	bool	CompositionedFlipY;
+		protected	bool	CompositionedHide;
 		protected	float	CompositionedOpacity;
 
 		public BitStatus Status;
@@ -2167,6 +2171,7 @@ public static class Library_SpriteStudio
 			CompositionedFlipX = false;
 			CompositionedFlipY = false;
 			CompositionedOpacity = 0.0f;
+			CompositionedHide = false;
 
 			Status = BitStatus.CLEAR;
 			ID = -1;
@@ -2293,6 +2298,7 @@ public static class Library_SpriteStudio
 			CompositionedFlipX = false;
 			CompositionedFlipY = false;
 			CompositionedOpacity = 1.0f;
+			CompositionedHide = false;
 		}
 		private void IndexSetPlayPoint(int FrameNo)
 		{
@@ -2486,6 +2492,21 @@ public static class Library_SpriteStudio
 		public void	PartsSetParent(SpriteData Parent)
 		{
 			PartsParent = Parent;
+		}
+
+		public bool	CompositedGetFlipX()
+		{
+			return(CompositionedFlipX);
+		}
+
+		public bool	CompositedGetFlipY()
+		{
+			return(CompositionedFlipY);
+		}
+
+		public bool	CompositedGetHide()
+		{
+			return(CompositionedHide);
 		}
 
 		public void AnimationUpdate(GameObject InstanceGameObject)
@@ -2780,7 +2801,8 @@ public static class Library_SpriteStudio
 
 			bool	FlagFlipX = KeyDataGetBoolInterpolationNon(KeyDataFlipX, FrameNo, false);
 			bool	FlagFlipY = KeyDataGetBoolInterpolationNon(KeyDataFlipY, FrameNo, false);
-			Status = (true == KeyDataGetBoolInterpolationNon(KeyDataHide, FrameNo, true)) ? (Status & ~BitStatus.DISPLAY) : (Status | BitStatus.DISPLAY);
+			bool	FlagHide = KeyDataGetBoolInterpolationNon(KeyDataHide, FrameNo, true);
+			Status = (true == FlagHide) ? (Status & ~BitStatus.DISPLAY) : (Status | BitStatus.DISPLAY);
 			Status = (true == FlagFlipX) ? (Status | BitStatus.FLIP_X) : (Status & ~BitStatus.FLIP_X);
 			Status = (true == FlagFlipY) ? (Status | BitStatus.FLIP_Y) : (Status & ~BitStatus.FLIP_Y);
 
@@ -2825,30 +2847,50 @@ public static class Library_SpriteStudio
 
 			KeyDataGetQuadrilateralInterpolation(PlaneCoordinateOffset, KeyDataVertexCorrection, AnimationDataVertexCorrection, FrameNo, FrameNoStart, FrameNoEnd);
 
-			if((null == PartsParent) || (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_X])))
+			if(null == PartsParent)
 			{
 				CompositionedFlipX = FlagFlipX;
-			}
-			else
-			{
-				CompositionedFlipX = (true == FlagFlipX) ? (!PartsParent.CompositionedFlipX) : (PartsParent.CompositionedFlipX);
-			}
-
-			if((null == PartsParent) || (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_Y])))
-			{
 				CompositionedFlipY = FlagFlipY;
-			}
-			else
-			{
-				CompositionedFlipY = (true == FlagFlipY) ? (!PartsParent.CompositionedFlipY) : (PartsParent.CompositionedFlipY);
-			}
-			if((null == PartsParent) || (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.OPACITY_RATE])))
-			{
 				CompositionedOpacity = RateOpacity;
+				CompositionedHide = FlagHide;
 			}
 			else
 			{
-				CompositionedOpacity = PartsParent.CompositionedOpacity * RateOpacity;
+				if(0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_X]))
+				{
+					CompositionedFlipX = FlagFlipX;
+				}
+				else
+				{
+					CompositionedFlipX = (true == FlagFlipX) ? (!PartsParent.CompositionedFlipX) : PartsParent.CompositionedFlipX;
+				}
+
+				if(0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_Y]))
+				{
+					CompositionedFlipY = FlagFlipY;
+				}
+				else
+				{
+					CompositionedFlipY = (true == FlagFlipY) ? (!PartsParent.CompositionedFlipY) : PartsParent.CompositionedFlipY;
+				}
+
+				if(true == FlagHide)
+				{
+					CompositionedHide = true;
+				}
+				else
+				{
+					CompositionedHide = (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.SHOW_HIDE])) ? FlagHide : PartsParent.CompositionedHide;
+				}
+
+				if(0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.OPACITY_RATE]))
+				{
+					CompositionedOpacity = RateOpacity;
+				}
+				else
+				{
+					CompositionedOpacity = PartsParent.CompositionedOpacity * RateOpacity;
+				}
 			}
 
 			if(null != KeyDataCell)
@@ -3200,21 +3242,13 @@ public static class Library_SpriteStudio
 		public void AnimationFixSpriteCommon(Transform InstanceTransform, Library_SpriteStudio.SpriteBase InstanceSprite)
 		{
 			AnimationFixCell(InstanceSprite);
-
 			AnimationFixTransform(InstanceTransform);
 
-			{
-				bool	FlagFlipX = (0 != (Status & BitStatus.FLIP_TEXTURE_X)) ? (!CompositionedFlipX) : (CompositionedFlipX);
-				bool	FlagFlipY = (0 != (Status & BitStatus.FLIP_TEXTURE_Y)) ? (!CompositionedFlipY) : (CompositionedFlipY);
-				InstanceSprite.FlipXTextureMapping(FlagFlipX);
-				InstanceSprite.FlipYTextureMapping(FlagFlipY);
-			}
+			InstanceSprite.FlipXTextureMapping((0 != (Status & BitStatus.FLIP_TEXTURE_X)));
+			InstanceSprite.FlipYTextureMapping((0 != (Status & BitStatus.FLIP_TEXTURE_Y)));
 
-			InstanceSprite.StatusSetRendering((0 != (Status & BitStatus.DISPLAY)) ? true : false);
-//			InstanceSprite.RateOpacityLU = RateOpacity * VertexColorPower[0];
-//			InstanceSprite.RateOpacityRU = RateOpacity * VertexColorPower[1];
-//			InstanceSprite.RateOpacityRD = RateOpacity * VertexColorPower[2];
-//			InstanceSprite.RateOpacityLD = RateOpacity * VertexColorPower[3];
+			InstanceSprite.StatusSetRendering(!CompositionedHide);
+
 			InstanceSprite.RateOpacityLU = CompositionedOpacity * VertexColorPower[0];
 			InstanceSprite.RateOpacityRU = CompositionedOpacity * VertexColorPower[1];
 			InstanceSprite.RateOpacityRD = CompositionedOpacity * VertexColorPower[2];
