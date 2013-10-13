@@ -841,9 +841,15 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				NameDirectoryCellMap = Path.GetDirectoryName(FileName);
 			}
-			string NameFileBody = Path.GetFileNameWithoutExtension(NameTexture);
-			string NameFileExtension = Path.GetExtension(NameTexture);
-			InformationCellMap.FileName = NameDirectoryImage + "/" + NameFileBody + NameFileExtension;
+
+			if(true == Path.IsPathRooted(NameTexture))
+			{
+				InformationCellMap.FileName = string.Copy(NameTexture);
+			}
+			else
+			{
+				InformationCellMap.FileName = Path.GetFullPath(NameDirectoryImage + "/" + NameTexture);
+			}
 
 			InformationCellMap.CellArea = new Hashtable();
 			if(null == InformationCellMap.CellArea)
