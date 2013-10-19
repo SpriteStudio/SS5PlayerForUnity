@@ -119,6 +119,10 @@ public static class Library_SpriteStudio
 				| ROTATE_Z
 				| SCALE_X
 				| SCALE_Y
+				| OPACITY_RATE
+//				| FLIP_X
+//				| FLIP_Y
+//				| SHOW_HIDE
 	};
 
 	public enum KindTypeKey
@@ -1181,7 +1185,8 @@ public static class Library_SpriteStudio
 			_Type KeyDataNow = default(_Type);
 			int IndexPast = -1;
 			int IndexFuture = -1;
-			if(null != TableKeyData)
+//			if(null != TableKeyData.Length)
+			if((0 < TableKeyData.Length) && (-1 < IndexTop))
 			{
 				int Count = TableKeyData.Length;
 				for(int i=IndexTop; i<Count; i++)
@@ -1981,7 +1986,6 @@ public static class Library_SpriteStudio
 			Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, textureRotate);
 			MatrixTexture = Matrix4x4.TRS(Translation, Rotation, Scaling);
 		}
-
 	}
 
 	[System.Serializable]
@@ -2023,7 +2027,7 @@ public static class Library_SpriteStudio
 			CHANGE_CELL = 0x010000,
 			CHANGE_COLLISION = 0x020000,
 
-			FRAMEOVER		 = 0x100000,
+			FRAMEOVER = 0x100000,
 			LOOP = 0x200000,
 			PAUSING = 0x400000,
 			PLAYING = 0x800000,
@@ -2043,6 +2047,7 @@ public static class Library_SpriteStudio
 
 		protected	bool	CompositionedFlipX;
 		protected	bool	CompositionedFlipY;
+		protected	bool	CompositionedHide;
 		protected	float	CompositionedOpacity;
 
 		public BitStatus Status;
@@ -2167,6 +2172,7 @@ public static class Library_SpriteStudio
 			CompositionedFlipX = false;
 			CompositionedFlipY = false;
 			CompositionedOpacity = 0.0f;
+			CompositionedHide = false;
 
 			Status = BitStatus.CLEAR;
 			ID = -1;
@@ -2293,6 +2299,7 @@ public static class Library_SpriteStudio
 			CompositionedFlipX = false;
 			CompositionedFlipY = false;
 			CompositionedOpacity = 1.0f;
+			CompositionedHide = false;
 		}
 		private void IndexSetPlayPoint(int FrameNo)
 		{
@@ -2488,6 +2495,21 @@ public static class Library_SpriteStudio
 			PartsParent = Parent;
 		}
 
+		public bool	CompositedGetFlipX()
+		{
+			return(CompositionedFlipX);
+		}
+
+		public bool	CompositedGetFlipY()
+		{
+			return(CompositionedFlipY);
+		}
+
+		public bool	CompositedGetHide()
+		{
+			return(CompositionedHide);
+		}
+
 		public void AnimationUpdate(GameObject InstanceGameObject)
 		{
 			int FrameNo = PartsRoot.FrameNoNow;
@@ -2496,6 +2518,10 @@ public static class Library_SpriteStudio
 			bool FlagLoop = (0 != (PartsRoot.SpriteStudioData.Status & BitStatus.LOOP)) ? true : false;
 			bool FlagFrameOver = (0 != (PartsRoot.SpriteStudioData.Status & BitStatus.FRAMEOVER)) ? true : false;
 
+			if(0 == (PartsRoot.SpriteStudioData.Status & BitStatus.PLAYING))
+			{
+				return;
+			}
 			if(0 != (PartsRoot.SpriteStudioData.Status & BitStatus.REFRESH_PLAYRANGENO))
 			{
 				IndexSetPlayRange(PartsRoot.AnimationNo);
@@ -2780,7 +2806,8 @@ public static class Library_SpriteStudio
 
 			bool	FlagFlipX = KeyDataGetBoolInterpolationNon(KeyDataFlipX, FrameNo, false);
 			bool	FlagFlipY = KeyDataGetBoolInterpolationNon(KeyDataFlipY, FrameNo, false);
-			Status = (true == KeyDataGetBoolInterpolationNon(KeyDataHide, FrameNo, true)) ? (Status & ~BitStatus.DISPLAY) : (Status | BitStatus.DISPLAY);
+			bool	FlagHide = KeyDataGetBoolInterpolationNon(KeyDataHide, FrameNo, true);
+			Status = (true == FlagHide) ? (Status & ~BitStatus.DISPLAY) : (Status | BitStatus.DISPLAY);
 			Status = (true == FlagFlipX) ? (Status | BitStatus.FLIP_X) : (Status & ~BitStatus.FLIP_X);
 			Status = (true == FlagFlipY) ? (Status | BitStatus.FLIP_Y) : (Status & ~BitStatus.FLIP_Y);
 
@@ -2825,30 +2852,50 @@ public static class Library_SpriteStudio
 
 			KeyDataGetQuadrilateralInterpolation(PlaneCoordinateOffset, KeyDataVertexCorrection, AnimationDataVertexCorrection, FrameNo, FrameNoStart, FrameNoEnd);
 
-			if((null == PartsParent) || (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_X])))
+			if(null == PartsParent)
 			{
 				CompositionedFlipX = FlagFlipX;
-			}
-			else
-			{
-				CompositionedFlipX = (true == FlagFlipX) ? (!PartsParent.CompositionedFlipX) : (PartsParent.CompositionedFlipX);
-			}
-
-			if((null == PartsParent) || (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_Y])))
-			{
 				CompositionedFlipY = FlagFlipY;
-			}
-			else
-			{
-				CompositionedFlipY = (true == FlagFlipY) ? (!PartsParent.CompositionedFlipY) : (PartsParent.CompositionedFlipY);
-			}
-			if((null == PartsParent) || (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.OPACITY_RATE])))
-			{
 				CompositionedOpacity = RateOpacity;
+				CompositionedHide = FlagHide;
 			}
 			else
 			{
-				CompositionedOpacity = PartsParent.CompositionedOpacity * RateOpacity;
+				if(0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_X]))
+				{
+					CompositionedFlipX = FlagFlipX;
+				}
+				else
+				{
+					CompositionedFlipX = (true == FlagFlipX) ? (!PartsParent.CompositionedFlipX) : PartsParent.CompositionedFlipX;
+				}
+
+				if(0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.FLIP_Y]))
+				{
+					CompositionedFlipY = FlagFlipY;
+				}
+				else
+				{
+					CompositionedFlipY = (true == FlagFlipY) ? (!PartsParent.CompositionedFlipY) : PartsParent.CompositionedFlipY;
+				}
+
+				if(true == FlagHide)
+				{
+					CompositionedHide = true;
+				}
+				else
+				{
+					CompositionedHide = (0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.SHOW_HIDE])) ? FlagHide : PartsParent.CompositionedHide;
+				}
+
+				if(0 == (FlagInheritance & FlagParameterKeyFrameInherit[(int)KindAttributeKey.OPACITY_RATE]))
+				{
+					CompositionedOpacity = RateOpacity;
+				}
+				else
+				{
+					CompositionedOpacity = PartsParent.CompositionedOpacity * RateOpacity;
+				}
 			}
 
 			if(null != KeyDataCell)
@@ -2899,6 +2946,10 @@ public static class Library_SpriteStudio
 			{
 				return(-1);
 			}
+			if(0 == TableKeyData.Length)
+			{
+				return(-1);
+			}
 			return(TableKeyData.Length - 1);
 		}
 		private void KeyIndexSetRange<_Type>(ref int IndexNoStart, ref int IndexNoEnd, _Type[] TableKeyData, int FrameNoStart, int FrameNoEnd)
@@ -2921,13 +2972,13 @@ public static class Library_SpriteStudio
 														FlagDirection.JUSTNOW | FlagDirection.PAST,
 														0
 													);
-			if(FrameNoEnd < TableKeyData[IndexNoStart].Time)
+			if(-1 < IndexNoStart)
 			{
-				IndexNoStart = -1;
+				IndexNoStart = (FrameNoEnd < TableKeyData[IndexNoStart].Time) ? -1 : IndexNoStart;
 			}
-			if(FrameNoStart > TableKeyData[IndexNoEnd].Time)
+			if(-1 < IndexNoEnd)
 			{
-				IndexNoEnd = -1;
+				IndexNoEnd = (FrameNoStart > TableKeyData[IndexNoEnd].Time) ? -1 : IndexNoEnd;
 			}
 		}
 
@@ -2947,18 +2998,16 @@ public static class Library_SpriteStudio
 			int IndexNext = KeyDataIndex[(int)KindKeyIndex.NEXT, (int)Kind];
 			_Type KeyData = default(_Type);
 
-			if((0 == TableKeyData.Length) || (-1 == IndexTop))
-			{
+			if(null == TableKeyData)
+			{	/* No Attribute-Keys */
 				return(default(_Type));
 			}
-//			if(1 > (IndexLast - IndexTop))
-//			{
-//				IndexNow = IndexTop;
-//				IndexNext = -1;
-//				goto KeyIndexUpdate_End;
-//			}
+			if((0 == TableKeyData.Length) || (-1 == IndexTop))
+			{	/* No Attribute-Keys or No Decode Next */
+				return(default(_Type));
+			}
 			if(true == FlagFrameNoOver)
-			{
+			{	/* Animation-Frame Over */
 				if(true == FlagLoop)
 				{
 					IndexNow = IndexTop;
@@ -2996,6 +3045,10 @@ public static class Library_SpriteStudio
 			KeyDataIndex[(int)KindKeyIndex.NOW, (int)Kind] = IndexNow;
 			KeyDataIndex[(int)KindKeyIndex.NEXT, (int)Kind] = IndexNext;
 
+			if(-1 == IndexNow)
+			{
+				return(default(_Type));
+			}
 			KeyData = KeyFrame.DataGetIndex(TableKeyData, IndexNow);
 			return((FrameNo < KeyData.Time) ? default(_Type) : KeyData);
 		}
@@ -3013,6 +3066,10 @@ public static class Library_SpriteStudio
 			int IndexNow = KeyDataIndex[(int)KindKeyIndex.NOW, (int)KindAttributeKey.USER_DATA];
 			int IndexNext = KeyDataIndex[(int)KindKeyIndex.NEXT, (int)KindAttributeKey.USER_DATA];
 
+			if(null == TableKeyData)
+			{
+				return;
+			}
 			if((0 == TableKeyData.Length) || (-1 == IndexTop))
 			{
 				return;
@@ -3172,12 +3229,8 @@ public static class Library_SpriteStudio
 				Material InstanceMaterial = PartsRoot.MaterialGet(TextureNo, KindBlendTarget);
 				InstanceSprite.DataMaterials[0] = InstanceMaterial;
 
-//				if(0 != (Status & BitStatus.CHANGE_CELL))
-				{
-					TextureSizePixel.x = InstanceMaterial.mainTexture.width;
-					TextureSizePixel.y = InstanceMaterial.mainTexture.height;
-				}
-//				Status &= ~BitStatus.CHANGE_CELL;
+				TextureSizePixel.x = InstanceMaterial.mainTexture.width;
+				TextureSizePixel.y = InstanceMaterial.mainTexture.height;
 			}
 			return(TextureNo);
 		}
@@ -3200,21 +3253,13 @@ public static class Library_SpriteStudio
 		public void AnimationFixSpriteCommon(Transform InstanceTransform, Library_SpriteStudio.SpriteBase InstanceSprite)
 		{
 			AnimationFixCell(InstanceSprite);
-
 			AnimationFixTransform(InstanceTransform);
 
-			{
-				bool	FlagFlipX = (0 != (Status & BitStatus.FLIP_TEXTURE_X)) ? (!CompositionedFlipX) : (CompositionedFlipX);
-				bool	FlagFlipY = (0 != (Status & BitStatus.FLIP_TEXTURE_Y)) ? (!CompositionedFlipY) : (CompositionedFlipY);
-				InstanceSprite.FlipXTextureMapping(FlagFlipX);
-				InstanceSprite.FlipYTextureMapping(FlagFlipY);
-			}
+			InstanceSprite.FlipXTextureMapping((0 != (Status & BitStatus.FLIP_TEXTURE_X)));
+			InstanceSprite.FlipYTextureMapping((0 != (Status & BitStatus.FLIP_TEXTURE_Y)));
 
-			InstanceSprite.StatusSetRendering((0 != (Status & BitStatus.DISPLAY)) ? true : false);
-//			InstanceSprite.RateOpacityLU = RateOpacity * VertexColorPower[0];
-//			InstanceSprite.RateOpacityRU = RateOpacity * VertexColorPower[1];
-//			InstanceSprite.RateOpacityRD = RateOpacity * VertexColorPower[2];
-//			InstanceSprite.RateOpacityLD = RateOpacity * VertexColorPower[3];
+			InstanceSprite.StatusSetRendering(!CompositionedHide);
+
 			InstanceSprite.RateOpacityLU = CompositionedOpacity * VertexColorPower[0];
 			InstanceSprite.RateOpacityRU = CompositionedOpacity * VertexColorPower[1];
 			InstanceSprite.RateOpacityRD = CompositionedOpacity * VertexColorPower[2];
@@ -3331,21 +3376,6 @@ public static class Library_SpriteStudio
 		{
 			MeshDataInformation.Priority = Priority + ((float)ID * (1.0f / 1000.0f));
 			PartsRoot.MeshAdd(TextureNo, KindBlendTarget, ref MeshDataInformation);
-		}
-
-		private SpriteData DataGetInhelitBase(KindAttributeKey AttributeKey)
-		{
-			SpriteData DataNow = this;
-			while(DataNow != PartsRoot.SpriteStudioData)
-			{
-				if(0 == (DataNow.FlagInheritance & FlagParameterKeyFrameInherit[(int)AttributeKey]))
-				{
-					return(DataNow);
-				}
-
-				DataNow = DataNow.PartsParent;
-			}
-			return(DataNow);
 		}
 	}
 }

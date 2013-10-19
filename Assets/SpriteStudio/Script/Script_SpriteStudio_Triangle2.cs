@@ -100,7 +100,8 @@ public class Script_SpriteStudio_Triangle2 : Library_SpriteStudio.SpriteBase
 			}
 			else
 			{
-				Vector3[] VertexCoordinate = (0 != (Status & BitStatus.UPDATE_COORDINATE)) ? ArrayCreateCoordinateVertex() : null;
+//				Vector3[] VertexCoordinate = (0 != (Status & BitStatus.UPDATE_COORDINATE)) ? ArrayCreateCoordinateVertex() : null;
+				Vector3[] VertexCoordinate = ArrayCreateCoordinateVertex();
 				Color32[] VertexColor = (0 != (Status & BitStatus.UPDATE_COLOR)) ? ArrayCreateColorVertex() : null;
 				Vector3[] VertexUV0 = (0 != (Status & BitStatus.UPDATE_MAPPING)) ? Library_SpriteStudio.ArrayUVMappingUV0_Triangle2 : null;
 				Vector2[] VertexUV1 = (0 != (Status & BitStatus.UPDATE_EFFECT)) ? ArrayCreateUV2Vertex() : null;
@@ -167,11 +168,13 @@ public class Script_SpriteStudio_Triangle2 : Library_SpriteStudio.SpriteBase
 
 	private Vector3[] ArrayCreateCoordinateVertex()
 	{
-		Vector2 Pivot  = PlanePivot;
-		float Left = -Pivot.x;
-		float Right = planeSize.x - Pivot.x;
-		float Top = -Pivot.y;
-		float Bottom = planeSize.y - Pivot.y;
+		Vector2 Pivot = PlanePivot;
+		float RateX = (true == SpriteStudioData.CompositedGetFlipX()) ? -1.0f : 1.0f;
+		float RateY = (true == SpriteStudioData.CompositedGetFlipY()) ? -1.0f : 1.0f;
+		float Left = (-Pivot.x) * RateX;
+		float Right = (planeSize.x - Pivot.x) * RateX;
+		float Top = (-Pivot.y) * RateY;
+		float Bottom = (planeSize.y - Pivot.y) * RateY;
 
 		int	VertexNo = -1;
 		Vector3[] PositionVertex = new Vector3[(int)Library_SpriteStudio.VertexNo.TERMINATOR2];

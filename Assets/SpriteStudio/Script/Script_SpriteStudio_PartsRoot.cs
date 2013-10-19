@@ -182,9 +182,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		set
 		{
-			if((value != animationNo) && (1 < ListInformationPlay.Length))
+			if((value != animationNo) && (value < ListInformationPlay.Length))
 			{
-				SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYRANGENO;
+				AnimationStop();
+				SpriteStudioData.Status |= (Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYRANGENO
+											| Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO
+											);
 				animationNo = value;
 			}
 		}
@@ -388,9 +391,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return(false);
 		}
 
-		AnimationNo = -1;	/* Set Status. */
-		AnimationNo = No;
 		CountLoopRemain = CountLoop;
+
+		SpriteStudioData.Status &= ~(Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING
+									| Library_SpriteStudio.AnimationDataRuntime.BitStatus.MASK_RESET
+									);
+		AnimationNo = No;
+		SpriteStudioData.Status |= (Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYRANGENO
+									| Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO
+									| Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING
+									);
 
 		frameNoStart = ListInformationPlay[AnimationNo].FrameStart;
 		frameNoEnd = ListInformationPlay[AnimationNo].FrameEnd;
@@ -399,10 +409,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		RateTimeAnimation = (0.0f <= RateTime) ? RateTime : RateTimeAnimation;
 		TimeAnimation = frameNoNow * TimeFramePerSecond;
 
-		SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO;
-		SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.MASK_RESET;
-		SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING;
-		SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING;
 		if(0 != CountLoopRemain)
 		{
 			SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.LOOP;
@@ -776,6 +782,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 								int PlayLength = (frameNoEnd - frameNoStart) + 1;
 								TimeAnimation -= ((float)PlayLength * TimeFramePerSecond);
 								frameNoNow -= PlayLength;
+
+								SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO;
 							}
 							else
 							{
