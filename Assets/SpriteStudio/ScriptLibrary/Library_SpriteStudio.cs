@@ -120,9 +120,9 @@ public static class Library_SpriteStudio
 				| SCALE_X
 				| SCALE_Y
 				| OPACITY_RATE
-				| FLIP_X
-				| FLIP_Y
-				| SHOW_HIDE
+//				| FLIP_X
+//				| FLIP_Y
+//				| SHOW_HIDE
 	};
 
 	public enum KindTypeKey
@@ -1185,7 +1185,8 @@ public static class Library_SpriteStudio
 			_Type KeyDataNow = default(_Type);
 			int IndexPast = -1;
 			int IndexFuture = -1;
-			if(null != TableKeyData)
+//			if(null != TableKeyData.Length)
+			if((0 < TableKeyData.Length) && (-1 < IndexTop))
 			{
 				int Count = TableKeyData.Length;
 				for(int i=IndexTop; i<Count; i++)
@@ -2517,6 +2518,10 @@ public static class Library_SpriteStudio
 			bool FlagLoop = (0 != (PartsRoot.SpriteStudioData.Status & BitStatus.LOOP)) ? true : false;
 			bool FlagFrameOver = (0 != (PartsRoot.SpriteStudioData.Status & BitStatus.FRAMEOVER)) ? true : false;
 
+			if(0 == (PartsRoot.SpriteStudioData.Status & BitStatus.PLAYING))
+			{
+				return;
+			}
 			if(0 != (PartsRoot.SpriteStudioData.Status & BitStatus.REFRESH_PLAYRANGENO))
 			{
 				IndexSetPlayRange(PartsRoot.AnimationNo);
@@ -2941,6 +2946,10 @@ public static class Library_SpriteStudio
 			{
 				return(-1);
 			}
+			if(0 == TableKeyData.Length)
+			{
+				return(-1);
+			}
 			return(TableKeyData.Length - 1);
 		}
 		private void KeyIndexSetRange<_Type>(ref int IndexNoStart, ref int IndexNoEnd, _Type[] TableKeyData, int FrameNoStart, int FrameNoEnd)
@@ -2963,13 +2972,13 @@ public static class Library_SpriteStudio
 														FlagDirection.JUSTNOW | FlagDirection.PAST,
 														0
 													);
-			if(FrameNoEnd < TableKeyData[IndexNoStart].Time)
+			if(-1 < IndexNoStart)
 			{
-				IndexNoStart = -1;
+				IndexNoStart = (FrameNoEnd < TableKeyData[IndexNoStart].Time) ? -1 : IndexNoStart;
 			}
-			if(FrameNoStart > TableKeyData[IndexNoEnd].Time)
+			if(-1 < IndexNoEnd)
 			{
-				IndexNoEnd = -1;
+				IndexNoEnd = (FrameNoStart > TableKeyData[IndexNoEnd].Time) ? -1 : IndexNoEnd;
 			}
 		}
 
@@ -2989,18 +2998,16 @@ public static class Library_SpriteStudio
 			int IndexNext = KeyDataIndex[(int)KindKeyIndex.NEXT, (int)Kind];
 			_Type KeyData = default(_Type);
 
-			if((0 == TableKeyData.Length) || (-1 == IndexTop))
-			{
+			if(null == TableKeyData)
+			{	/* No Attribute-Keys */
 				return(default(_Type));
 			}
-//			if(1 > (IndexLast - IndexTop))
-//			{
-//				IndexNow = IndexTop;
-//				IndexNext = -1;
-//				goto KeyIndexUpdate_End;
-//			}
+			if((0 == TableKeyData.Length) || (-1 == IndexTop))
+			{	/* No Attribute-Keys or No Decode Next */
+				return(default(_Type));
+			}
 			if(true == FlagFrameNoOver)
-			{
+			{	/* Animation-Frame Over */
 				if(true == FlagLoop)
 				{
 					IndexNow = IndexTop;
@@ -3038,6 +3045,10 @@ public static class Library_SpriteStudio
 			KeyDataIndex[(int)KindKeyIndex.NOW, (int)Kind] = IndexNow;
 			KeyDataIndex[(int)KindKeyIndex.NEXT, (int)Kind] = IndexNext;
 
+			if(-1 == IndexNow)
+			{
+				return(default(_Type));
+			}
 			KeyData = KeyFrame.DataGetIndex(TableKeyData, IndexNow);
 			return((FrameNo < KeyData.Time) ? default(_Type) : KeyData);
 		}
@@ -3055,6 +3066,10 @@ public static class Library_SpriteStudio
 			int IndexNow = KeyDataIndex[(int)KindKeyIndex.NOW, (int)KindAttributeKey.USER_DATA];
 			int IndexNext = KeyDataIndex[(int)KindKeyIndex.NEXT, (int)KindAttributeKey.USER_DATA];
 
+			if(null == TableKeyData)
+			{
+				return;
+			}
 			if((0 == TableKeyData.Length) || (-1 == IndexTop))
 			{
 				return;
@@ -3214,12 +3229,8 @@ public static class Library_SpriteStudio
 				Material InstanceMaterial = PartsRoot.MaterialGet(TextureNo, KindBlendTarget);
 				InstanceSprite.DataMaterials[0] = InstanceMaterial;
 
-//				if(0 != (Status & BitStatus.CHANGE_CELL))
-				{
-					TextureSizePixel.x = InstanceMaterial.mainTexture.width;
-					TextureSizePixel.y = InstanceMaterial.mainTexture.height;
-				}
-//				Status &= ~BitStatus.CHANGE_CELL;
+				TextureSizePixel.x = InstanceMaterial.mainTexture.width;
+				TextureSizePixel.y = InstanceMaterial.mainTexture.height;
 			}
 			return(TextureNo);
 		}
@@ -3365,21 +3376,6 @@ public static class Library_SpriteStudio
 		{
 			MeshDataInformation.Priority = Priority + ((float)ID * (1.0f / 1000.0f));
 			PartsRoot.MeshAdd(TextureNo, KindBlendTarget, ref MeshDataInformation);
-		}
-
-		private SpriteData DataGetInhelitBase(KindAttributeKey AttributeKey)
-		{
-			SpriteData DataNow = this;
-			while(DataNow != PartsRoot.SpriteStudioData)
-			{
-				if(0 == (DataNow.FlagInheritance & FlagParameterKeyFrameInherit[(int)AttributeKey]))
-				{
-					return(DataNow);
-				}
-
-				DataNow = DataNow.PartsParent;
-			}
-			return(DataNow);
 		}
 	}
 }

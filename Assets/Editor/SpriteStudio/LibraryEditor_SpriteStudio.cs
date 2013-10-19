@@ -263,15 +263,15 @@ public static partial class LibraryEditor_SpriteStudio
 
 				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
 
-				Object DataPrefab = Create.DataPrefabSprite(	FileNameBodySSAE,
-																NamePathBase,
-																DataOutput[i],
-																TableMaterial,
-																ref DataSettingImport,
-																MaskKeyAttoribute_OPSS,
-																Library_SpriteStudio.SpriteData.BitStatus.PIVOTPLANE_UV | Library_SpriteStudio.SpriteData.BitStatus.TEXTURETRANSLATE_UV
-															);
-				if(null == DataPrefab)
+				bool DataPrefab = Create.DataPrefabSprite(	FileNameBodySSAE,
+															NamePathBase,
+															DataOutput[i],
+															TableMaterial,
+															ref DataSettingImport,
+															MaskKeyAttoribute_OPSS,
+															Library_SpriteStudio.SpriteData.BitStatus.PIVOTPLANE_UV | Library_SpriteStudio.SpriteData.BitStatus.TEXTURETRANSLATE_UV
+														);
+				if(false == DataPrefab)
 				{
 					Debug.LogError("SSPJ-Import: Failure Creating Prefab :" + FileNameBodySSAE);
 				}
@@ -2417,7 +2417,7 @@ public static partial class LibraryEditor_SpriteStudio
 			return(TableMaterial);
 		}
 
-		public static Object DataPrefabSprite(	string Name,
+		public static bool DataPrefabSprite(	string Name,
 												string NamePath,
 												DataIntermediate.TrunkParts Data,
 												Material[] TableMaterial,
@@ -2426,10 +2426,11 @@ public static partial class LibraryEditor_SpriteStudio
 												Library_SpriteStudio.AnimationDataRuntime.BitStatus StatusInitial
 											)
 		{
-			Object PrefabNow = AssetUtility.Create.Prefab(Name, NamePath);
+			bool FlagExsting = false;
+			Object PrefabNow = AssetUtility.Create.Prefab(out FlagExsting, Name, NamePath);
 			if(null == PrefabNow)
 			{
-				return(null);
+				return(true);
 			}
 
 			GameObject GameObjectControl = AssetUtility.Create.GameObject(Name + "_Control", null);
@@ -2483,13 +2484,16 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
+#if false
 			PrefabUtility.ReplacePrefab(GameObjectControl, PrefabNow, ReplacePrefabOptions.ConnectToPrefab);
-
+#else
+			PrefabUtility.ReplacePrefab(GameObjectControl, PrefabNow, ReplacePrefabOptions.Default);
+#endif
 			AssetDatabase.SaveAssets();
 
 			Object.DestroyImmediate(GameObjectControl);
 
-			return(PrefabNow);
+			return(true);
 		}
 
 		public static Texture2D[] TextureTable(	string NamePath,
@@ -2618,16 +2622,25 @@ public static partial class LibraryEditor_SpriteStudio
 				return(true);
 			}
 
-			public static Object Prefab(string Name, string NamePath)
+			public static Object Prefab(out bool FlagExsting, string Name, string NamePath)
 			{
+				Object PrefabNow = null;
 				string NamePathAsset = NamePath + "/" + Name + ".prefab";
-				if(false == AssetUtility.ObjectCheckOverwrite(NamePathAsset))
+				FlagExsting = false;
+				if(false == AssetUtility.ObjectCheckOverwrite(out PrefabNow, NamePathAsset))
 				{
 					return(null);
 				}
 
-				Object PrefabNow = PrefabUtility.CreateEmptyPrefab(NamePathAsset);
-
+				if(null == PrefabNow)
+				{
+					FlagExsting = false;
+					PrefabNow = PrefabUtility.CreateEmptyPrefab(NamePathAsset);
+				}
+				else
+				{
+					FlagExsting = true;
+				}
 				return(PrefabNow);
 			}
 
@@ -2685,9 +2698,9 @@ public static partial class LibraryEditor_SpriteStudio
 			return(NamePathAsset);
 		}
 
-		public static bool ObjectCheckOverwrite(string NameAsset)
+		public static bool ObjectCheckOverwrite(out Object ObjectExsting, string NameAsset)
 		{
-			Object ObjectExsting = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(GameObject));
+			ObjectExsting = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(GameObject));
 			if(null != ObjectExsting)
 			{
 				if(false == EditorUtility.DisplayDialog(	"The asset already exists.\n" + NameAsset,
