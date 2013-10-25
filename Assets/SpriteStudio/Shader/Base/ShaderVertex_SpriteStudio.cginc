@@ -50,7 +50,6 @@ InputPS	VS_main(InputVS Input)
 
 	Temp = Input.vertex;
 	Temp = mul(UNITY_MATRIX_MVP, Temp);
-	Temp.w = 1.0;
 	Output.PositionDraw = Temp;
 	Output.Position = Temp;
 
