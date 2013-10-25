@@ -2,6 +2,9 @@ SpriteStudio5 Player for Unity
 
 Change log
 
+0.92.1 (2013/10/25)
+ [fix] Perspectiveカメラを通して見た時にメッシュが切れる。
+
 0.92 (2013/10/20)
  [fix] １つのssaeが含む複数のアニメを切り替えた際にExceptionが発生したり、正しく切り替わらない事がある。
 
