@@ -1,7 +1,7 @@
 /**
 	SpriteStudio5 Player for Unity
 
-	Copyright(C) 2003-2014 Web Technology Corp. 
+	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
 using UnityEngine;
@@ -1997,6 +1997,7 @@ public static partial class LibraryEditor_SpriteStudio
 						Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.AddComponent<Script_LinkPrefab>();
 						ScriptLinkPrefab.LinkPrefab = PrefabNow;
 						ScriptLinkPrefab.FlagDeleteScript = false;
+						ScriptLinkPrefab.FlagAutoDevelop = true;
 
 						/* Create Control Prefab */
 						/* MEMO: can't to be confirmed Overwrite */

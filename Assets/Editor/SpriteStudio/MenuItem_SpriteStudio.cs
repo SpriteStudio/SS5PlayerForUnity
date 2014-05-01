@@ -1,7 +1,7 @@
 /**
 	SpriteStudio5 Player for Unity
 
-	Copyright(C) 2003-2014 Web Technology Corp. 
+	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
 using UnityEngine;
@@ -51,7 +51,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		EditorUtility.DisplayDialog(	"SpriteStudio5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
-										+ "Copyright(C) 2014 Web Technology Corp.",
+										+ "Copyright(C) Web Technology Corp.",
 										"OK"
 									);
 	}

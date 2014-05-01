@@ -1,7 +1,7 @@
 //
 //	SpriteStudio5 Player for Unity
 //
-//	Copyright(C) 2003-2014 Web Technology Corp.
+//	Copyright(C) Web Technology Corp.
 //	All rights reserved.
 //
 #define	LIMIT_ALPHA	0.0038
