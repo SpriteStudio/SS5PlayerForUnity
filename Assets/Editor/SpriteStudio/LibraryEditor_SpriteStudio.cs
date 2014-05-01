@@ -1,11 +1,12 @@
 /**
 	SpriteStudio5 Player for Unity
 
-	Copyright(C) 2003-2013 Web Technology Corp. 
+	Copyright(C) 2003-2014 Web Technology Corp. 
 	All rights reserved.
 */
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.IO;
 using System.Xml;
 using System.Text;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 
 public static partial class LibraryEditor_SpriteStudio
 {
+	/* Default Shaders' Data */
 	private readonly static int ShaderOperationMax = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
 	private readonly static Shader[] Shader_SpriteStudioTriangleX = new Shader[(int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1]
 	{
@@ -23,163 +25,19 @@ public static partial class LibraryEditor_SpriteStudio
 		Shader.Find("Custom/SpriteStudio5/Mul")
 	};
 
-	private readonly static Library_SpriteStudio.KindAttributeKey[][] MaskKeyAttoribute_OPSS =
-	{
-		new Library_SpriteStudio.KindAttributeKey[]
-		{
-			Library_SpriteStudio.KindAttributeKey.TERMINATOR
-		},
-		new Library_SpriteStudio.KindAttributeKey[]
-		{
-			Library_SpriteStudio.KindAttributeKey.PRIORITY,
-			Library_SpriteStudio.KindAttributeKey.VERTEX_CORRECTION,
-			Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_X,
-			Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_Y,
-			Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_X,
-			Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_Y,
-			Library_SpriteStudio.KindAttributeKey.TEXTURE_ROTATE,
-			Library_SpriteStudio.KindAttributeKey.TEXTURE_SCALE_X,
-			Library_SpriteStudio.KindAttributeKey.TEXTURE_SCALE_Y,
-			Library_SpriteStudio.KindAttributeKey.PALETTE_CHANGE,
-			Library_SpriteStudio.KindAttributeKey.SOUND,
-
-			Library_SpriteStudio.KindAttributeKey.TERMINATOR
-		},
-		new Library_SpriteStudio.KindAttributeKey[]
-		{
-			Library_SpriteStudio.KindAttributeKey.PRIORITY,
-			Library_SpriteStudio.KindAttributeKey.SOUND,
-
-			Library_SpriteStudio.KindAttributeKey.TERMINATOR
-		},
-		new Library_SpriteStudio.KindAttributeKey[]
-		{
-			Library_SpriteStudio.KindAttributeKey.TERMINATOR
-		},
-		new Library_SpriteStudio.KindAttributeKey[]
-		{
-			Library_SpriteStudio.KindAttributeKey.TERMINATOR
-		}
-	};
-
+	/* Interfaces between Unity's-Menu-Script and OPSS(SS5)Data-Importing-Script */
 	public struct SettingImport
 	{
 		public int TextureSizePixelMaximum;
 		public float CollisionThicknessZ;
 		public bool FlagAttachRigidBody;
+		public bool FlagAttachControlGameObject;
 	}
-
-	public static class DataIntermediate
-	{
-		public class InformationCell
-		{
-			public Rect Area;
-			public Vector2 Pivot;
-			public float Rotate;
-
-			public void CleanUp()
-			{
-				Area.x = 0.0f;
-				Area.y = 0.0f;
-				Area.width = 0.0f;
-				Area.height = 0.0f;
-				Pivot = Vector2.zero;
-				Rotate = 0.0f;
-			}
-		}
-		public struct PartsImage
-		{
-			public string FileName;
-			public Hashtable CellArea;
-
-			public void CleanUp()
-			{
-				FileName = "";
-				CellArea = null;
-			}
-		}
-
-		public class AnimationDataEditor : Library_SpriteStudio.AnimationDataBasis
-		{
-			public float[] RateInheritance;
-			public ArrayList[] DataKeyFrame;
-
-			public void CleanUp()
-			{
-				Inheritance = Library_SpriteStudio.KindInheritance.PARENT;
-
-				FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.CLEAR;
-				RateInheritance = null;
-
-				FlagKeyParameter = Library_SpriteStudio.FlagAttributeKeyInherit.CLEAR;
-				DataKeyFrame = null;
-			}
-		}
-
-		public struct PartsSprite
-		{
-			public struct ParamaterInheritance
-			{
-				public bool Use;
-				public float Rate;
-
-				public void CleanUp()
-				{
-					Use = false;
-					Rate = 0.0f;
-				}
-
-				public override string ToString()
-				{
-					return("Use: " + Use + ", Rate: " + Rate);
-				}
-			}
-
-			public Library_SpriteStudio.KindParts PartsKind;
-			public Library_SpriteStudio.KindParts ObjectKind;
-			public Library_SpriteStudio.KindCollision CollisionKind;
-			public int ID;
-			public int IDParent;
-
-			public string Name;
-			public Library_SpriteStudio.KindColorOperation KindBlendTarget;
-
-			public AnimationDataEditor DataAnimation;
-
-			public void CleanUp()
-			{
-				PartsKind = Library_SpriteStudio.KindParts.NORMAL;
-				ObjectKind = Library_SpriteStudio.KindParts.TERMINATOR;
-				CollisionKind = Library_SpriteStudio.KindCollision.NON;
-				ID = -1;
-				IDParent = -1;
-
-				Name = "";
-				KindBlendTarget = Library_SpriteStudio.KindColorOperation.MIX;
-
-				DataAnimation = null;
-			}
-
-			public void BootUp()
-			{
-				DataAnimation = new AnimationDataEditor();
-			}
-		}
-
-		public class TrunkParts
-		{
-			public PartsSprite[] ListParts = null;
-			public PartsImage[] ListImage = null;
-			public Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay = null;
-			public int CountNode = -1;
-			public bool FlameFlipForImageOnly = false;
-		}
-	}
-
 	public static partial class Menu
 	{
 		public static void ImportSSPJ(SettingImport DataSettingImport)
 		{
+			/* Select Project,Imported(.sspj) */
 			string NameDirectory = "";
 			string NameFileBody = "";
 			string NameFileExtension = "";
@@ -190,17 +48,24 @@ public static partial class LibraryEditor_SpriteStudio
 													"sspj"
 													)
 				)
-			{
+			{	/* Cancelled */
 				return;
 			}
 
+			/* Initialize */
 			int StepNow = 0;
 			int StepFull = 0;
 			ProgressBarUpdate("Decoding Project Files", 0, 1);
 
+			/* ".sspj" Import */
 			ParseOPSS.InformationSSPJ InformationSSPJ = ParseOPSS.ImportSSPJ(NameDirectory, NameFileBody + NameFileExtension);
-			StepFull = 1 + (InformationSSPJ.ListSSCE.Count + InformationSSPJ.ListSSAE.Count) * 2;
+			if(null == InformationSSPJ)
+			{
+				goto Menu_ImportSSPJ_ErrorEnd;
+			}
+			StepFull = 1 + (InformationSSPJ.ListSSCE.Count + InformationSSPJ.ListSSAE.Count) * 2;	/* BaseFolderGet + ((SSCE + SSAE) * (Decoding + Create) */
 
+			/* ".ssce" Import */
 			int Count = InformationSSPJ.ListSSCE.Count;
 			DataIntermediate.PartsImage[] DataListImage = new DataIntermediate.PartsImage[Count];
 			for(int i=0; i<Count; i++)
@@ -215,10 +80,11 @@ public static partial class LibraryEditor_SpriteStudio
 				DataListImage[i].CleanUp();
 				if(false == ParseOPSS.ImportSSCE(ref DataListImage[i], InformationSSPJ.NameDirectorySSCE, InformationSSPJ.NameDirectoryImage, (string)InformationSSPJ.ListSSCE[i]))
 				{
-					return;
+					goto Menu_ImportSSPJ_ErrorEnd;
 				}
 			}
 
+			/* ".ssae" Import */
 			Count = InformationSSPJ.ListSSAE.Count;
 			DataIntermediate.TrunkParts[] DataOutput = new DataIntermediate.TrunkParts[Count];
 			for(int i=0; i<Count; i++)
@@ -234,50 +100,60 @@ public static partial class LibraryEditor_SpriteStudio
 
 				if(false == ParseOPSS.ImportSSAE(ref DataOutput[i], InformationSSPJ.NameDirectorySSAE, (string)InformationSSPJ.ListSSAE[i], InformationSSPJ))
 				{
-					return;
+					goto Menu_ImportSSPJ_ErrorEnd;
 				}
 			}
 
+			/* Importing Base-Folder Get & Create Destination-Folders */
 			string NamePathBase = AssetUtility.NamePathGetSelectNow(null);
-
+			DataOutput[0].CreateDestinationFolders(NamePathBase);
 			StepNow++;
+
+			/* Materials Creating */
 			ProgressBarUpdate(	"Creating Materials",
 								StepNow,
 								StepFull
 							);
-			Material[] TableMaterial = Create.DataMaterial(	NameFileBody,
-															NamePathBase,
-															DataOutput[0],
-															ref DataSettingImport
-														);
+			Material[] TableMaterial = DataOutput[0].CreateAssetMaterial(NameFileBody, NamePathBase, ref DataSettingImport);
 			StepNow += InformationSSPJ.ListSSCE.Count;
 
+			/* Animations Creating */
 			string FileNameBodySSAE = "";
 			for(int i=0; i<Count; i++)
 			{
+				/* Progress-Bar Update */
 				StepNow++;
 				ProgressBarUpdate(	"Creating Animation Prefabs: " + i.ToString() + "-" + Count.ToString(),
 									StepNow,
 									StepFull
 								);
 
+				/* Prefab Create */
 				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
-
-				bool DataPrefab = Create.DataPrefabSprite(	FileNameBodySSAE,
-															NamePathBase,
-															DataOutput[i],
-															TableMaterial,
-															ref DataSettingImport,
-															MaskKeyAttoribute_OPSS,
-															Library_SpriteStudio.SpriteData.BitStatus.PIVOTPLANE_UV | Library_SpriteStudio.SpriteData.BitStatus.TEXTURETRANSLATE_UV
-														);
+				bool DataPrefab = DataOutput[i].CreateDataPrefabSprite(	FileNameBodySSAE,
+																		NamePathBase,
+																		TableMaterial,
+																		ref DataSettingImport
+																	);
 				if(false == DataPrefab)
 				{
-					Debug.LogError("SSPJ-Import: Failure Creating Prefab :" + FileNameBodySSAE);
+					Debug.LogError("SSAE-Convert-Prefab Error:" + FileNameBodySSAE);
+					goto Menu_ImportSSPJ_ErrorEnd;
 				}
 			}
 
-			ProgressBarUpdate(	"Import End", -1, -1);
+			/* End of Importing (Success) */
+			ProgressBarUpdate("Import End", -1, -1);
+			return;
+
+		Menu_ImportSSPJ_ErrorEnd:;
+			/* End of Importing (Failure) */
+			ProgressBarUpdate("Import Stop", -1, -1);
+			EditorUtility.DisplayDialog(	"SpriteStudio5 Player for Unity",
+											"Import Interrupted! Check Error on Console.",
+									 		"OK"
+										);
+			return;
 		}
 
 		private static void ProgressBarUpdate(string NowTaskName, int Step, int StepFull)
@@ -296,442 +172,18 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 	}
 
-	public static class File
+	/* Functions for Parsing OPSS(SS5) Datas */
+	internal static class ParseOPSS
 	{
-		private static string DirectoryPrevious = "";
-		private readonly static string NamePathRootFile = Application.dataPath;
-
-		public static bool FileNameGetFileDialog(out string NameDirectory, out string NameFileBody, out string NameFileExtension, string TitleDialog, string FilterExtension)
+		/* for Parsing ".sspj" */
+		internal static InformationSSPJ ImportSSPJ(string DataPathBase, string FileName)
 		{
-			string FileNameFullPath = EditorUtility.OpenFilePanel(	TitleDialog,
-																	DirectoryPrevious,
-																	FilterExtension
-																);
-			if(0 == FileNameFullPath.Length)
-			{
-				NameDirectory = "";
-				NameFileBody = "";
-				NameFileExtension = "";
+			string MessageError = "";
 
-				return(false);
-			}
-
-			NameDirectory = Path.GetDirectoryName(FileNameFullPath);
-			NameFileBody = Path.GetFileNameWithoutExtension(FileNameFullPath);
-			NameFileExtension = Path.GetExtension(FileNameFullPath);
-
-			DirectoryPrevious = NameDirectory;
-
-			return(true);
-		}
-
-		public static string NamePathToAsset(string Name)
-		{
-			string NamePath = System.String.Copy(NamePathRootFile);
-			if(null != Name)
-			{
-				NamePath += "/" + Name.Substring(AssetUtility.NamePathRootAsset.Length + 1);
-			}
-
-			return(NamePath);
-		}
-
-		public static bool FileCopyToAsset(string NameAsset, string NameOriginalFileName, bool FlagOverCopy)
-		{
-			System.IO.File.Copy(NameOriginalFileName, NameAsset, true);
-
-			return(true);
-		}
-	}
-
-	public static class Cursor
-	{
-		public static Object ObjectGetOnCursor()
-		{
-			return(Selection.activeObject);
-		}
-	}
-
-	public static class ParseOPSS
-	{
-		public enum KindVersionSSPJ
-		{
-			ERROR = 0x00000000,
-			VERSION_000100  = 0x00000100,
-			VERSION_010000  = 0x00010000,
-
-			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,
-		};
-		public enum KindVersionSSCE
-		{
-			ERROR = 0x00000000,
-			VERSION_000100  = 0x00000100,
-			VERSION_010000  = 0x00010000,
-
-			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,
-		};
-		public enum KindVersionSSAE
-		{
-			ERROR = 0x00000000,
-			VERSION_000100  = 0x00000100,
-			VERSION_010000  = 0x00010000,
-
-			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,
-		};
-
-		public class InformationSSPJ
-		{
-			public KindVersionSSPJ VersionCode;
-			public ArrayList ListSSCE;
-			public ArrayList ListSSAE;
-			public string NameDirectorySSCE;
-			public string NameDirectorySSAE;
-			public string NameDirectoryImage;
-
-			public void CleanUp()
-			{
-				VersionCode = LibraryEditor_SpriteStudio.ParseOPSS.KindVersionSSPJ.ERROR;
-				ListSSCE = null;
-				ListSSAE = null;
-				NameDirectorySSCE = "";
-				NameDirectorySSAE = "";
-				NameDirectoryImage = "";
-			}
-
-			public void AddSSCE(string FileName)
-			{
-				if(null == ListSSCE)
-				{
-					ListSSCE = new ArrayList();
-					ListSSCE.Clear();
-				}
-
-				if(0 <= ArraySearchFileName(ListSSCE, FileName))
-				{
-					return;
-				}
-
-				string FileNameNew = string.Copy(FileName);
-				ListSSCE.Add(FileNameNew);
-			}
-
-			public void AddSSAE(string FileName)
-			{
-				if(null == ListSSAE)
-				{
-					ListSSAE = new ArrayList();
-					ListSSAE.Clear();
-				}
-
-				if(0 <= ArraySearchFileName(ListSSAE, FileName))
-				{
-					return;
-				}
-
-				string FileNameNew = string.Copy(FileName);
-				ListSSAE.Add(FileNameNew);
-			}
-
-			public int ArraySearchFileName(ArrayList ListFileName, string FileName)
-			{
-				for(int i=0; i<ListFileName.Count; i++)
-				{
-					string FileNameNow = ListFileName[i] as string;
-					if(0 == FileName.CompareTo(FileNameNow))
-					{
-						return(i);
-					}
-				}
-				return(-1);
-			}
-
-			public int ArraySearchFileNameBody(ArrayList ListFileName, string FileName)
-			{
-				for(int i=0; i<ListFileName.Count; i++)
-				{
-					string FileNameNow = ListFileName[i] as string;
-					if(0 == FileName.CompareTo(FileNameNow))
-					{
-						return(i);
-					}
-				}
-				return(-1);
-			}
-		}
-		public static class ManagerDescriptionAttribute
-		{
-			public class DescriptionAttribute
-			{
-				public Library_SpriteStudio.KindAttributeKey Attribute
-				{
-					set;
-					get;
-				}
-				public Library_SpriteStudio.KindValueKey KindValue
-				{
-					set;
-					get;
-				}
-				public Library_SpriteStudio.KindTypeKey KindType
-				{
-					set;
-					get;
-				}
-				public bool Interpolatable
-				{
-					get
-					{
-						switch(KindValue)
-						{
-							case Library_SpriteStudio.KindValueKey.CHECK:
-							case Library_SpriteStudio.KindValueKey.USER:
-							case Library_SpriteStudio.KindValueKey.SOUND:
-								return(false);
-						}
-						return(true);
-					}
-				}
-
-				public DescriptionAttribute(Library_SpriteStudio.KindAttributeKey AttributeNew,
-											Library_SpriteStudio.KindValueKey KindValueNew,
-											Library_SpriteStudio.KindTypeKey KindTypeNew
-										)
-				{
-					Attribute = AttributeNew;
-					KindValue = KindValueNew;
-					KindType = KindTypeNew;
-				}
-			}
-
-			private readonly static Dictionary<string, DescriptionAttribute> ListDescriptionSSAE = new Dictionary<string, DescriptionAttribute>
-			{
-				{"POSX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.POSITION_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"POSY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.POSITION_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"POSZ",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.POSITION_Z,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"ROTX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ROTATE_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.DEGREE
-													)
-				},
-				{"ROTY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ROTATE_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.DEGREE
-													)
-				},
-				{"ROTZ",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ROTATE_Z,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.DEGREE
-													)
-				},
-
-				{"SCLX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.SCALE_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"SCLY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.SCALE_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"ALPH",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.OPACITY_RATE,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"PRIO",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.PRIORITY,
-													 	Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"FLPH",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.FLIP_X,
-														Library_SpriteStudio.KindValueKey.CHECK,
-														Library_SpriteStudio.KindTypeKey.BOOL
-													)
-				},
-				{"FLPV",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.FLIP_Y,
-														Library_SpriteStudio.KindValueKey.CHECK,
-														Library_SpriteStudio.KindTypeKey.BOOL
-													)
-				},
-				{"HIDE",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.SHOW_HIDE,
-														Library_SpriteStudio.KindValueKey.CHECK,
-														Library_SpriteStudio.KindTypeKey.BOOL
-													)
-				},
-
-				{"VCOL",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.COLOR_BLEND,
-														Library_SpriteStudio.KindValueKey.COLOR,
-														Library_SpriteStudio.KindTypeKey.OTHER
-													)
-				},
-				{"VERT",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.VERTEX_CORRECTION,
-														Library_SpriteStudio.KindValueKey.QUADRILATERRAL,
-														Library_SpriteStudio.KindTypeKey.OTHER
-													)
-				},
-
-				{"PVTX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"PVTY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"ANCX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ANCHOR_POSITION_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"ANCY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ANCHOR_POSITION_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"SIZX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ANCHOR_SIZE_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"SIZY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ANCHOR_SIZE_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"UVTX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"UVTY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"UVRZ",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_ROTATE,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.DEGREE
-													)
-				},
-				{"UVSX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_EXPAND_WIDTH,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"UVSY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_EXPAND_HEIGHT,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"BNDR",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.COLLISION_RADIUS,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"CELL",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.CELL,
-														Library_SpriteStudio.KindValueKey.CELL,
-														Library_SpriteStudio.KindTypeKey.OTHER
-													)
-				},
-				{"USER",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.USER_DATA,
-														Library_SpriteStudio.KindValueKey.USER,
-														Library_SpriteStudio.KindTypeKey.OTHER
-													)
-				},
-
-				{"IFLH",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_FLIP_X,
-														Library_SpriteStudio.KindValueKey.CHECK,
-														Library_SpriteStudio.KindTypeKey.BOOL
-													)
-				},
-				{"IFLV",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_FLIP_Y,
-														Library_SpriteStudio.KindValueKey.CHECK,
-														Library_SpriteStudio.KindTypeKey.BOOL
-													)
-				},
-
-				{"IMGX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"IMGY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"IMGW",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_EXPAND_WIDTH,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"IMGH",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.TEXTURE_EXPAND_HEIGHT,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-
-				{"ORFX",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_X,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-				{"ORFY",	new DescriptionAttribute(	Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_Y,
-														Library_SpriteStudio.KindValueKey.NUMBER,
-														Library_SpriteStudio.KindTypeKey.FLOAT
-													)
-				},
-			};
-
-			static public DescriptionAttribute DescriptionAttributeGetTagName(string NameTag)
-			{
-				DescriptionAttribute Description;
-				return((true == ListDescriptionSSAE.TryGetValue(NameTag, out Description)) ? Description : null);
-			}
-
-			static public DescriptionAttribute DescriptionAttributeGetKey(Library_SpriteStudio.KindAttributeKey Key)
-			{
-				foreach (DescriptionAttribute Description in ListDescriptionSSAE.Values)
-				{
-					if(Description.Attribute == Key)
-					{
-						return(Description);
-					}
-				}
-				return(null);
-			}
-		}
-
-		public static InformationSSPJ ImportSSPJ(string DataPathBase, string FileName)
-		{
 			XmlDocument DataXML = new XmlDocument();
 			DataXML.Load(DataPathBase + "/" + FileName);
 
+			/* Version-Check */
 			InformationSSPJ InformationProject = null;
 			XmlNode NodeRoot = DataXML.FirstChild;
 			NodeRoot = NodeRoot.NextSibling;
@@ -744,15 +196,16 @@ public static partial class LibraryEditor_SpriteStudio
 
 				case KindVersionSSPJ.ERROR:
 				default:
-					Debug.LogError("SSCE-Import: Aborted.");
-					return(null);
+					MessageError = "Not Supported Version.";
+					goto ParseOPSS_ImportSSPJ_ErrorEnd;
 			}
 
+			/* Get Directories */
 			InformationProject = new InformationSSPJ();
 			if(null == InformationProject)
 			{
-				Debug.LogError("SSPJ-Import: Error!: Not Enough Memory");
-				return(null);
+				MessageError = "Not Enough Memory.";
+				goto ParseOPSS_ImportSSPJ_ErrorEnd;
 			}
 
 			InformationProject.VersionCode = VersionCode;
@@ -781,11 +234,12 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationProject.NameDirectoryImage += "/" + ValueText;
 			}
 
+			/* Get Cell-Maps */
 			NodeList = XMLUtility.XML_SelectNodes(NodeRoot, "cellmapNames/value", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError("SSPJ-Import: Error!: CellMapNameList-Node Not-Found");
-				return(null);
+				MessageError = "CellMapNameList-Node Not-Found.";
+				goto ParseOPSS_ImportSSPJ_ErrorEnd;
 			}
 			foreach(XmlNode NodeNameCellMap in NodeList)
 			{
@@ -793,11 +247,12 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationProject.AddSSCE(NameFileName);
 			}
 
+			/* Get Animations */
 			NodeList = XMLUtility.XML_SelectNodes(NodeRoot, "animepackNames/value", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError("SSPJ-Import: Error!: AnimePackNameList-Node Not-Found");
-				return(null);
+				MessageError = "AnimePackNameList-Node Not-Found.";
+				goto ParseOPSS_ImportSSPJ_ErrorEnd;
 			}
 			foreach(XmlNode NodeNameAnimation in NodeList)
 			{
@@ -806,14 +261,109 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			return(InformationProject);
+
+		ParseOPSS_ImportSSPJ_ErrorEnd:;
+			Debug.LogError("SSPJ-Import Error: " + MessageError + " (" + FileName + ")");
+			return(null);
+		}
+		internal enum KindVersionSSPJ
+		{
+			ERROR = 0x00000000,
+			VERSION_000100  = 0x00000100,
+			VERSION_010000  = 0x00010000,
+
+			VERSION_REQUIRED = VERSION_000100,
+			VERSION_CURRENT = VERSION_010000,
+		};
+		internal class InformationSSPJ
+		{
+			internal KindVersionSSPJ VersionCode;
+			internal ArrayList ListSSCE;
+			internal ArrayList ListSSAE;
+			internal string NameDirectorySSCE;
+			internal string NameDirectorySSAE;
+			internal string NameDirectoryImage;
+
+			internal void CleanUp()
+			{
+				VersionCode = LibraryEditor_SpriteStudio.ParseOPSS.KindVersionSSPJ.ERROR;
+				ListSSCE = null;
+				ListSSAE = null;
+				NameDirectorySSCE = "";
+				NameDirectorySSAE = "";
+				NameDirectoryImage = "";
+			}
+
+			internal void AddSSCE(string FileName)
+			{
+				if(null == ListSSCE)
+				{
+					ListSSCE = new ArrayList();
+					ListSSCE.Clear();
+				}
+
+				if(0 <= ArraySearchFileName(ListSSCE, FileName))
+				{
+					return;
+				}
+
+				string FileNameNew = string.Copy(FileName);
+				ListSSCE.Add(FileNameNew);
+			}
+
+			internal void AddSSAE(string FileName)
+			{
+				if(null == ListSSAE)
+				{
+					ListSSAE = new ArrayList();
+					ListSSAE.Clear();
+				}
+
+				if(0 <= ArraySearchFileName(ListSSAE, FileName))
+				{
+					return;
+				}
+
+				string FileNameNew = string.Copy(FileName);
+				ListSSAE.Add(FileNameNew);
+			}
+
+			internal int ArraySearchFileName(ArrayList ListFileName, string FileName)
+			{
+				for(int i=0; i<ListFileName.Count; i++)
+				{
+					string FileNameNow = ListFileName[i] as string;
+					if(0 == FileName.CompareTo(FileNameNow))
+					{
+						return(i);
+					}
+				}
+				return(-1);
+			}
+
+			internal int ArraySearchFileNameBody(ArrayList ListFileName, string FileName)
+			{
+				for(int i=0; i<ListFileName.Count; i++)
+				{
+					string FileNameNow = ListFileName[i] as string;
+					if(0 == FileName.CompareTo(FileNameNow))
+					{
+						return(i);
+					}
+				}
+				return(-1);
+			}
 		}
 
-		public static bool ImportSSCE(	ref DataIntermediate.PartsImage InformationCellMap,
+		/* for Parsing ".ssce" */
+		internal static bool ImportSSCE(	ref DataIntermediate.PartsImage InformationCellMap,
 										string NameDirectoryCellMap,
 										string NameDirectoryImage,
 										string FileName
 									)
 		{
+			string MessageError = "";
+
 			XmlDocument DataXML = new XmlDocument();
 			DataXML.Load(NameDirectoryCellMap + "/" + FileName);
 
@@ -828,8 +378,8 @@ public static partial class LibraryEditor_SpriteStudio
 
 				case KindVersionSSCE.ERROR:
 				default:
-					Debug.LogError("SSCE-Import: Aborted.");
-					return(false);
+					MessageError = "Not Supported Version.";
+					goto ParseOPSS_ImportSSCE_ErrorEnd;
 			}
 
 			NameTable NodeNameSpace = new NameTable();
@@ -854,16 +404,16 @@ public static partial class LibraryEditor_SpriteStudio
 			InformationCellMap.CellArea = new Hashtable();
 			if(null == InformationCellMap.CellArea)
 			{
-				Debug.LogError("SSCE-Import: Error!: Not Enough Memory");
-				return(false);
+				MessageError = "Not Enough Memory.";
+				goto ParseOPSS_ImportSSCE_ErrorEnd;
 			}
 			DataIntermediate.InformationCell Cell = null;
 
 			NodeList = XMLUtility.XML_SelectNodes(NodeRoot, "cells/cell", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError("SSCE-Import: Error!: Cells-Node Not-Found");
-				return(false);
+				MessageError = "Cells-Node Not-Found.";
+				goto ParseOPSS_ImportSSCE_ErrorEnd;
 			}
 			string Key = null;
 			string ItemText = null;
@@ -877,8 +427,8 @@ public static partial class LibraryEditor_SpriteStudio
 				Cell = new DataIntermediate.InformationCell();
 				if(null == Cell)
 				{
-					Debug.LogError("SSCE-Import: Error!: Not Enough Memory");
-					return(false);
+					MessageError = "Not Enough Memory.";
+					goto ParseOPSS_ImportSSCE_ErrorEnd;
 				}
 
 				ItemText = XMLUtility.TextGetSelectSingleNode(NodeCell, "pos", ManagerNameSpace);
@@ -905,10 +455,26 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			return(true);
-		}
 
-		public static bool ImportSSAE(ref DataIntermediate.TrunkParts DataTrunk, string NameDirectory, string FileName, InformationSSPJ InformationProject)
+		ParseOPSS_ImportSSCE_ErrorEnd:;
+			Debug.LogError("SSCE-Import Error: " + MessageError + " (" + FileName + ")");
+			return(false);
+		}
+		internal enum KindVersionSSCE
 		{
+			ERROR = 0x00000000,
+			VERSION_000100  = 0x00000100,
+			VERSION_010000  = 0x00010000,
+
+			VERSION_REQUIRED = VERSION_000100,
+			VERSION_CURRENT = VERSION_010000,
+		};
+
+		/* for Parsing ".ssae" */
+		internal static bool ImportSSAE(ref DataIntermediate.TrunkParts DataTrunk, string NameDirectory, string FileName, InformationSSPJ InformationProject)
+		{
+			string MessageError = "";
+
 			XmlDocument DataXML = new XmlDocument();
 			DataXML.Load(NameDirectory + "/" + FileName);
 
@@ -923,8 +489,8 @@ public static partial class LibraryEditor_SpriteStudio
 
 				case KindVersionSSAE.ERROR:
 				default:
-					Debug.LogError("SSAE-Import: Aborted.");
-					return(false);
+					MessageError = "Not Supported Version.";
+					goto ParseOPSS_ImportSSAE_ErrorEnd;
 			}
 
 			NameTable NodeNameSpace = new NameTable();
@@ -934,8 +500,8 @@ public static partial class LibraryEditor_SpriteStudio
 			NodeList = XMLUtility.XML_SelectNodes(NodeRoot, "cellmapNames/value", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError("SSAE-Import: Error!: CellMapNames-Node Not-Found");
-				return(false);
+				MessageError = "CellMapNames-Node Not-Found.";
+				goto ParseOPSS_ImportSSAE_ErrorEnd;
 			}
 			int[] CellMapNo = new int[NodeList.Count];
 			for(int i=0; i<NodeList.Count; i++)
@@ -948,8 +514,8 @@ public static partial class LibraryEditor_SpriteStudio
 				CellMapNo[CellNo] = InformationProject.ArraySearchFileName(InformationProject.ListSSCE, NodeCellMapName.InnerText);
 				if(-1 == CellMapNo[CellNo])
 				{
-					Debug.LogWarning("SSAE-Import: Error!: CellMap Not-Found: " + NodeCellMapName.Value);
-					return(false);
+					MessageError = "CellMap Not-Found.";
+					goto ParseOPSS_ImportSSAE_ErrorEnd;
 				}
 				CellNo++;
 			}
@@ -957,44 +523,44 @@ public static partial class LibraryEditor_SpriteStudio
 			NodeList = XMLUtility.XML_SelectNodes(NodeRoot, "Model/partList/value", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError("SSAE-Import: Error!: PartsList-Node Not-Found");
-				return(false);
+				MessageError = "PartsList-Node Not-Found.";
+				goto ParseOPSS_ImportSSAE_ErrorEnd;
 			}
 
 			DataTrunk.CountNode = NodeList.Count;
 			DataTrunk.ListParts = new DataIntermediate.PartsSprite[DataTrunk.CountNode];
 			if(null == DataTrunk.ListParts)
 			{
-				Debug.LogError("SSAE-Import: Error!: Not Enough Memory");
-				return(false);
+				MessageError = "Not Enough Memory.";
+				goto ParseOPSS_ImportSSAE_ErrorEnd;
 			}
 			for(int i=0; i<DataTrunk.CountNode; i++)
 			{
 				DataTrunk.ListParts[i].BootUp();
 				if(null == DataTrunk.ListParts[i].DataAnimation)
 				{
-					Debug.LogError("SSAE-Import: Error!: Not Enough Memory");
-					return(false);
+					MessageError = "Not Enough Memory.";
+					goto ParseOPSS_ImportSSAE_ErrorEnd;
 				}
 
-				DataTrunk.ListParts[i].DataAnimation.DataKeyFrame = new ArrayList[(int)Library_SpriteStudio.KindAttributeKey.TERMINATOR];
+				DataTrunk.ListParts[i].DataAnimation.DataKeyFrame = new ArrayList[(int)DataIntermediate.KindAttributeKey.TERMINATOR];
 				if(null == DataTrunk.ListParts[i].DataAnimation.DataKeyFrame)
 				{
-					Debug.LogError("SSAE-Import: Error!: Not Enough Memory");
-					return(false);
+					MessageError = "Not Enough Memory.";
+					goto ParseOPSS_ImportSSAE_ErrorEnd;
 				}
-				for(int j=(int)Library_SpriteStudio.KindAttributeKey.POSITION_X; j<(int)Library_SpriteStudio.KindAttributeKey.TERMINATOR; j++)
+				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR; j++)
 				{
 					DataTrunk.ListParts[i].DataAnimation.DataKeyFrame[j] = null;
 				}
 
-				DataTrunk.ListParts[i].DataAnimation.RateInheritance = new float[(int)Library_SpriteStudio.KindAttributeKey.TERMINATOR_INHELIT];
+				DataTrunk.ListParts[i].DataAnimation.RateInheritance = new float[(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT];
 				if(null == DataTrunk.ListParts[i].DataAnimation.RateInheritance)
 				{
-					Debug.LogError("SSAE-Import: Error!: Not Enough Memory");
-					return(false);
+					MessageError = "Not Enough Memory.";
+					goto ParseOPSS_ImportSSAE_ErrorEnd;
 				}
-				for(int j=(int)Library_SpriteStudio.KindAttributeKey.POSITION_X; j<(int)Library_SpriteStudio.KindAttributeKey.TERMINATOR_INHELIT; j++)
+				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT; j++)
 				{
 					DataTrunk.ListParts[i].DataAnimation.RateInheritance[j] = 0.0f;
 				}
@@ -1008,34 +574,33 @@ public static partial class LibraryEditor_SpriteStudio
 
 				if(false == ImportSSAESetParts(ref DataTrunk.ListParts[PartsNo], NodeParts, ManagerNameSpace))
 				{
-					Debug.LogError("SSAE-Import: Aborted.");
-					return(false);
+					goto ParseOPSS_ImportSSAE_ErrorEnd_NoMessage;
 				}
 			}
 
 			for(int i=0; i<DataTrunk.CountNode; i++)
 			{
-				if(Library_SpriteStudio.KindInheritance.PARENT == DataTrunk.ListParts[i].DataAnimation.Inheritance)
+				if(DataIntermediate.KindInheritance.PARENT == DataTrunk.ListParts[i].DataAnimation.Inheritance)
 				{
 					PartsNo = DataTrunk.ListParts[i].IDParent;
-					while(Library_SpriteStudio.KindInheritance.PARENT == DataTrunk.ListParts[PartsNo].DataAnimation.Inheritance)
+					while(DataIntermediate.KindInheritance.PARENT == DataTrunk.ListParts[PartsNo].DataAnimation.Inheritance)
 					{
 						PartsNo = DataTrunk.ListParts[PartsNo].IDParent;
 					}
 					DataTrunk.ListParts[i].DataAnimation.FlagInheritance = DataTrunk.ListParts[PartsNo].DataAnimation.FlagInheritance;
 				}
 
-				for(int j=(int)Library_SpriteStudio.KindAttributeKey.POSITION_X; j<(int)Library_SpriteStudio.KindAttributeKey.TERMINATOR_INHELIT; j++)
+				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT; j++)
 				{
-					DataTrunk.ListParts[i].DataAnimation.RateInheritance[j] = (0 != (DataTrunk.ListParts[i].DataAnimation.FlagInheritance & Library_SpriteStudio.FlagParameterKeyFrameInherit[j])) ? 1.0f : 0.0f;
+					DataTrunk.ListParts[i].DataAnimation.RateInheritance[j] = (0 != (DataTrunk.ListParts[i].DataAnimation.FlagInheritance & DataIntermediate.FlagParameterKeyFrameInherit[j])) ? 1.0f : 0.0f;
 				}
 			}
 
 			NodeList = XMLUtility.XML_SelectNodes(NodeRoot, "animeList/anime", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError("SSAE-Import: Error!: AnimationList-Node Not-Found");
-				return(false);
+				MessageError = "AnimationList-Node Not-Found.";
+				goto ParseOPSS_ImportSSAE_ErrorEnd;
 			}
 			int CountAnimation = NodeList.Count;
 			DataTrunk.ListInformationPlay = new Library_SpriteStudio.AnimationInformationPlay[CountAnimation];
@@ -1054,11 +619,11 @@ public static partial class LibraryEditor_SpriteStudio
 				DataTrunk.ListInformationPlay[CountAnimation].FrameEnd += FrameNoStart;
 				DataTrunk.ListInformationPlay[CountAnimation].FrameEnd--;
 				DataTrunk.ListInformationPlay[CountAnimation].FramePerSecond = XMLUtility.ValueGetInt(XMLUtility.TextGetSelectSingleNode(NodeAnimation, "settings/fps", ManagerNameSpace));
+				DataTrunk.CountFrameFull = DataTrunk.ListInformationPlay[CountAnimation].FrameEnd + 1;
 
 				if(false == ImportSSAESetAnimation(ref DataTrunk, CountAnimation, FrameNoStart, CellMapNo, NodeAnimation, ManagerNameSpace))
 				{
-					Debug.LogError("SSAE-Import: Aborted.");
-					return(false);
+					goto ParseOPSS_ImportSSAE_ErrorEnd_NoMessage;
 				}
 
 				FrameNoStart = (((DataTrunk.ListInformationPlay[CountAnimation].FrameEnd + 9) / 10) + 1) * 10;
@@ -1066,14 +631,29 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			return(true);
-		}
 
-		private	static int VersionCodeGet(XmlNode NodeRoot, string NameTag, int ErrorCode)
+		ParseOPSS_ImportSSAE_ErrorEnd:;
+			Debug.LogError("SSAE-Import Error: " + MessageError + " (" + FileName + ")");
+		ParseOPSS_ImportSSAE_ErrorEnd_NoMessage:;
+			return(false);
+		}
+		internal enum KindVersionSSAE
+		{
+			ERROR = 0x00000000,
+			VERSION_000100  = 0x00000100,
+			VERSION_010000  = 0x00010000,
+
+			VERSION_REQUIRED = VERSION_000100,
+			VERSION_CURRENT = VERSION_010000,
+		};
+
+		/* Version-Code Shaping */
+		private static int VersionCodeGet(XmlNode NodeRoot, string NameTag, int ErrorCode)
 		{
 			XmlAttributeCollection AttributeNodeRoot = NodeRoot.Attributes;
 			if(NameTag != NodeRoot.Name)
 			{
-				Debug.LogError(	"SSxx-Import: Error!: Invalid Root-Tag: "
+				Debug.LogError(	"SSxx-Import Error: Invalid Root-Tag: "
 								+ NodeRoot.Name
 							);
 				return(ErrorCode);
@@ -1084,7 +664,7 @@ public static partial class LibraryEditor_SpriteStudio
 			int Version = XMLUtility.VersionGetHexCode(VersionText);
 			if(-1 == Version)
 			{
-				Debug.LogError(	"SSxx-Import: Error!: Version-Invalid = " + VersionText);
+				Debug.LogError(	"SSxx-Import Error: Version-Invalid = " + VersionText);
 				return(ErrorCode);
 			}
 
@@ -1092,6 +672,7 @@ public static partial class LibraryEditor_SpriteStudio
 			return(Version);
 		}
 
+		/* SSAE-Parts Data Decoding */
 		private static bool ImportSSAESetParts(	ref DataIntermediate.PartsSprite DataParts,
 												XmlNode NodeParts,
 												XmlNamespaceManager ManagerNameSpace
@@ -1124,7 +705,7 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				default:
-					Debug.LogWarning("SSAE-Import: Warning: Parts["
+					Debug.LogWarning("SSAE-Import Warning: Parts["
 										+ DataParts.ID.ToString()
 										+ "] Invalid Parts Kind.: "
 										+ ValueText
@@ -1160,7 +741,7 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				default:
-					Debug.LogWarning("SSAE-Import: Warning: Parts["
+					Debug.LogWarning("SSAE-Import Warning: Parts["
 										+ DataParts.ID.ToString()
 										+ "] Invalid Collision Kind.: "
 										+ ValueText
@@ -1174,54 +755,50 @@ public static partial class LibraryEditor_SpriteStudio
 				case "parent":
 					if(0 == DataParts.ID)
 					{
-						DataParts.DataAnimation.Inheritance = Library_SpriteStudio.KindInheritance.SELF;
-						DataParts.DataAnimation.FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.PRESET;
+						DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
+						DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET;
 					}
 					else
 					{
-						DataParts.DataAnimation.Inheritance = Library_SpriteStudio.KindInheritance.PARENT;
-						DataParts.DataAnimation.FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.CLEAR;
+						DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.PARENT;
+						DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
 					}
 					break;
 
 				case "self":
 					{
-						DataParts.DataAnimation.Inheritance = Library_SpriteStudio.KindInheritance.SELF;
-#if false
-						DataParts.DataAnimation.FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.PRESET;
-						DataParts.DataAnimation.FlagInheritance &= ~Library_SpriteStudio.FlagAttributeKeyInherit.OPACITY_RATE;
-#else
-						DataParts.DataAnimation.FlagInheritance = Library_SpriteStudio.FlagAttributeKeyInherit.CLEAR;
-#endif
+						DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
+						DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
+
 						XmlNode NodeAttribute = null;
 						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
-							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.OPACITY_RATE;
+							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE;
 						}
 
 						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
-							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.FLIP_X;
+							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_X;
 						}
 
 						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
-							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.FLIP_Y;
+							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_Y;
 						}
 
 						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
 						if(null == NodeAttribute)
 						{
-							DataParts.DataAnimation.FlagInheritance |= Library_SpriteStudio.FlagAttributeKeyInherit.SHOW_HIDE;
+							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE;
 						}
 					}
 					break;
 
 				default:
-					Debug.LogWarning("SSAE-Import: Warning: Parts["
+					Debug.LogWarning("SSAE-Import Warning: Parts["
 										+ DataParts.ID.ToString()
 										+ "] Invalid Inheritance Kind.: "
 										+ ValueText
@@ -1249,7 +826,7 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				default:
-					Debug.LogWarning("SSAE-Import: Warning: Parts["
+					Debug.LogWarning("SSAE-Import Warning: Parts["
 										+ DataParts.ID.ToString()
 										+ "] Invalid Alpha-Blend Kind.: "
 										+ ValueText
@@ -1259,7 +836,6 @@ public static partial class LibraryEditor_SpriteStudio
 
 			return(true);
 		}
-
 		private static bool ImportSSAESetAnimation(	ref DataIntermediate.TrunkParts DataTrunk,
 													int No,
 													int FrameNoStart,
@@ -1271,7 +847,7 @@ public static partial class LibraryEditor_SpriteStudio
 			XmlNodeList NodeList = XMLUtility.XML_SelectNodes(NodeAnimation, "partAnimes/partAnime", ManagerNameSpace);
 			if(null == NodeList)
 			{
-				Debug.LogError(	"SSAE-Import: Error!: Animation["
+				Debug.LogError(	"SSAE-Import Error: Animation["
 								+ No.ToString()
 								+ "] Parts-KeyDatas Not-Found"
 							);
@@ -1286,7 +862,7 @@ public static partial class LibraryEditor_SpriteStudio
 				IndexNoParts = ImportSSAEPartsSearchNameToID(DataTrunk, ValueText);
 				if(-1 == IndexNoParts)
 				{
-					Debug.LogWarning(	"SSAE-Import: Warning: Animation["
+					Debug.LogWarning(	"SSAE-Import Warning: Animation["
 										+ No.ToString()
 										+ "] Parts Name Invalid: "
 										+ ValueText
@@ -1297,13 +873,9 @@ public static partial class LibraryEditor_SpriteStudio
 				NodeAttributes = XMLUtility.XML_SelectNodes(NodeParts, "attributes/attribute", ManagerNameSpace);
 				ImportSSAEPartsSetKeyData(ref DataTrunk.ListParts[IndexNoParts], FrameNoStart, CellMapNo, DataTrunk.ListImage, NodeAttributes, ManagerNameSpace);
 			}
-
 			return(true);
 		}
-
-		private static int ImportSSAEPartsSearchNameToID(	DataIntermediate.TrunkParts DataTrunk,
-															string Name
-														)
+		private static int ImportSSAEPartsSearchNameToID(DataIntermediate.TrunkParts DataTrunk, string Name)
 		{
 			int Count = DataTrunk.CountNode;
 			for(int i=0; i<Count; i++)
@@ -1315,7 +887,6 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 			return(-1);
 		}
-
 		private static bool ImportSSAEPartsSetKeyData(	ref DataIntermediate.PartsSprite DataParts,
 														int FrameNoStart,
 														int[] CellMapNo,
@@ -1326,14 +897,14 @@ public static partial class LibraryEditor_SpriteStudio
 		{
 			if(null == ListNodeAttribute)
 			{
-				Debug.LogError(	"SSAE-Import: Error!: Animation["
+				Debug.LogError(	"SSAE-Import Error: Animation["
 								+ DataParts.Name
 								+ "] KeyData Not-Found."
 							);
 				return(false);
 			}
 
-			ManagerDescriptionAttribute.DescriptionAttribute Description = null;
+			DataIntermediate.ManagerDescriptionAttribute.DescriptionAttribute Description = null;
 			XmlNodeList NodeListKey = null;
 			XmlNode NodeInterpolation = null;
 			bool FlagWithParameterInterpolation = false;
@@ -1342,16 +913,16 @@ public static partial class LibraryEditor_SpriteStudio
 			int KeyNo = -1;
 			string ValueText = "";
 			string[] ValueTextParameter = null;
-			Library_SpriteStudio.KeyFrame.DataCurve DataCurve = null;
-			Library_SpriteStudio.KeyFrame.InterfaceData KeyData = null;
+			DataIntermediate.KeyFrame.DataCurve DataCurve = null;
+			DataIntermediate.KeyFrame.InterfaceData KeyData = null;
 			foreach(XmlNode NodeAttribute in ListNodeAttribute)
 			{
 				ValueText = NodeAttribute.Attributes["tag"].Value;
 
-				Description = ManagerDescriptionAttribute.DescriptionAttributeGetTagName(ValueText);
+				Description = DataIntermediate.ManagerDescriptionAttribute.DescriptionAttributeGetTagName(ValueText);
 				if(null == Description)
 				{
-					Debug.LogWarning(	"SSAE-Import: Warning: Part["
+					Debug.LogWarning(	"SSAE-Import Warning: Part["
 										+ DataParts.Name
 										+ "] Attribute Invalid. ["
 										+ ValueText
@@ -1360,9 +931,9 @@ public static partial class LibraryEditor_SpriteStudio
 					continue;
 				}
 				AttributeNo = (int)Description.Attribute;
-				if((int)Library_SpriteStudio.KindAttributeKey.TERMINATOR_INHELIT > AttributeNo)
+				if((int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT > AttributeNo)
 				{
-					DataParts.DataAnimation.FlagKeyParameter |= Library_SpriteStudio.FlagParameterKeyFrameInherit[AttributeNo];
+					DataParts.DataAnimation.FlagKeyParameter |= DataIntermediate.FlagParameterKeyFrameInherit[AttributeNo];
 				}
 				if(null == DataParts.DataAnimation.DataKeyFrame[AttributeNo])
 				{
@@ -1373,7 +944,7 @@ public static partial class LibraryEditor_SpriteStudio
 				NodeListKey = XMLUtility.XML_SelectNodes(NodeAttribute, "key", ManagerNameSpace);
 				if(null == NodeListKey)
 				{
-					Debug.LogWarning(	"SSAE-Import: Warning: Part["
+					Debug.LogWarning(	"SSAE-Import Warning: Part["
 										+ DataParts.Name
 										+ "] Attribute ["
 										+ Description.Attribute.ToString()
@@ -1389,50 +960,50 @@ public static partial class LibraryEditor_SpriteStudio
 
 					if(true == Description.Interpolatable)
 					{
-						DataCurve = new Library_SpriteStudio.KeyFrame.DataCurve();
+						DataCurve = new DataIntermediate.KeyFrame.DataCurve();
 						NodeInterpolation = NodeKey.Attributes["ipType"];
 						FlagWithParameterInterpolation = false;
 						if(null == NodeInterpolation)
 						{
-							DataCurve.Kind = Library_SpriteStudio.KindInterpolation.NON;
+							DataCurve.Kind = DataIntermediate.KindInterpolation.NON;
 						}
 						else
 						{
 							switch(NodeInterpolation.Value)
 							{
 								case "linear":
-									DataCurve.Kind = Library_SpriteStudio.KindInterpolation.LINEAR;
+									DataCurve.Kind = DataIntermediate.KindInterpolation.LINEAR;
 									break;
 
 								case "hermite":
-									DataCurve.Kind = Library_SpriteStudio.KindInterpolation.HERMITE;
+									DataCurve.Kind = DataIntermediate.KindInterpolation.HERMITE;
 									FlagWithParameterInterpolation = true;
 									break;
 
 								case "bezier":
-									DataCurve.Kind = Library_SpriteStudio.KindInterpolation.BEZIER;
+									DataCurve.Kind = DataIntermediate.KindInterpolation.BEZIER;
 									FlagWithParameterInterpolation = true;
 									break;
 
 								case "acceleration":
-									DataCurve.Kind = Library_SpriteStudio.KindInterpolation.ACCELERATE;
+									DataCurve.Kind = DataIntermediate.KindInterpolation.ACCELERATE;
 									break;
 
 								case "deceleration":
-									DataCurve.Kind = Library_SpriteStudio.KindInterpolation.DECELERATE;
+									DataCurve.Kind = DataIntermediate.KindInterpolation.DECELERATE;
 									break;
 
 								default:
-									Debug.LogWarning(	"SSAE-Import: Warning: Part["
+									Debug.LogWarning(	"SSAE-Import Warning: Part["
 														+ DataParts.Name
 														+ "] Attribute ["
 														+ Description.Attribute.ToString()
-														+ "] : Key ["
+														+ "] - Key ["
 														+ KeyNo.ToString()
 														+ "] Invalid Interpolation Kind: "
 														+ NodeInterpolation.Value
 													);
-									DataCurve.Kind = Library_SpriteStudio.KindInterpolation.NON;
+									DataCurve.Kind = DataIntermediate.KindInterpolation.NON;
 									break;
 							}
 
@@ -1441,11 +1012,11 @@ public static partial class LibraryEditor_SpriteStudio
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "curve", ManagerNameSpace);
 								if(null == ValueText)
 								{
-									Debug.LogWarning(	"SSAE-Import: Warning: Part["
+									Debug.LogWarning(	"SSAE-Import Warning: Part["
 														+ DataParts.Name
 														+ "] Attribute ["
 														+ Description.Attribute.ToString()
-														+ "] : Key ["
+														+ "] - Key ["
 														+ KeyNo.ToString()
 														+ "] Has No Interpolation-Parameters: "
 														+ NodeInterpolation.Value
@@ -1483,48 +1054,48 @@ public static partial class LibraryEditor_SpriteStudio
 					KeyData = null;
 					switch(Description.KindValue)
 					{
-						case Library_SpriteStudio.KindValueKey.NUMBER:
+						case DataIntermediate.KindValueKey.NUMBER:
 							{
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value", ManagerNameSpace);
 
 								switch(Description.KindType)
 								{
-									case Library_SpriteStudio.KindTypeKey.INT:
+									case DataIntermediate.KindTypeKey.INT:
 										{
 											int Value = XMLUtility.ValueGetInt(ValueText);
-											Library_SpriteStudio.KeyFrame.DataInt DataInt = new Library_SpriteStudio.KeyFrame.DataInt();
+											DataIntermediate.KeyFrame.DataInt DataInt = new DataIntermediate.KeyFrame.DataInt();
 											DataInt.Value = Value;
 											KeyData = DataInt;
 										}
 										break;
 
-									case Library_SpriteStudio.KindTypeKey.HEX:
+									case DataIntermediate.KindTypeKey.HEX:
 										{
 											int Value = XMLUtility.TextHexToInt(ValueText);
-											Library_SpriteStudio.KeyFrame.DataInt DataInt = new Library_SpriteStudio.KeyFrame.DataInt();
+											DataIntermediate.KeyFrame.DataInt DataInt = new DataIntermediate.KeyFrame.DataInt();
 											DataInt.Value = Value;
 											KeyData = DataInt;
 										}
 										break;
 
-									case Library_SpriteStudio.KindTypeKey.FLOAT:
-									case Library_SpriteStudio.KindTypeKey.DEGREE:
+									case DataIntermediate.KindTypeKey.FLOAT:
+									case DataIntermediate.KindTypeKey.DEGREE:
 										{
 											float Value = (float)(XMLUtility.ValueGetDouble(ValueText));
-											Library_SpriteStudio.KeyFrame.DataFloat DataFloat = new Library_SpriteStudio.KeyFrame.DataFloat();
+											DataIntermediate.KeyFrame.DataFloat DataFloat = new DataIntermediate.KeyFrame.DataFloat();
 											DataFloat.Value = Value;
 											KeyData = DataFloat;
 										}
 										break;
 
-									case Library_SpriteStudio.KindTypeKey.BOOL:
-									case Library_SpriteStudio.KindTypeKey.OTHER:
+									case DataIntermediate.KindTypeKey.BOOL:
+									case DataIntermediate.KindTypeKey.OTHER:
 									default:
-										Debug.LogWarning(	"SSAE-Import: Warning: Part["
+										Debug.LogWarning(	"SSAE-Import Warning: Part["
 															+ DataParts.Name
 															+ "] Attribute ["
 															+ Description.Attribute.ToString()
-															+ "] : Key ["
+															+ "] - Key ["
 															+ KeyNo.ToString()
 															+ "] Not-Supported Value-Type: "
 															+ Description.KindType.ToString()
@@ -1534,12 +1105,12 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 							break;
 
-						case Library_SpriteStudio.KindValueKey.CHECK:
+						case DataIntermediate.KindValueKey.CHECK:
 							{
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value", ManagerNameSpace);
 
 								bool Value = XMLUtility.ValueGetBool(ValueText);
-								Library_SpriteStudio.KeyFrame.DataBool DataBool = new Library_SpriteStudio.KeyFrame.DataBool();
+								DataIntermediate.KeyFrame.DataBool DataBool = new DataIntermediate.KeyFrame.DataBool();
 								DataBool.Value = Value;
 								KeyData = DataBool;
 
@@ -1547,9 +1118,9 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 							break;
 
-						case Library_SpriteStudio.KindValueKey.COLOR:
+						case DataIntermediate.KindValueKey.COLOR:
 							{
-								Library_SpriteStudio.KeyFrame.ValueColor Value = new Library_SpriteStudio.KeyFrame.ValueColor();
+								DataIntermediate.KeyFrame.ValueColor Value = new DataIntermediate.KeyFrame.ValueColor();
 
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/blendType", ManagerNameSpace);
 								switch(ValueText)
@@ -1571,11 +1142,11 @@ public static partial class LibraryEditor_SpriteStudio
 										break;
 
 									default:
-										Debug.LogWarning(	"SSAE-Import: Warning: Part["
+										Debug.LogWarning(	"SSAE-Import Warning: Part["
 															+ DataParts.Name
 															+ "] Attribute ["
 															+ Description.Attribute.ToString()
-															+ "] : Key ["
+															+ "] - Key ["
 															+ KeyNo.ToString()
 															+ "] Not-Supported ColorBlend-Type: "
 															+ ValueText
@@ -1654,11 +1225,11 @@ public static partial class LibraryEditor_SpriteStudio
 
 									default:
 										{
-											Debug.LogWarning(	"SSAE-Import: Warning: Part["
+											Debug.LogWarning(	"SSAE-Import Warning: Part["
 																+ DataParts.Name
 																+ "] Attribute ["
 																+ Description.Attribute.ToString()
-																+ "] : Key ["
+																+ "] - Key ["
 																+ KeyNo.ToString()
 																+ "] Not-Supported ColorBlend-Target: "
 																+ ValueText
@@ -1676,15 +1247,15 @@ public static partial class LibraryEditor_SpriteStudio
 										break;
 								}
 
-								Library_SpriteStudio.KeyFrame.DataColor DataColor = new Library_SpriteStudio.KeyFrame.DataColor();
+								DataIntermediate.KeyFrame.DataColor DataColor = new DataIntermediate.KeyFrame.DataColor();
 								DataColor.Value = Value;
 								KeyData = DataColor;
 							}
 							break;
 
-						case Library_SpriteStudio.KindValueKey.QUADRILATERRAL:
+						case DataIntermediate.KindValueKey.QUADRILATERRAL:
 							{
-								Library_SpriteStudio.KeyFrame.ValueQuadrilateral Value = new Library_SpriteStudio.KeyFrame.ValueQuadrilateral();
+								DataIntermediate.KeyFrame.ValueQuadrilateral Value = new DataIntermediate.KeyFrame.ValueQuadrilateral();
 
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/LT", ManagerNameSpace);
 								ValueTextParameter = ValueText.Split(' ');
@@ -1706,41 +1277,41 @@ public static partial class LibraryEditor_SpriteStudio
 								Value.Coordinate[3].X = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[0]));
 								Value.Coordinate[3].Y = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[1]));
 
-								Library_SpriteStudio.KeyFrame.DataQuadrilateral DataQuadrilateral = new Library_SpriteStudio.KeyFrame.DataQuadrilateral();
+								DataIntermediate.KeyFrame.DataQuadrilateral DataQuadrilateral = new DataIntermediate.KeyFrame.DataQuadrilateral();
 								DataQuadrilateral.Value = Value;
 								KeyData = DataQuadrilateral;
 							}
 							break;
 
-						case Library_SpriteStudio.KindValueKey.USER:
+						case DataIntermediate.KindValueKey.USER:
 							{
-								Library_SpriteStudio.KeyFrame.ValueUser Value = new Library_SpriteStudio.KeyFrame.ValueUser();
-								Value.Flag = Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR;
+								DataIntermediate.KeyFrame.ValueUser Value = new DataIntermediate.KeyFrame.ValueUser();
+								Value.Flag = DataIntermediate.KeyFrame.ValueUser.FlagData.CLEAR;
 
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/integer", ManagerNameSpace);
 								if(null != ValueText)
 								{
-									if(false == uint.TryParse(ValueText, out Value.Number))
+									if(false == int.TryParse(ValueText, out Value.Number))
 									{
-										int	ValueIntTemp = 0;
-										if(false == int.TryParse(ValueText, out ValueIntTemp))
+										uint	ValueUintTemp = 0;
+										if(false == uint.TryParse(ValueText, out ValueUintTemp))
 										{
-											Debug.LogWarning(	"SSAE-Import: Warning: Part["
+											Debug.LogWarning("SSAE-Import Warning: Part["
 																+ DataParts.Name
-																+ "] : Key ["
+																+ "] - Key ["
 																+ KeyNo.ToString()
 																+ "] Invalid Number: "
 																+ ValueText
 															);
 										}
-										Value.Number = (uint)ValueIntTemp;
+										Value.Number = (int)ValueUintTemp;
 									}
-									Value.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.NUMBER;
+									Value.Flag |= DataIntermediate.KeyFrame.ValueUser.FlagData.NUMBER;
 								}
 								else
 								{
 									Value.Number = 0;
-									Value.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.NUMBER;
+									Value.Flag &= ~DataIntermediate.KeyFrame.ValueUser.FlagData.NUMBER;
 								}
 
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/rect", ManagerNameSpace);
@@ -1751,7 +1322,7 @@ public static partial class LibraryEditor_SpriteStudio
 									Value.Rectangle.yMin = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[1]));
 									Value.Rectangle.xMax = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[2]));
 									Value.Rectangle.yMax = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[3]));
-									Value.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.RECTANGLE;
+									Value.Flag |= DataIntermediate.KeyFrame.ValueUser.FlagData.RECTANGLE;
 								}
 								else
 								{
@@ -1759,38 +1330,38 @@ public static partial class LibraryEditor_SpriteStudio
 									Value.Rectangle.yMin = 0.0f;
 									Value.Rectangle.xMax = 0.0f;
 									Value.Rectangle.yMax = 0.0f;
-									Value.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.RECTANGLE;
+									Value.Flag &= ~DataIntermediate.KeyFrame.ValueUser.FlagData.RECTANGLE;
 								}
 
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/point", ManagerNameSpace);
-								Value.Coordinate = new Library_SpriteStudio.KeyFrame.ValuePoint();
+								Value.Coordinate = new DataIntermediate.KeyFrame.ValuePoint();
 								if(null != ValueText)
 								{
 									ValueTextParameter = ValueText.Split(' ');
 									Value.Coordinate.X = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[0]));
 									Value.Coordinate.Y = (float)(XMLUtility.ValueGetDouble(ValueTextParameter[1]));
-									Value.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.COORDINATE;
+									Value.Flag |= DataIntermediate.KeyFrame.ValueUser.FlagData.COORDINATE;
 								}
 								else
 								{
 									Value.Coordinate.X = 0.0f;
 									Value.Coordinate.Y = 0.0f;
-									Value.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.COORDINATE;
+									Value.Flag &= ~DataIntermediate.KeyFrame.ValueUser.FlagData.COORDINATE;
 								}
 
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/string", ManagerNameSpace);
 								if(null != ValueText)
 								{
 									Value.Text = string.Copy(ValueText);
-									Value.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.TEXT;
+									Value.Flag |= DataIntermediate.KeyFrame.ValueUser.FlagData.TEXT;
 								}
 								else
 								{
 									Value.Text = null;
-									Value.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.TEXT;
+									Value.Flag &= ~DataIntermediate.KeyFrame.ValueUser.FlagData.TEXT;
 								}
 
-								Library_SpriteStudio.KeyFrame.DataUser DataUser = new Library_SpriteStudio.KeyFrame.DataUser();
+								DataIntermediate.KeyFrame.DataUser DataUser = new DataIntermediate.KeyFrame.DataUser();
 								DataUser.Value = Value;
 								KeyData = DataUser;
 
@@ -1798,9 +1369,9 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 							break;
 
-						case Library_SpriteStudio.KindValueKey.CELL:
+						case DataIntermediate.KindValueKey.CELL:
 							{
-								Library_SpriteStudio.KeyFrame.ValueCell Value = new Library_SpriteStudio.KeyFrame.ValueCell();
+								DataIntermediate.KeyFrame.ValueCell Value = new DataIntermediate.KeyFrame.ValueCell();
 
 								bool	FlagValidCell = true;
 								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/mapId", ManagerNameSpace);
@@ -1839,9 +1410,9 @@ public static partial class LibraryEditor_SpriteStudio
 								}
 								if(false == FlagValidCell)
 								{
-									Debug.LogWarning(	"SSAE-Import: Warning: Part["
+									Debug.LogWarning(	"SSAE-Import Warning: Part["
 														+ DataParts.Name
-														+ "] : Key ["
+														+ "] - Key ["
 														+ KeyNo.ToString()
 														+ "] Invalid Cell-Name: "
 														+ ValueText
@@ -1855,7 +1426,7 @@ public static partial class LibraryEditor_SpriteStudio
 									Value.Pivot.y = 0.0f;
 								}
 
-								Library_SpriteStudio.KeyFrame.DataCell DataCell = new Library_SpriteStudio.KeyFrame.DataCell();
+								DataIntermediate.KeyFrame.DataCell DataCell = new DataIntermediate.KeyFrame.DataCell();
 								DataCell.Value = Value;
 								KeyData = DataCell;
 
@@ -1863,15 +1434,15 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 							break;
 
-						case Library_SpriteStudio.KindValueKey.POINT:
-						case Library_SpriteStudio.KindValueKey.SOUND:
-						case Library_SpriteStudio.KindValueKey.PALETTE:
+						case DataIntermediate.KindValueKey.POINT:
+						case DataIntermediate.KindValueKey.SOUND:
+						case DataIntermediate.KindValueKey.PALETTE:
 						default:
-							Debug.LogWarning(	"SSAE-Import: Warning: Part["
+							Debug.LogWarning(	"SSAE-Import Warning: Part["
 												+ DataParts.Name
 												+ "] Attribute ["
 												+ Description.Attribute.ToString()
-												+ "] : Key ["
+												+ "] - Key ["
 												+ KeyNo.ToString()
 												+ "] Not-Supported Value-Kind: "
 												+ Description.KindValue.ToString()
@@ -1889,8 +1460,7 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 			return(true);
 		}
-
-		public static void ImportSSAEKeyDataGetColorBlend(	out float ColorA,
+		private static void ImportSSAEKeyDataGetColorBlend(	out float ColorA,
 															out float ColorR,
 															out float ColorG,
 															out float ColorB,
@@ -1912,60 +1482,174 @@ public static partial class LibraryEditor_SpriteStudio
 			ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, NameTagBase + "/rate", ManagerNameSpace);
 			ColorA = (float)(XMLUtility.ValueGetDouble(ValueText));
 		}
+
 	}
 
-	public static class Create
+	/* File Utilities (for Native File-System) */
+	internal static class File
 	{
-		private readonly static string NamePathSubImportTexture = "Texture";
-		private readonly static string NamePathSubImportMaterial = "Material";
+		private static string DirectoryPrevious = "";
+		private readonly static string NamePathRootFile = Application.dataPath;
 
-		public static class Parts
+		/* Choose File on File-Dialogue */
+		internal static bool FileNameGetFileDialog(out string NameDirectory, out string NameFileBody, out string NameFileExtension, string TitleDialog, string FilterExtension)
 		{
-			public static GameObject Root(DataIntermediate.PartsSprite Parts, DataIntermediate.TrunkParts Trunk, GameObject GameObjectParent)
-			{
-				GameObject GameObjectNow = AssetUtility.Create.GameObject(Parts.Name, GameObjectParent);
-
-				Script_SpriteStudio_PartsRoot PartsRoot = GameObjectNow.AddComponent<Script_SpriteStudio_PartsRoot>();
-				PartsRoot.BootUpForce();
-				int CountAnimation = Trunk.ListInformationPlay.Length;
-				PartsRoot.ListInformationPlay = new Library_SpriteStudio.AnimationInformationPlay[CountAnimation];
-				for(int i=0; i<CountAnimation; i++)
-				{
-					PartsRoot.ListInformationPlay[i] = new Library_SpriteStudio.AnimationInformationPlay();
-
-					PartsRoot.ListInformationPlay[i].Name = string.Copy(Trunk.ListInformationPlay[i].Name);
-					PartsRoot.ListInformationPlay[i].FrameStart = Trunk.ListInformationPlay[i].FrameStart;
-					PartsRoot.ListInformationPlay[i].FrameEnd = Trunk.ListInformationPlay[i].FrameEnd;
-					PartsRoot.ListInformationPlay[i].FramePerSecond = Trunk.ListInformationPlay[i].FramePerSecond;
-				}
-
-				PartsRoot.RateTimeAnimation = 1.0f;
-				PartsRoot.AnimationNo = 0;
-				PartsRoot.CountLoopRemain = -1;
-				PartsRoot.FrameNoInitial = 0;
-
-				PartsRoot.KindRenderQueueBase = Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING;
-				PartsRoot.OffsetDrawQueue = 0;
-				PartsRoot.RateDrawQueueEffectZ = 250.0f;
-
-				GameObjectNow.AddComponent<MeshFilter>();
-				MeshRenderer InstanceMeshRenderer = GameObjectNow.AddComponent<MeshRenderer>();
-				InstanceMeshRenderer.enabled = true;
-				InstanceMeshRenderer.castShadows = false;
-				InstanceMeshRenderer.receiveShadows = false;
-
-				return(GameObjectNow);
+			/* Choose Import-File */
+			string FileNameFullPath = EditorUtility.OpenFilePanel(TitleDialog, DirectoryPrevious, FilterExtension);
+			if(0 == FileNameFullPath.Length)
+			{	/* Cancelled */
+				NameDirectory = "";
+				NameFileBody = "";
+				NameFileExtension = "";
+				return(false);
 			}
 
-			public static GameObject Node(DataIntermediate.PartsSprite DataParts, GameObject GameObjectParent)
+			NameDirectory = Path.GetDirectoryName(FileNameFullPath);
+			NameFileBody = Path.GetFileNameWithoutExtension(FileNameFullPath);
+			NameFileExtension = Path.GetExtension(FileNameFullPath);
+
+			DirectoryPrevious = NameDirectory;
+
+			return(true);
+		}
+
+		/* Convert Path-in-Asset to Native-Path */
+		internal static string AssetPathToNativePath(string Name)
+		{
+			string NamePath = System.String.Copy(NamePathRootFile);
+			if(null != Name)
+			{
+				NamePath += "/" + Name.Substring(AssetUtility.NamePathRootAsset.Length + 1);
+			}
+			return(NamePath);
+		}
+
+		internal static bool FileCopyToAsset(string NameAsset, string NameOriginalFileName, bool FlagOverCopy)
+		{
+			System.IO.File.Copy(NameOriginalFileName, NameAsset, true);
+			return(true);
+		}
+	}
+
+	/* Asset Utilities (for Unity Asset-Files) */
+	internal static partial class AssetUtility
+	{
+		/* Unity's Assets' Root Path-Name */
+		internal readonly static string NamePathRootAsset = "Assets";
+
+		/* Unity's Path-Name to "Assets"-Origined-Path-Name */
+		internal static string NamePathGet(string Name)
+		{
+			string NamePath = System.String.Copy(NamePathRootAsset);
+			if(null != Name)
+			{
+				NamePath += "/" + Name;
+			}
+
+			return(NamePath);
+		}
+
+		/* Get Selected PathName (in Project-Window) */
+		internal static string NamePathGetSelectNow(string NamePath)
+		{
+			string NamePathAsset = "";
+			if(null == NamePath)
+			{	/* Now Selected Path in "Project" */
+				UnityEngine.Object ObjectNow = Selection.activeObject;
+				if(null == ObjectNow)
+				{	/* No Selected */
+					NamePathAsset = System.String.Copy(NamePathRootAsset);
+				}
+				else
+				{	/* Selected */
+					NamePathAsset = AssetDatabase.GetAssetPath(ObjectNow);
+				}
+			}
+			else
+			{	/* Specified */
+				NamePathAsset = System.String.Copy(NamePath);
+			}
+
+			return(NamePathAsset);
+		}
+
+		/* Confirm Overwrite */
+		internal static bool ObjectCheckOverwrite(out UnityEngine.Object ObjectExisting, string NameAsset, Type TypeObject)
+		{
+			ObjectExisting = AssetDatabase.LoadAssetAtPath(NameAsset, TypeObject);
+			if(null != ObjectExisting)
+			{	/* Existing */
+				if(false == EditorUtility.DisplayDialog(	"The asset already exists.\n" + NameAsset,
+															"Do you want to overwrite?",
+															"Yes",
+															"No"
+														)
+					)
+				{	/* "No" */
+					return(false);
+				}
+			}
+			return(true);
+		}
+
+		/* Switch GameObject's Active-Status */
+		internal static void GameObjectSetActive(GameObject InstanceGameObject, bool FlagSwitch)
+		{
+			InstanceGameObject.active = FlagSwitch;
+		}
+
+		/* Creating Assets */
+		internal static class Create
+		{
+			internal static bool Folder(string Name, string NameParent)
+			{
+				string NameFolderParent = "";
+				if(null != NameParent)
+				{	/* Sub-Folder */
+					NameFolderParent = string.Copy(NameParent);
+				}
+				else
+				{	/* Root */
+					NameFolderParent = string.Copy(NamePathRootAsset);
+				}
+
+				string PathFolderNative = File.AssetPathToNativePath(NameFolderParent + "/" + Name);
+				if(false == Directory.Exists(PathFolderNative))
+				{	/* Not Found */
+					AssetDatabase.CreateFolder(NameFolderParent, Name);
+				}
+				return(true);
+			}
+
+			internal static UnityEngine.Object Prefab(GameObject GameObjectInstanceTop, string Name, string NamePath)
+			{
+				/* Check Existing */
+				UnityEngine.Object PrefabNow = null;
+				string NamePathAsset = NamePath + "/" + Name + ".prefab";
+				if(false == AssetUtility.ObjectCheckOverwrite(out PrefabNow, NamePathAsset, typeof(GameObject)))
+				{	/* Exist & Cancel */
+					Debug.Log("SSAE-Create-Prefab: Not-Overwritten Prefab[" + NamePathAsset + "]");
+					return(PrefabNow);
+				}
+
+				if(null == PrefabNow)
+				{	/* Create New */
+					PrefabNow = PrefabUtility.CreateEmptyPrefab(NamePathAsset);
+				}
+				PrefabNow = PrefabUtility.ReplacePrefab(GameObjectInstanceTop, PrefabNow, ReplacePrefabOptions.Default);
+//				PrefabNow = PrefabUtility.ReplacePrefab(GameObjectInstanceTop, PrefabNow, ReplacePrefabOptions.ConnectToPrefab);
+
+				return(PrefabNow);
+			}
+
+			public static GameObject GameObjectNode(DataIntermediate.TrunkParts Trunk, DataIntermediate.PartsSprite DataParts, GameObject GameObjectParent)
 			{
 				GameObject GameObjectNow = AssetUtility.Create.GameObject(DataParts.Name, GameObjectParent);
-
 				switch(DataParts.PartsKind)
 				{
-					case Library_SpriteStudio.KindParts.NORMAL:
+					case Library_SpriteStudio.KindParts.NORMAL:	/* Sprite-Node */
 						{
-							if(null == DataParts.DataAnimation.DataKeyFrame[(int)Library_SpriteStudio.KindAttributeKey.VERTEX_CORRECTION])
+							if(null == DataParts.DataAnimation.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.VERTEX_CORRECTION])
 							{
 								GameObjectNow.AddComponent<Script_SpriteStudio_Triangle2>();
 							}
@@ -1976,33 +1660,368 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						break;
 
-					case Library_SpriteStudio.KindParts.ROOT:
+					case Library_SpriteStudio.KindParts.ROOT:	/* Root-Node */
+						{
+							Script_SpriteStudio_PartsRoot PartsRoot = GameObjectNow.AddComponent<Script_SpriteStudio_PartsRoot>();
+							PartsRoot.BootUpForce();
+							int CountAnimation = Trunk.ListInformationPlay.Length;
+							PartsRoot.ListInformationPlay = new Library_SpriteStudio.AnimationInformationPlay[CountAnimation];
+							for(int i=0; i<CountAnimation; i++)
+							{
+								PartsRoot.ListInformationPlay[i] = new Library_SpriteStudio.AnimationInformationPlay();
+
+								PartsRoot.ListInformationPlay[i].Name = string.Copy(Trunk.ListInformationPlay[i].Name);
+								PartsRoot.ListInformationPlay[i].FrameStart = Trunk.ListInformationPlay[i].FrameStart;
+								PartsRoot.ListInformationPlay[i].FrameEnd = Trunk.ListInformationPlay[i].FrameEnd;
+								PartsRoot.ListInformationPlay[i].FramePerSecond = Trunk.ListInformationPlay[i].FramePerSecond;
+							}
+
+							PartsRoot.RateTimeAnimation = 1.0f;
+							PartsRoot.AnimationNo = 0;
+							PartsRoot.CountLoopRemain = -1;
+							PartsRoot.FrameNoInitial = 0;
+
+							PartsRoot.KindRenderQueueBase = Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING;
+							PartsRoot.OffsetDrawQueue = 0;
+							PartsRoot.RateDrawQueueEffectZ = 250.0f;
+
+							GameObjectNow.AddComponent<MeshFilter>();
+							MeshRenderer InstanceMeshRenderer = GameObjectNow.AddComponent<MeshRenderer>();
+							InstanceMeshRenderer.enabled = true;
+							InstanceMeshRenderer.castShadows = false;
+							InstanceMeshRenderer.receiveShadows = false;
+						}
 						break;
 
-					case Library_SpriteStudio.KindParts.NULL:
+					case Library_SpriteStudio.KindParts.NULL:	/* NULL-Node */
 						{
 							GameObjectNow.AddComponent<Script_SpriteStudio_PartsNULL>();
 						}
 						break;
 
-					case Library_SpriteStudio.KindParts.BOUND:
+					case Library_SpriteStudio.KindParts.BOUND:	/* Bound-Node (not Supported SS5) */
 						break;
 
-					case Library_SpriteStudio.KindParts.SOUND:
+					case Library_SpriteStudio.KindParts.SOUND:	/* Sound-Node (not Supported SS5) */
 						break;
 				}
 
 				return(GameObjectNow);
 			}
 
-			public static Library_SpriteStudio.SpriteData NodeSetAnimation(	GameObject GameObjectParts,
-																			DataIntermediate.PartsSprite DataParts,
-																			Script_SpriteStudio_PartsRoot ScriptRoot,
-																			Library_SpriteStudio.KindAttributeKey[][] TableMaskAttribute,
-																			Library_SpriteStudio.SpriteData.BitStatus StatusInitial
-																		)
+			internal static GameObject GameObject(string Name, GameObject GameObjectParent)
 			{
-				Library_SpriteStudio.SpriteData DataSpriteStudio = null;
+				GameObject GameObjectNow = new GameObject(Name);
+				GameObjectNow.active = false;
+				if(null != GameObjectNow)
+				{
+					if(null == GameObjectParent)
+					{
+						GameObjectNow.transform.parent = null;
+					}
+					else
+					{
+						GameObjectNow.transform.parent = GameObjectParent.transform;
+					}
+					GameObjectNow.name = System.String.Copy(Name);
+				}
+				return(GameObjectNow);
+			}
+		}
+	}
+
+	internal static class DataIntermediate
+	{
+		private readonly static string NamePathSubImportTexture = "Texture";
+		private readonly static string NamePathSubImportMaterial = "Material";
+		private readonly static string NamePathSubImportPrefab = "Prefab";
+
+		/* Animation-Parts Trunk */
+		internal class TrunkParts
+		{
+			internal PartsSprite[] ListParts = null;
+			internal PartsImage[] ListImage = null;
+			internal Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay = null;
+			internal int CountNode = -1;
+			internal int CountFrameFull = -1;
+			internal bool FlameFlipForImageOnly = false;
+
+			/* Create Destination Folders */
+			internal void CreateDestinationFolders(string NamePath)
+			{
+				/* Create Destination-Folders */
+				AssetUtility.Create.Folder(NamePathSubImportTexture, NamePath);
+				AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePath);
+				AssetUtility.Create.Folder(NamePathSubImportPrefab, NamePath);
+			}
+
+			/* Create Assets (Materials & Textures) */
+			internal Material[] CreateAssetMaterial(string Name, string NamePath, ref SettingImport DataSettingImport)
+			{
+				string NamePathImportAssetSub = "";
+
+				/* Create Texture-Assets */
+				NamePathImportAssetSub = NamePath + "/" + NamePathSubImportTexture;
+				Texture2D[] TebleTexture = CreateTextureTable(	NamePathImportAssetSub,
+																ListImage,
+																ListImage.Length,
+																ref DataSettingImport
+															);
+
+				/* Create Material-Assets */
+				NamePathImportAssetSub = NamePath + "/" + NamePathSubImportMaterial;
+				Material[] TableMaterial = CreateMaterialTable(	NamePathImportAssetSub,
+																TebleTexture
+															);
+
+				/* Fixing Created Assets */
+				AssetDatabase.SaveAssets();
+				return(TableMaterial);
+			}
+			private static Texture2D[] CreateTextureTable(	string NamePath,
+															PartsImage[] ListImage,
+															int Count,
+															ref SettingImport DataSettingImport
+														)
+			{
+				Texture2D[] TableTexture = new Texture2D[Count];
+				string NameFileBody = "";
+				string NameFileExtensionTexture = "";
+				string NameAsset = "";
+
+				for(int i=0; i<Count; i++)
+				{
+					NameFileBody = Path.GetFileNameWithoutExtension(ListImage[i].FileName);
+					NameFileExtensionTexture = Path.GetExtension(ListImage[i].FileName);
+
+					/* Texture File Copy */
+					NameAsset = NamePath + "/" + NameFileBody + NameFileExtensionTexture;
+					File.FileCopyToAsset(File.AssetPathToNativePath(NameAsset), ListImage[i].FileName, true);
+
+					/* Importer Setting */
+					AssetDatabase.ImportAsset(NameAsset);
+					TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
+					Importer.anisoLevel = 1;
+					Importer.borderMipmap = false;
+					Importer.convertToNormalmap = false;
+					Importer.fadeout = false;
+					Importer.filterMode = FilterMode.Bilinear;
+					Importer.generateCubemap = TextureImporterGenerateCubemap.None;
+					Importer.generateMipsInLinearSpace = false;
+					Importer.grayscaleToAlpha = false;
+					Importer.isReadable = false;
+					Importer.lightmap = false;
+					Importer.linearTexture = false;
+					Importer.mipmapEnabled = false;
+					Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
+					Importer.normalmap = false;
+					Importer.npotScale = TextureImporterNPOTScale.None;
+					Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+					Importer.textureType  = TextureImporterType.Advanced;
+					Importer.wrapMode = TextureWrapMode.Clamp;
+					AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
+					TableTexture[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
+
+					/* Texture's Pixel-Size Check */
+					if((true != PixelSizeCheck(TableTexture[i].width)) || (true != PixelSizeCheck(TableTexture[i].height)))
+					{
+						Debug.LogWarning("SSCE-Texture Warning: CellMap Pixel-Size is not multiples of powerd by 2: (" + ListImage[i].FileName + ")");
+					}
+				}
+
+				/* Fixing Created Assets */
+				AssetDatabase.SaveAssets();
+				return(TableTexture);
+			}
+			private static Material[] CreateMaterialTable(string NamePath, Texture2D[] TableTexture)
+			{
+				int Count = TableTexture.Length;
+				Material[] TableMaterial = new Material[Count * ShaderOperationMax];
+				string NameFileBody = "";
+				string NameAsset = "";
+				for(int i=0; i<Count; i++)
+				{
+					string NameMaterialSuffix = "";
+					int MaterialNo = 0;
+					Library_SpriteStudio.KindColorOperation	KindOperation = Library_SpriteStudio.KindColorOperation.NON;
+					NameFileBody = TableTexture[i].name;
+					for(int j=0; j<ShaderOperationMax; j++)
+					{
+						KindOperation = (Library_SpriteStudio.KindColorOperation)(j + 1);
+						NameMaterialSuffix = KindOperation.ToString();
+
+						MaterialNo = (i * ShaderOperationMax) + j;
+						NameAsset = NamePath + "/" + NameFileBody + "_" + NameMaterialSuffix + ".mat";
+
+						TableMaterial[MaterialNo] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
+						if(null == TableMaterial[MaterialNo])
+						{
+							TableMaterial[MaterialNo] = new Material(Shader_SpriteStudioTriangleX[j]);
+							AssetDatabase.CreateAsset(TableMaterial[MaterialNo], NameAsset);
+						}
+						TableMaterial[MaterialNo].mainTexture = TableTexture[i];
+						TableMaterial[MaterialNo] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
+					}
+				}
+
+				/* Fixing Created Assets */
+				AssetDatabase.SaveAssets();
+				return(TableMaterial);
+			}
+
+			/* Legal-Check Texture's-Pixel-Size, */
+			private readonly static int[] SizePixelNormalize = {64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, -1};
+			private static bool PixelSizeCheck(int Size)
+			{
+				int SizeNow;
+				for(int i=0; ; i++)
+				{
+					SizeNow = SizePixelNormalize[i];
+					if(-1 == SizeNow)
+					{
+						return(false);
+					}
+					if(SizeNow < Size)
+					{
+						continue;
+					}
+					if(SizeNow == Size)
+					{
+						return(true);
+					}
+					return(false);
+				}
+			}
+
+			/* Create Prefab (Sprite-Data) */
+			private readonly static string NamePrefabControlSuffix = "_Control";
+			public bool CreateDataPrefabSprite(	string Name,
+												string NamePath,
+												Material[] TableMaterial,
+												ref LibraryEditor_SpriteStudio.SettingImport DataSettingImport
+											)
+			{
+				/* "Root" Node(GameObject)s Create (on Scene) */
+				GameObject GameObjectRoot = AssetUtility.Create.GameObjectNode(this, ListParts[0], null);
+				Script_SpriteStudio_PartsRoot ScriptRoot = GameObjectRoot.GetComponent<Script_SpriteStudio_PartsRoot>();
+				ScriptRoot.TableMaterial = TableMaterial;
+
+				/* Ordinary-Nodes Create (on Scene) */
+				GameObject[] GameObjectParts = new GameObject[ListParts.Length];
+				GameObjectParts[0] = GameObjectRoot;
+				for(int i=1; i<ListParts.Length; i++)
+				{
+					/* Create GameObjects and Attach Script */
+					GameObjectParts[i] = AssetUtility.Create.GameObjectNode(this, ListParts[i], GameObjectRoot);
+				}
+
+				/* Set Parent-Child-Relation */
+				GameObject GameObjectParent = null;
+				int ParentNo = -1;
+				for(int i=1; i<ListParts.Length; i++)
+				{
+					ParentNo = ListParts[i].IDParent;
+					if(0 < ParentNo)
+					{
+						GameObjectParent = GameObjectParts[ParentNo];
+						GameObjectParts[i].transform.parent = GameObjectParent.transform;
+					}
+				}
+
+				/* Animation Converting (Intermediate to Runtime) & Attaching Collider */
+				{
+					Library_SpriteStudio.AnimationData[] ListDataRuntime = new Library_SpriteStudio.AnimationData[ListParts.Length];
+					Library_SpriteStudio.AnimationData DataSpriteStudio = null;
+					for(int i=0; i<ListParts.Length; i++)
+					{
+						/* Create Animation-Data for Runtime */
+						DataSpriteStudio = NodeSetAnimation(GameObjectParts[i], ListParts[i], ScriptRoot);
+						if(null == DataSpriteStudio)
+						{
+							return(false);
+						}
+						ListDataRuntime[i] = DataSpriteStudio;
+
+						/* Attach Collider (to GameObject) */
+						NodeSetCollider(GameObjectParts[i], ListParts[i], DataSpriteStudio, ref DataSettingImport);
+					}
+
+					/* Solving Inherit-Attributes */
+					/* MEMO: Child-nodes only (Parent-node need not solve) */
+					/* MEMO: Child-node's ID might not be smaller than Parent-Node's ID. */
+					/*       However...To make sure..."Inherit" is solved after all nodes'data are decided. */
+					for(int i=1; i<ListParts.Length; i++)
+					{
+						DataRuntimeSolvingInherit(i, ListDataRuntime);
+					}
+				}
+
+				/* Set Nodes Active */
+				AssetUtility.GameObjectSetActive(GameObjectRoot, true);
+				for(int i=0; i<GameObjectParts.Length; i++)
+				{
+					if(null != GameObjectParts[i])
+					{
+						AssetUtility.GameObjectSetActive(GameObjectParts[i], true);
+					}
+				}
+
+				/* Create Prefab */
+				UnityEngine.Object PrefabNow = AssetUtility.Create.Prefab(GameObjectRoot, Name, NamePath + "/" + NamePathSubImportPrefab);
+				if(null == PrefabNow)
+				{
+					return(false);
+				}
+
+				/* Fixing Created Assets */
+				AssetDatabase.SaveAssets();
+
+				/* Deleting Tempolary-Instance */
+				UnityEngine.Object.DestroyImmediate(GameObjectRoot);
+
+				/* "Control" Node Attached Prefab Create */
+				/* MEMO: When the prefab existing, Not Update it. */
+				if(true == DataSettingImport.FlagAttachControlGameObject)
+				{
+					/* Existing Check */
+					string NameControl = Name + NamePrefabControlSuffix;
+					string NamePathAssetControl = NamePath + "/" + NameControl + ".prefab";
+					UnityEngine.Object ObjectExisting = AssetDatabase.LoadAssetAtPath(NamePathAssetControl, typeof(GameObject));
+					if(null == ObjectExisting)
+					{	/* No existing */
+						/* "Control" Node(GameObject)s Create (on Scene) */
+						GameObject GameObjectControl = AssetUtility.Create.GameObject(NameControl, null);
+						AssetUtility.GameObjectSetActive(GameObjectControl, true);
+
+						/*  Attach Link-Prefab Script */
+						Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.AddComponent<Script_LinkPrefab>();
+						ScriptLinkPrefab.LinkPrefab = PrefabNow;
+						ScriptLinkPrefab.FlagDeleteScript = false;
+
+						/* Create Control Prefab */
+						/* MEMO: can't to be confirmed Overwrite */
+						PrefabNow = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath);
+						if(null == PrefabNow)
+						{
+							Debug.LogError("Miss-Creating[" + Name + "]");
+							return(false);
+						}
+
+						/* Fixing Created Assets */
+						AssetDatabase.SaveAssets();
+
+						/* Deleting Tempolary-Instance */
+						UnityEngine.Object.DestroyImmediate(GameObjectControl);
+					}
+				}
+
+				return(true);
+			}
+			private Library_SpriteStudio.AnimationData NodeSetAnimation(GameObject GameObjectParts, PartsSprite DataParts, Script_SpriteStudio_PartsRoot ScriptRoot)
+			{
+				Library_SpriteStudio.AnimationData DataSpriteStudio = null;
+				DataIntermediate.KindAttributeKey[] MaskKeyAttribute = null;
+				bool FlagRoot = false;
 
 				Script_SpriteStudio_Triangle2 ComponentScript_Triangle2 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle2>();
 				if(null != ComponentScript_Triangle2)
@@ -2011,27 +2030,11 @@ public static partial class LibraryEditor_SpriteStudio
 					DataSpriteStudio = ComponentScript_Triangle2.SpriteStudioData;
 					DataSpriteStudio.ID = DataParts.ID;
 
-					AnimationDataConvertRuntime(	DataSpriteStudio,
-													DataParts.DataAnimation,
-													TableMaskAttribute[(int)Library_SpriteStudio.KindParts.NORMAL],
-													StatusInitial
-												);
-
-					ComponentScript_Triangle2.RateOpacityLU = 1.0f;
-					ComponentScript_Triangle2.RateOpacityRU = 1.0f;
-					ComponentScript_Triangle2.RateOpacityRD = 1.0f;
-					ComponentScript_Triangle2.RateOpacityLD = 1.0f;
-
-					ComponentScript_Triangle2.TextureScale = Vector2.one;
-					ComponentScript_Triangle2.TextureRotate = 0.0f;
-
-					ComponentScript_Triangle2.VertexColorLU = Color.white;
-					ComponentScript_Triangle2.VertexColorRU = Color.white;
-					ComponentScript_Triangle2.VertexColorLD = Color.white;
-					ComponentScript_Triangle2.VertexColorRD = Color.white;
-					ComponentScript_Triangle2.SpriteStudioData.ColorBlendKind = Library_SpriteStudio.KindColorOperation.NON;
-
 					ComponentScript_Triangle2.SpriteStudioData.KindBlendTarget = DataParts.KindBlendTarget;
+					ComponentScript_Triangle2.ScriptRoot = ScriptRoot;
+
+					MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.NORMAL];
+					FlagRoot = false;
 				}
 				else
 				{
@@ -2042,27 +2045,11 @@ public static partial class LibraryEditor_SpriteStudio
 						DataSpriteStudio = ComponentScript_Triangle4.SpriteStudioData;
 						DataSpriteStudio.ID = DataParts.ID;
 
-						AnimationDataConvertRuntime(	DataSpriteStudio,
-														DataParts.DataAnimation,
-														TableMaskAttribute[(int)Library_SpriteStudio.KindParts.NORMAL],
-														StatusInitial
-													);
-
-						ComponentScript_Triangle4.RateOpacityLU = 1.0f;
-						ComponentScript_Triangle4.RateOpacityRU = 1.0f;
-						ComponentScript_Triangle4.RateOpacityRD = 1.0f;
-						ComponentScript_Triangle4.RateOpacityLD = 1.0f;
-
-						ComponentScript_Triangle4.TextureScale = Vector2.one;
-						ComponentScript_Triangle4.TextureRotate = 0.0f;
-
-						ComponentScript_Triangle4.VertexColorLU = Color.white;
-						ComponentScript_Triangle4.VertexColorRU = Color.white;
-						ComponentScript_Triangle4.VertexColorLD = Color.white;
-						ComponentScript_Triangle4.VertexColorRD = Color.white;
-						ComponentScript_Triangle4.SpriteStudioData.ColorBlendKind = Library_SpriteStudio.KindColorOperation.NON;
-
 						ComponentScript_Triangle4.SpriteStudioData.KindBlendTarget = DataParts.KindBlendTarget;
+						ComponentScript_Triangle4.ScriptRoot = ScriptRoot;
+
+						MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.NORMAL];
+						FlagRoot = false;
 					}
 					else
 					{
@@ -2073,11 +2060,10 @@ public static partial class LibraryEditor_SpriteStudio
 							DataSpriteStudio = ComponentScript_PartsNULL.SpriteStudioData;
 							DataSpriteStudio.ID = DataParts.ID;
 
-							AnimationDataConvertRuntime(	DataSpriteStudio,
-															DataParts.DataAnimation,
-															TableMaskAttribute[(int)Library_SpriteStudio.KindParts.NULL],
-															StatusInitial
-														);
+							ComponentScript_PartsNULL.ScriptRoot = ScriptRoot;
+
+							MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.NULL];
+							FlagRoot = false;
 						}
 						else
 						{
@@ -2088,35 +2074,1257 @@ public static partial class LibraryEditor_SpriteStudio
 								DataSpriteStudio = ComponentScript_PartsRoot.SpriteStudioData;
 								DataSpriteStudio.ID = DataParts.ID;
 
-								AnimationDataConvertRuntime(	DataSpriteStudio,
-																DataParts.DataAnimation,
-																TableMaskAttribute[(int)Library_SpriteStudio.KindParts.ROOT],
-																StatusInitial
-															);
+								MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.ROOT];
+								FlagRoot = true;
+							}
+							else
+							{	/* Node is Invalid */
+								Debug.LogError("SSAE-Create-Animation-Data Error: Animation[" + DataParts.Name + "] Invalid Node-Kind.");
+								return(null);
 							}
 						}
 					}
 				}
 
+				if(false == AnimationDataConvertRuntime(DataSpriteStudio, DataParts.DataAnimation, MaskKeyAttribute, FlagRoot))
+				{	/* No-Data */
+					GameObjectParts.transform.localPosition = Vector3.zero;
+					GameObjectParts.transform.localEulerAngles = Vector3.zero;
+					GameObjectParts.transform.localScale = Vector3.one;
+				}
+
 				return(DataSpriteStudio);
 			}
-			private static Library_SpriteStudio.KeyFrame.InterfaceData KeyFrameGetTime0(Library_SpriteStudio.KeyFrame.InterfaceData KeyData)
+			private bool AnimationDataConvertRuntime(	Library_SpriteStudio.AnimationData DataRuntime,
+														DataIntermediate.AnimationDataEditor DataEditor,
+														DataIntermediate.KindAttributeKey[] ListMaskAttribute,
+														bool FlagRoot
+													)
 			{
-				if(null != KeyData)
+				if(null == DataEditor.DataKeyFrame)
 				{
-					if(0 == KeyData.Time)
+					return(false);
+				}
+
+				/* Delete Invalid-Attributes */
+				int AttributeNo = -1;
+				for(int i=0; i<ListMaskAttribute.Length; i++)
+				{
+					AttributeNo = (int)ListMaskAttribute[i];
+					if((int)DataIntermediate.KindAttributeKey.TERMINATOR == AttributeNo)
 					{
-						return(KeyData);
+						break;
+					}
+
+					if(null != DataEditor.DataKeyFrame[AttributeNo])
+					{
+						DataEditor.DataKeyFrame[AttributeNo].Clear();
+						DataEditor.DataKeyFrame[AttributeNo] = null;
+					}
+					if((int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT > AttributeNo)
+					{
+						DataEditor.FlagKeyParameter = DataEditor.FlagKeyParameter & ~DataIntermediate.FlagParameterKeyFrameInherit[AttributeNo];
 					}
 				}
-				return(null);
+
+				DataRuntime.AnimationDataFlags = AnimationDataConvertRuntimeBools(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SHOW_HIDE],
+																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.FLIP_X],
+																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.FLIP_Y],
+																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_FLIP_X],
+																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_FLIP_Y]
+																				);
+
+				DataRuntime.AnimationDataPosition = AnimationDataConvertRuntimeVector3(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_X],
+																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_Y],
+																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_Z],
+																						Vector3.zero
+																					);
+				DataRuntime.AnimationDataRotation = AnimationDataConvertRuntimeVector3(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_X],
+																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_Y],
+																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_Z],
+																						Vector3.zero
+																					);
+				DataRuntime.AnimationDataScaling = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SCALE_X],
+																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SCALE_Y],
+																						Vector2.one
+																					);
+
+				DataRuntime.AnimationDataOpacityRate = AnimationDataConvertRuntimeFloat(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.OPACITY_RATE], 1.0f);
+				DataRuntime.AnimationDataPriority = AnimationDataConvertRuntimeFloat(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.PRIORITY], 0.0f);
+
+				DataRuntime.AnimationDataColorBlend = AnimationDataConvertRuntimeColorBlend(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLOR_BLEND]);
+				DataRuntime.AnimationDataVertexCorrection = AnimationDataConvertRuntimeQuadrilateral(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.VERTEX_CORRECTION]);
+
+				DataRuntime.AnimationDataOriginOffset = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_X],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_Y],
+																							Vector2.zero
+																						);
+
+				DataRuntime.AnimationDataAnchorPosition = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_POSITION_X],
+																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_POSITION_Y],
+																								Vector2.zero
+																							);
+				DataRuntime.AnimationDataAnchorSize =  AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_X],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_Y],
+																							Vector2.one
+																						);
+
+				DataRuntime.AnimationDataTextureTranslate = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_X],
+																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_Y],
+																								Vector2.zero
+																							);
+				DataRuntime.AnimationDataTextureRotate = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_ROTATE],
+																							0.0f
+																						);
+				DataRuntime.AnimationDataTextureScale = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_SCALE_X],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_SCALE_Y],
+																							Vector2.one
+																						);
+				DataRuntime.AnimationDataTextureExpand = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_WIDTH],
+																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_HEIGHT],
+																								Vector2.zero
+																							);
+
+				DataRuntime.AnimationDataCollisionRadius = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLLISION_RADIUS],
+																								0.0f
+																							);
+				DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeCell(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL]);
+				DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeUserData(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
+
+				return(true);
+			}
+			private Vector3[] AnimationDataConvertRuntimeVector3(ArrayList DataOriginalArrayX, ArrayList DataOriginalArrayY, ArrayList DataOriginalArrayZ, Vector3 ValueInitial)
+			{
+				if((null == DataOriginalArrayX) && (null == DataOriginalArrayY) && (null == DataOriginalArrayZ))
+				{	/* All Attributes don't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Vector3[] DataOutput = new Vector3[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = ValueInitial;
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataFloat DataStart;
+				DataIntermediate.KeyFrame.DataFloat DataEnd;
+				int CountKeyFrame;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				bool FirstKeyFrameAnimation;
+				
+				if(null != DataOriginalArrayX)
+				{
+					CountKeyFrame = DataOriginalArrayX.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayX[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayX[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].x = DataStart.Value;
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									DataOutput[j].x = DataStart.Value;
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].x = DataStart.Value;
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataOutput[j].x = Interpolation.Interpolate<float>(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				if(null != DataOriginalArrayY)
+				{
+					CountKeyFrame = DataOriginalArrayY.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayY[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayY[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].y = DataStart.Value;
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									DataOutput[j].y = DataStart.Value;
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].y = DataStart.Value;
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataOutput[j].y = Interpolation.Interpolate<float>(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				if(null != DataOriginalArrayZ)
+				{
+					CountKeyFrame = DataOriginalArrayZ.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayZ[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayZ[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].z = DataStart.Value;
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									DataOutput[j].z = DataStart.Value;
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].z = DataStart.Value;
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataOutput[j].z = Interpolation.Interpolate<float>(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private Vector2[] AnimationDataConvertRuntimeVector2(ArrayList DataOriginalArrayX, ArrayList DataOriginalArrayY, Vector2 ValueInitial)
+			{
+				if((null == DataOriginalArrayX) && (null == DataOriginalArrayY))
+				{	/* All Attributes don't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Vector2[] DataOutput = new Vector2[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = ValueInitial;
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataFloat DataStart;
+				DataIntermediate.KeyFrame.DataFloat DataEnd;
+				int CountKeyFrame;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				bool FirstKeyFrameAnimation;
+				
+				if(null != DataOriginalArrayX)
+				{
+					CountKeyFrame = DataOriginalArrayX.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayX[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayX[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].x = DataStart.Value;
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									DataOutput[j].x = DataStart.Value;
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].x = DataStart.Value;
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataOutput[j].x = Interpolation.Interpolate<float>(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				if(null != DataOriginalArrayY)
+				{
+					CountKeyFrame = DataOriginalArrayY.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayY[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArrayY[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].y = DataStart.Value;
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									DataOutput[j].y = DataStart.Value;
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j].y = DataStart.Value;
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataOutput[j].y = Interpolation.Interpolate<float>(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private float[] AnimationDataConvertRuntimeFloat(ArrayList DataOriginalArray, float ValueInitial)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				float[] DataOutput = new float[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = ValueInitial;
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataFloat DataStart;
+				DataIntermediate.KeyFrame.DataFloat DataEnd;
+				int CountKeyFrame;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				bool FirstKeyFrameAnimation;
+				
+				if(null != DataOriginalArray)
+				{
+					CountKeyFrame = DataOriginalArray.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArray[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataFloat)DataOriginalArray[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j] = DataStart.Value;
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									DataOutput[j] = DataStart.Value;
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									DataOutput[j] = DataStart.Value;
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataOutput[j] = Interpolation.Interpolate<float>(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private Library_SpriteStudio.KeyFrame.ValueColor[] AnimationDataConvertRuntimeColorBlend(ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Library_SpriteStudio.KeyFrame.ValueColor[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueColor[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueColor();
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataColor DataStart;
+				DataIntermediate.KeyFrame.DataColor DataEnd;
+				DataIntermediate.KeyFrame.ValueColor DataInterpolation;
+				int CountKeyFrame;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				bool FirstKeyFrameAnimation;
+				
+				if(null != DataOriginalArray)
+				{
+					CountKeyFrame = DataOriginalArray.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataColor)DataOriginalArray[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataColor)DataOriginalArray[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									AnimationDataCopyColorBlend(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									AnimationDataCopyColorBlend(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									AnimationDataCopyColorBlend(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataInterpolation = (DataIntermediate.KeyFrame.ValueColor)DataStart.Value.GetInterpolated(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+								AnimationDataCopyColorBlend(DataOutput[j], DataInterpolation);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private void AnimationDataCopyColorBlend(Library_SpriteStudio.KeyFrame.ValueColor DataOutput, DataIntermediate.KeyFrame.ValueColor Data)
+			{
+				DataOutput.Bound = Data.Bound;
+				DataOutput.Operation = Data.Operation;
+
+				DataOutput.VertexColor[(int)Library_SpriteStudio.VertexNo.LU] = Data.VertexColor[0];
+				DataOutput.VertexColor[(int)Library_SpriteStudio.VertexNo.RU] = Data.VertexColor[1];
+				DataOutput.VertexColor[(int)Library_SpriteStudio.VertexNo.RD] = Data.VertexColor[2];
+				DataOutput.VertexColor[(int)Library_SpriteStudio.VertexNo.LD] = Data.VertexColor[3];
+				DataOutput.VertexColor[(int)Library_SpriteStudio.VertexNo.C] = (Data.VertexColor[0] + Data.VertexColor[1] + Data.VertexColor[2] + Data.VertexColor[3]) / 4.0f;
+
+				DataOutput.RatePixelAlpha[(int)Library_SpriteStudio.VertexNo.LU] = Data.RatePixelAlpha[0];
+				DataOutput.RatePixelAlpha[(int)Library_SpriteStudio.VertexNo.RU] = Data.RatePixelAlpha[1];
+				DataOutput.RatePixelAlpha[(int)Library_SpriteStudio.VertexNo.RD] = Data.RatePixelAlpha[2];
+				DataOutput.RatePixelAlpha[(int)Library_SpriteStudio.VertexNo.LD] = Data.RatePixelAlpha[3];
+				DataOutput.RatePixelAlpha[(int)Library_SpriteStudio.VertexNo.C] = (Data.RatePixelAlpha[0] + Data.RatePixelAlpha[1] + Data.RatePixelAlpha[2] + Data.RatePixelAlpha[3]) / 4.0f;
+			}
+			private Library_SpriteStudio.KeyFrame.ValueQuadrilateral[] AnimationDataConvertRuntimeQuadrilateral(ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Library_SpriteStudio.KeyFrame.ValueQuadrilateral[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueQuadrilateral[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueQuadrilateral();
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataQuadrilateral DataStart;
+				DataIntermediate.KeyFrame.DataQuadrilateral DataEnd;
+				DataIntermediate.KeyFrame.ValueQuadrilateral DataInterpolation;
+				int CountKeyFrame;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				bool FirstKeyFrameAnimation;
+				
+				if(null != DataOriginalArray)
+				{
+					CountKeyFrame = DataOriginalArray.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataQuadrilateral)DataOriginalArray[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataQuadrilateral)DataOriginalArray[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									AnimationDataCopyQuadrilateral(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									AnimationDataCopyQuadrilateral(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									AnimationDataCopyQuadrilateral(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							/* Value Interpolation */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								DataInterpolation = (DataIntermediate.KeyFrame.ValueQuadrilateral)DataStart.Value.GetInterpolated(DataStart.Curve, j, DataStart.Value, DataEnd.Value, DataStart.Time, DataEnd.Time);
+								AnimationDataCopyQuadrilateral(DataOutput[j], DataInterpolation);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private void AnimationDataCopyQuadrilateral(Library_SpriteStudio.KeyFrame.ValueQuadrilateral DataOutput, DataIntermediate.KeyFrame.ValueQuadrilateral Data)
+			{
+				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.LU] = Data.Coordinate[0].Point;
+				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.RU] = Data.Coordinate[1].Point;
+				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.RD] = Data.Coordinate[2].Point;
+				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.LD] = Data.Coordinate[3].Point;
+			}
+			private Library_SpriteStudio.KeyFrame.ValueCell[] AnimationDataConvertRuntimeCell(ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Library_SpriteStudio.KeyFrame.ValueCell[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueCell[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueCell();
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataCell DataStart;
+				DataIntermediate.KeyFrame.DataCell DataEnd;
+				int CountKeyFrame;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				bool FirstKeyFrameAnimation;
+				
+				if(null != DataOriginalArray)
+				{
+					CountKeyFrame = DataOriginalArray.Count;
+					FirstKeyFrameAnimation = true;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Get Key-Frames */
+						DataStart = (DataIntermediate.KeyFrame.DataCell)DataOriginalArray[i];
+						IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+						if((CountKeyFrame - 1) == i)
+						{
+							DataEnd = DataStart;	/* Dummy */
+							IndexAnimationEnd = -1;
+						}
+						else
+						{
+							DataEnd = (DataIntermediate.KeyFrame.DataCell)DataOriginalArray[i + 1];
+							IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+						}
+
+						/* Calculate Frames' Value  */
+						if(IndexAnimationStart != IndexAnimationEnd)
+						{	/* Differnt Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									AnimationDataCopyCell(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+							{	/* Padding to End-Frames  */
+								for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+								{
+									AnimationDataCopyCell(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							FirstKeyFrameAnimation = true;
+						}
+						else
+						{	/* Same Animation */
+							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
+							{	/* Padding to Start-Frames  */
+								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
+								{
+									AnimationDataCopyCell(DataOutput[j], DataStart.Value);
+								}
+							}
+
+							/* Range-Fill (Not Interpolation) */
+							for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+							{
+								AnimationDataCopyCell(DataOutput[j], DataStart.Value);
+							}
+
+							FirstKeyFrameAnimation = false;
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private void AnimationDataCopyCell(Library_SpriteStudio.KeyFrame.ValueCell DataOutput, DataIntermediate.KeyFrame.ValueCell Data)
+			{
+				DataOutput.TextureNo = Data.TextureNo;
+				DataOutput.Rectangle = Data.Rectangle;
+
+				DataOutput.Pivot = Data.Pivot;
+				/* MEMO: Make lower 2-lines effective (and upper 1-line un-effective),if the pivot must be integer. */
+//				DataOutput.Pivot.x = (float)((int)Data.Pivot.x);
+//				DataOutput.Pivot.y = (float)((int)Data.Pivot.y);
+			}
+			private Library_SpriteStudio.KeyFrame.ValueUser[] AnimationDataConvertRuntimeUserData(ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Library_SpriteStudio.KeyFrame.ValueUser[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueUser[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueUser();
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataUser Data;
+				int IndexKeyFrame;
+				int CountKeyFrame;
+				
+				if(null != DataOriginalArray)
+				{
+					CountKeyFrame = DataOriginalArray.Count;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Copy Key-Frames */
+						Data = (DataIntermediate.KeyFrame.DataUser)DataOriginalArray[i];
+						IndexKeyFrame = Data.Time;
+						
+						DataOutput[IndexKeyFrame].Flag = Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR;
+						if(true == Data.Value.IsNumber)
+						{
+							DataOutput[IndexKeyFrame].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.NUMBER;
+							DataOutput[IndexKeyFrame].NumberInt = Data.Value.Number;
+						}
+						else
+						{
+							DataOutput[IndexKeyFrame].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.NUMBER;
+							DataOutput[IndexKeyFrame].NumberInt = 0;
+						}
+
+						if(true == Data.Value.IsRectangle)
+						{
+							DataOutput[IndexKeyFrame].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.RECTANGLE;
+							DataOutput[IndexKeyFrame].Rectangle = Data.Value.Rectangle;
+						}
+						else
+						{
+							DataOutput[IndexKeyFrame].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.RECTANGLE;
+							DataOutput[IndexKeyFrame].Rectangle.xMin = 0.0f;
+							DataOutput[IndexKeyFrame].Rectangle.yMin = 0.0f;
+							DataOutput[IndexKeyFrame].Rectangle.xMax = 0.0f;
+							DataOutput[IndexKeyFrame].Rectangle.yMax = 0.0f;
+						}
+
+						if(true == Data.Value.IsCoordinate)
+						{
+							DataOutput[IndexKeyFrame].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.COORDINATE;
+							DataOutput[IndexKeyFrame].Coordinate = Data.Value.Coordinate.Point;
+						}
+						else
+						{
+							DataOutput[IndexKeyFrame].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.COORDINATE;
+							DataOutput[IndexKeyFrame].Coordinate = Vector2.zero;
+						}
+
+						if(true == Data.Value.IsText)
+						{
+							DataOutput[IndexKeyFrame].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.FlagData.TEXT;
+							DataOutput[IndexKeyFrame].Text = String.Copy(Data.Value.Text);
+						}
+						else
+						{
+							DataOutput[IndexKeyFrame].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.FlagData.TEXT;
+							DataOutput[IndexKeyFrame].Text = "";
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
+			private Library_SpriteStudio.KeyFrame.ValueBools[] AnimationDataConvertRuntimeBools(	ArrayList DataOriginalArrayHide,
+																									ArrayList DataOriginalArrayFlipX,
+																									ArrayList DataOriginalArrayFlipY,
+																									ArrayList DataOriginalArrayTextureFlipX,
+																									ArrayList DataOriginalArrayTextureFlipY
+																								)
+			{
+				Library_SpriteStudio.KeyFrame.ValueBools[] DataOutput = null;
+
+				/* Check Phantom-Data */
+				if((null == DataOriginalArrayHide) && (null == DataOriginalArrayFlipX) && (null == DataOriginalArrayFlipY) && (null == DataOriginalArrayTextureFlipX) && (null == DataOriginalArrayTextureFlipY))
+				{	/* All Attributes don't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				DataOutput = new Library_SpriteStudio.KeyFrame.ValueBools[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueBools();
+					DataOutput[i].Flag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.CLEAR;
+					DataOutput[i].Flag |= Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
+				}
+
+				AnimationDataConvertRuntimeBoolsHide(DataOutput, DataOriginalArrayHide);
+				AnimationDataConvertRuntimeBoolsFlipX(DataOutput, DataOriginalArrayFlipX);
+				AnimationDataConvertRuntimeBoolsFlipY(DataOutput, DataOriginalArrayFlipY);
+				AnimationDataConvertRuntimeBoolsTextureFlipX(DataOutput, DataOriginalArrayTextureFlipX);
+				AnimationDataConvertRuntimeBoolsTextureFlipY(DataOutput, DataOriginalArrayTextureFlipY);
+				
+				return(DataOutput);
+			}
+			private void AnimationDataConvertRuntimeBoolsHide(Library_SpriteStudio.KeyFrame.ValueBools[] DataOutput, ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return;
+				}
+
+				/* Set Frames */
+				Library_SpriteStudio.KeyFrame.ValueBools.FlagData ValueFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
+				DataIntermediate.KeyFrame.DataBool DataStart;
+				DataIntermediate.KeyFrame.DataBool DataEnd;
+				int CountKeyFrame = DataOriginalArray.Count;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				
+				for(int i=0; i<CountKeyFrame; i++)
+				{
+					/* Get Key-Frames */
+					DataStart = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i];
+					IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+					if((CountKeyFrame - 1) == i)
+					{
+						DataEnd = DataStart;	/* Dummy */
+						IndexAnimationEnd = -1;
+					}
+					else
+					{
+						DataEnd = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i + 1];
+						IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+					}
+
+					/* Calculate Frames' Value  */
+					if(IndexAnimationStart != IndexAnimationEnd)
+					{	/* Differnt Animation */
+						if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+						{	/* Padding to End-Frames  */
+							for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+							{
+								DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+							}
+						}
+					}
+					else
+					{	/* Same Animation */
+						/* Range-Fill (Not Interpolation) */
+						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+					}
+				}
+			}
+			private void AnimationDataConvertRuntimeBoolsFlipX(Library_SpriteStudio.KeyFrame.ValueBools[] DataOutput, ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return;
+				}
+
+				/* Set Frames */
+				Library_SpriteStudio.KeyFrame.ValueBools.FlagData ValueFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.FLIPX;
+				DataIntermediate.KeyFrame.DataBool DataStart;
+				DataIntermediate.KeyFrame.DataBool DataEnd;
+				int CountKeyFrame = DataOriginalArray.Count;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				
+				for(int i=0; i<CountKeyFrame; i++)
+				{
+					/* Get Key-Frames */
+					DataStart = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i];
+					IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+					if((CountKeyFrame - 1) == i)
+					{
+						DataEnd = DataStart;	/* Dummy */
+						IndexAnimationEnd = -1;
+					}
+					else
+					{
+						DataEnd = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i + 1];
+						IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+					}
+
+					/* Calculate Frames' Value  */
+					if(IndexAnimationStart != IndexAnimationEnd)
+					{	/* Differnt Animation */
+						if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+						{	/* Padding to End-Frames  */
+							for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+							{
+								DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+							}
+						}
+					}
+					else
+					{	/* Same Animation */
+						/* Range-Fill (Not Interpolation) */
+						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+					}
+				}
+			}
+			private void AnimationDataConvertRuntimeBoolsFlipY(Library_SpriteStudio.KeyFrame.ValueBools[] DataOutput, ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return;
+				}
+
+				/* Set Frames */
+				Library_SpriteStudio.KeyFrame.ValueBools.FlagData ValueFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.FLIPY;
+				DataIntermediate.KeyFrame.DataBool DataStart;
+				DataIntermediate.KeyFrame.DataBool DataEnd;
+				int CountKeyFrame = DataOriginalArray.Count;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				
+				for(int i=0; i<CountKeyFrame; i++)
+				{
+					/* Get Key-Frames */
+					DataStart = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i];
+					IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+
+					if((CountKeyFrame - 1) == i)
+					{
+						DataEnd = DataStart;	/* Dummy */
+						IndexAnimationEnd = -1;
+					}
+					else
+					{
+						DataEnd = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i + 1];
+						IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+					}
+
+					/* Calculate Frames' Value  */
+					if(IndexAnimationStart != IndexAnimationEnd)
+					{	/* Differnt Animation */
+						if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+						{	/* Padding to End-Frames  */
+							for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+							{
+								DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+							}
+						}
+					}
+					else
+					{	/* Same Animation */
+						/* Range-Fill (Not Interpolation) */
+						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+					}
+				}
+			}
+			private void AnimationDataConvertRuntimeBoolsTextureFlipX(Library_SpriteStudio.KeyFrame.ValueBools[] DataOutput, ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return;
+				}
+
+				/* Set Frames */
+				Library_SpriteStudio.KeyFrame.ValueBools.FlagData ValueFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.FLIPXTEXTURE;
+				DataIntermediate.KeyFrame.DataBool DataStart;
+				DataIntermediate.KeyFrame.DataBool DataEnd;
+				int CountKeyFrame = DataOriginalArray.Count;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				
+				for(int i=0; i<CountKeyFrame; i++)
+				{
+					/* Get Key-Frames */
+					DataStart = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i];
+					IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+					if((CountKeyFrame - 1) == i)
+					{
+						DataEnd = DataStart;	/* Dummy */
+						IndexAnimationEnd = -1;
+					}
+					else
+					{
+						DataEnd = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i + 1];
+						IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+					}
+
+					/* Calculate Frames' Value  */
+					if(IndexAnimationStart != IndexAnimationEnd)
+					{	/* Differnt Animation */
+						if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+						{	/* Padding to End-Frames  */
+							for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+							{
+								DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+							}
+						}
+					}
+					else
+					{	/* Same Animation */
+						/* Range-Fill (Not Interpolation) */
+						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+					}
+				}
+			}
+			private void AnimationDataConvertRuntimeBoolsTextureFlipY(Library_SpriteStudio.KeyFrame.ValueBools[] DataOutput, ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return;
+				}
+
+				/* Set Frames */
+				Library_SpriteStudio.KeyFrame.ValueBools.FlagData ValueFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.FLIPYTEXTURE;
+				DataIntermediate.KeyFrame.DataBool DataStart;
+				DataIntermediate.KeyFrame.DataBool DataEnd;
+				int CountKeyFrame = DataOriginalArray.Count;
+				int IndexAnimationStart;
+				int IndexAnimationEnd;
+				
+				for(int i=0; i<CountKeyFrame; i++)
+				{
+					/* Get Key-Frames */
+					DataStart = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i];
+					IndexAnimationStart = IndexAnimationGetFrameNo(DataStart.Time);
+				
+					if((CountKeyFrame - 1) == i)
+					{
+						DataEnd = DataStart;	/* Dummy */
+						IndexAnimationEnd = -1;
+					}
+					else
+					{
+						DataEnd = (DataIntermediate.KeyFrame.DataBool)DataOriginalArray[i + 1];
+						IndexAnimationEnd = IndexAnimationGetFrameNo(DataEnd.Time);
+					}
+
+					/* Calculate Frames' Value  */
+					if(IndexAnimationStart != IndexAnimationEnd)
+					{	/* Differnt Animation */
+						if(ListInformationPlay[IndexAnimationStart].FrameEnd > DataStart.Time)
+						{	/* Padding to End-Frames  */
+							for(int j=DataStart.Time; j<=ListInformationPlay[IndexAnimationStart].FrameEnd; j++)
+							{
+								DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+							}
+						}
+					}
+					else
+					{	/* Same Animation */
+						/* Range-Fill (Not Interpolation) */
+						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+					}
+				}
 			}
 
-			public static void NodeSetCollider(	GameObject GameObjectParts,
-												DataIntermediate.PartsSprite DataParts,
-												Library_SpriteStudio.SpriteData DataPartsRuntime,
-												ref SettingImport DataSettingImport
-											)
+			public void NodeSetCollider(	GameObject GameObjectParts,
+											PartsSprite DataParts,
+											Library_SpriteStudio.AnimationData DataPartsRuntime,
+											ref SettingImport DataSettingImport
+										)
 			{
 				switch(DataParts.CollisionKind)
 				{
@@ -2174,588 +3382,1621 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
-			private static Library_SpriteStudio.SpriteData Script_SpriteDataGet(GameObject GameObjectParts)
+			private void DataRuntimeSolvingInherit(int NodeNo, Library_SpriteStudio.AnimationData[] ListDataRuntime)
 			{
-				Script_SpriteStudio_Triangle2 ComponentScript_Triangle2 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle2>();
-				if(null != ComponentScript_Triangle2)
+				/* Get My Datas */
+				int Count = CountFrameFull;
+				Library_SpriteStudio.KeyFrame.ValueBools[] DataFlags = ListDataRuntime[NodeNo].AnimationDataFlags;
+				float[] OpacityRate = ListDataRuntime[NodeNo].AnimationDataOpacityRate;
+				FlagAttributeKeyInherit FlagInherit = DataRuntimeParentGetInherit(NodeNo);
+				if(0 != (FlagInherit & (FlagAttributeKeyInherit.FLIP_X | FlagAttributeKeyInherit.FLIP_Y | FlagAttributeKeyInherit.SHOW_HIDE)))
 				{
-					return(ComponentScript_Triangle2.SpriteStudioData);
+					if((null == DataFlags) && (Library_SpriteStudio.KindParts.NORMAL == this.ListParts[NodeNo].PartsKind))
+					{	/* Normal(Sprite)-Parts only */
+						/* Create New Frame-Datas */
+						DataFlags = new Library_SpriteStudio.KeyFrame.ValueBools[Count];
+						for(int i=0; i<Count; i++)
+						{
+							DataFlags[i] = new Library_SpriteStudio.KeyFrame.ValueBools();
+							DataFlags[i].Flag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
+						}
+						ListDataRuntime[NodeNo].AnimationDataFlags = DataFlags;						
+					}
 				}
-				else
+
+				/* Get Parent-Datas */
+				bool FlagRootFlipX = false;
+				Library_SpriteStudio.KeyFrame.ValueBools[] DataFlagsParentFlipX = DataRuntimeParentGetFlags(out FlagRootFlipX, NodeNo, ListDataRuntime, FlagAttributeKeyInherit.FLIP_X);
+
+				bool FlagRootFlipY = false;
+				Library_SpriteStudio.KeyFrame.ValueBools[] DataFlagsParentFlipY = DataRuntimeParentGetFlags(out FlagRootFlipY, NodeNo, ListDataRuntime, FlagAttributeKeyInherit.FLIP_Y);
+
+				bool FlagRootHide = false;
+				Library_SpriteStudio.KeyFrame.ValueBools[] DataFlagsParentHide = DataRuntimeParentGetFlags(out FlagRootHide, NodeNo, ListDataRuntime, FlagAttributeKeyInherit.SHOW_HIDE);
+
+				/* Solving Flip-X */
+				if(0 != (FlagInherit & FlagAttributeKeyInherit.FLIP_X) && (null != DataFlagsParentFlipX))
 				{
-					Script_SpriteStudio_Triangle4 ComponentScript_Triangle4 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle4>();
-					if(null != ComponentScript_Triangle4)
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.FLIPX;
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData DataParent;
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData Data;
+					for(int i=0; i<Count; i++)
 					{
-						return(ComponentScript_Triangle4.SpriteStudioData);
+						Data = DataFlags[i].Flag & MaskFlag;
+						DataParent = DataFlagsParentFlipX[i].Flag & MaskFlag;
+
+						/* XOR (1:1=0/1:0=1/0:1=1/0:0=0) */
+						DataFlags[i].Flag &= ~MaskFlag;
+						DataFlags[i].Flag |= (Data ^ DataParent);
+					}
+				}
+
+				/* Solving Flip-Y */
+				if(0 != (FlagInherit & FlagAttributeKeyInherit.FLIP_Y) && (null != DataFlagsParentFlipY))
+				{
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.FLIPY;
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData DataParent;
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData Data;
+					for(int i=0; i<Count; i++)
+					{
+						Data = DataFlags[i].Flag & MaskFlag;
+						DataParent = DataFlagsParentFlipY[i].Flag & MaskFlag;
+
+						/* XOR (1:1=0/1:0=1/0:1=1/0:0=0) */
+						DataFlags[i].Flag &= ~MaskFlag;
+						DataFlags[i].Flag |= (Data ^ DataParent);
+					}
+				}
+
+				/* Solving Hide */
+				if(0 != (FlagInherit & FlagAttributeKeyInherit.SHOW_HIDE) && (null != DataFlagsParentHide) && (null != this.ListParts[NodeNo].DataAnimation.DataKeyFrame[(int)KindAttributeKey.SHOW_HIDE]))
+				{
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
+					Library_SpriteStudio.KeyFrame.ValueBools.FlagData DataParent;
+					for(int i=0; i<Count; i++)
+					{
+						if(true == ValidityCheckFrameNoBool(NodeNo, i, LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.SHOW_HIDE))
+						{
+							DataParent = DataFlagsParentHide[i].Flag & MaskFlag;
+
+							/* Copy Parent's Data */
+							DataFlags[i].Flag &= ~MaskFlag;
+							DataFlags[i].Flag |= DataParent;
+						}
+					}
+				}
+
+				/* Solving Opacity-Rate */
+				if(0 != (FlagInherit & FlagAttributeKeyInherit.OPACITY_RATE))
+				{
+					if(null == OpacityRate)
+					{
+						/* Create New Frame-Datas */
+						OpacityRate = new float[Count];
+						for(int i=0; i<Count; i++)
+						{
+							OpacityRate[i] = 1.0f;
+						}
+						ListDataRuntime[NodeNo].AnimationDataOpacityRate = OpacityRate;
+					}
+
+					float[] OpacityRateParent = DataRuntimeParentGetOpacityRate(NodeNo, ListDataRuntime);
+					if(null != OpacityRateParent)
+					{
+						for(int i=0; i<Count; i++)
+						{
+							OpacityRate[i] *= OpacityRateParent[i];
+						}
+					}
+				}
+			}
+			private FlagAttributeKeyInherit DataRuntimeParentGetInherit(int NodeNo)
+			{
+				int NodeNoParent = NodeNo;
+				while(-1 != NodeNoParent)
+				{
+					if(KindInheritance.SELF == ListParts[NodeNoParent].DataAnimation.Inheritance)
+					{	/* Has Original Inherit-Parameter */
+						return(ListParts[NodeNoParent].DataAnimation.FlagInheritance);
+					}
+					NodeNoParent = ListParts[NodeNoParent].IDParent;
+				}
+				return(FlagAttributeKeyInherit.OPACITY_RATE);
+			}
+			private Library_SpriteStudio.KeyFrame.ValueBools[] DataRuntimeParentGetFlags(out bool FlagRoot, int NodeNo, Library_SpriteStudio.AnimationData[] ListDataRuntime, FlagAttributeKeyInherit FlagData)
+			{
+				FlagRoot = false;
+				int NodeNoParent = ListParts[NodeNo].IDParent;
+				while(-1 != NodeNoParent)
+				{
+					if(0 != (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagData))
+					{	/* Parent-Node has datas. */
+						return(ListDataRuntime[NodeNoParent].AnimationDataFlags);	/* valid-datas */
 					}
 					else
-					{
-						Script_SpriteStudio_PartsNULL ComponentScript_PartsNULL = GameObjectParts.GetComponent<Script_SpriteStudio_PartsNULL>();
-						if(null != ComponentScript_PartsNULL)
-						{
-							return(ComponentScript_PartsNULL.SpriteStudioData);
-						}
-						else
-						{
-							Script_SpriteStudio_PartsRoot ComponentScript_PartsRoot = GameObjectParts.GetComponent<Script_SpriteStudio_PartsRoot>();
-							if(null != ComponentScript_PartsRoot)
-							{
-								return(null);
-							}
+					{	/* Parent-Node has no-datas. */
+						bool FlagInheritData = (0 != (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagData));
+						if((KindInheritance.SELF == ListParts[NodeNoParent].DataAnimation.Inheritance) && (false == FlagInheritData))
+						{	/* Parent-Node doesn't inherit datas */
+							FlagRoot = (0 == NodeNoParent) ? true : false;	/* Root-Node */
+							return(ListDataRuntime[NodeNoParent].AnimationDataFlags);	/* null or valid-datas */
 						}
 					}
+					NodeNoParent = ListParts[NodeNoParent].IDParent;
+				}
+				FlagRoot = true;
+				return(null);
+			}
+			private float[] DataRuntimeParentGetOpacityRate(int NodeNo, Library_SpriteStudio.AnimationData[] ListDataRuntime)
+			{
+				int NodeNoParent = ListParts[NodeNo].IDParent;
+				while(-1 != NodeNoParent)
+				{
+					if(0 != (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagAttributeKeyInherit.OPACITY_RATE))
+					{	/* Parent-Node has datas. */
+						return(ListDataRuntime[NodeNoParent].AnimationDataOpacityRate);	/* valid-datas */
+					}
+					else
+					{	/* Parent-Node has no-datas. */
+						if((KindInheritance.SELF == ListParts[NodeNoParent].DataAnimation.Inheritance) && (0 == (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagAttributeKeyInherit.OPACITY_RATE)))
+						{	/* Parent-Node doesn't inherit datas */
+							return(ListDataRuntime[NodeNoParent].AnimationDataOpacityRate);	/* null or valid-datas */
+						}
+					}
+					NodeNoParent = ListParts[NodeNoParent].IDParent;
 				}
 				return(null);
 			}
 
-			public static void AnimationDataConvertRuntime(	Library_SpriteStudio.AnimationDataRuntime DataRuntime,
-															DataIntermediate.AnimationDataEditor DataEditor,
-															Library_SpriteStudio.KindAttributeKey[] ListMaskAttribute,
-															Library_SpriteStudio.SpriteData.BitStatus StatusInitial
-														)
+			private bool ValidityCheckFrameNoBool(int NodeNo, int FrameNo, KindAttributeKey KindAttribute)
 			{
-				DataRuntime.Status = StatusInitial & Library_SpriteStudio.AnimationDataRuntime.BitStatus.MASK_RESET;
-				DataRuntime.Inheritance = DataEditor.Inheritance;
-				DataRuntime.FlagInheritance = DataEditor.FlagInheritance;
-
-				int AttributeNo = -1;
-				for(int i=0; i<ListMaskAttribute.Length; i++)
-				{
-					AttributeNo = (int)ListMaskAttribute[i];
-					if((int)Library_SpriteStudio.KindAttributeKey.TERMINATOR == AttributeNo)
-					{
-						break;
-					}
-
-					if(null != DataEditor.DataKeyFrame[AttributeNo])
-					{
-						DataEditor.DataKeyFrame[AttributeNo].Clear();
-						DataEditor.DataKeyFrame[AttributeNo] = null;
-					}
-					if((int)Library_SpriteStudio.KindAttributeKey.TERMINATOR_INHELIT > AttributeNo)
-					{
-						DataEditor.FlagKeyParameter = DataEditor.FlagKeyParameter & ~Library_SpriteStudio.FlagParameterKeyFrameInherit[AttributeNo];
-					}
-				}
-				DataRuntime.FlagKeyParameter = DataEditor.FlagKeyParameter;
-
-				AttributeNo = -1;
-				if(null != DataEditor.DataKeyFrame)
-				{
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.POSITION_X;
-					DataRuntime.AnimationDataPositionX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.POSITION_Y;
-					DataRuntime.AnimationDataPositionY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.POSITION_Z;
-					DataRuntime.AnimationDataPositionZ = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ROTATE_X;
-					DataRuntime.AnimationDataRotateX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ROTATE_Y;
-					DataRuntime.AnimationDataRotateY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ROTATE_Z;
-					DataRuntime.AnimationDataRotateZ = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.SCALE_X;
-					DataRuntime.AnimationDataScaleX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.SCALE_Y;
-					DataRuntime.AnimationDataScaleY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.FLIP_X;
-					DataRuntime.AnimationDataFlipX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataBool>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.FLIP_Y;
-					DataRuntime.AnimationDataFlipY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataBool>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.SHOW_HIDE;
-					DataRuntime.AnimationDataHide = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataBool>(DataEditor.DataKeyFrame[AttributeNo]);
-
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.OPACITY_RATE;
-					DataRuntime.AnimationDataOpacityRate = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.PRIORITY;
-					DataRuntime.AnimationDataPriority = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.COLOR_BLEND;
-					DataRuntime.AnimationDataColorBlend = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataColor>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.VERTEX_CORRECTION;
-					DataRuntime.AnimationDataVertexCorrection = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataQuadrilateral>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_X;
-					DataRuntime.AnimationDataOriginOffsetX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ORIGIN_OFFSET_Y;
-					DataRuntime.AnimationDataOriginOffsetY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ANCHOR_POSITION_X;
-					DataRuntime.AnimationDataAnchorPositionX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ANCHOR_POSITION_Y;
-					DataRuntime.AnimationDataAnchorPositionY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ANCHOR_SIZE_X;
-					DataRuntime.AnimationDataAnchorSizeX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.ANCHOR_SIZE_Y;
-					DataRuntime.AnimationDataAnchorSizeY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_FLIP_X;
-					DataRuntime.AnimationDataTextureFlipX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataBool>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_FLIP_Y;
-					DataRuntime.AnimationDataTextureFlipY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataBool>(DataEditor.DataKeyFrame[AttributeNo]);
-
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_X;
-					DataRuntime.AnimationDataTextureTranslateX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_TRANSLATE_Y;
-					DataRuntime.AnimationDataTextureTranslateY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_ROTATE;
-					DataRuntime.AnimationDataTextureRotate = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_SCALE_X;
-					DataRuntime.AnimationDataTextureScaleX = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.TEXTURE_SCALE_Y;
-					DataRuntime.AnimationDataTextureScaleY = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.COLLISION_RADIUS;
-					DataRuntime.AnimationDataCollisionRadius = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataFloat>(DataEditor.DataKeyFrame[AttributeNo]);
-
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.CELL;
-					DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataCell>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.USER_DATA;
-					DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataUser>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.SOUND;
-					DataRuntime.AnimationDataSound = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataSound>(DataEditor.DataKeyFrame[AttributeNo]);
-
-					AttributeNo = (int)Library_SpriteStudio.KindAttributeKey.PALETTE_CHANGE;
-					DataRuntime.AnimationDataPaletteChange = AnimationDataConvertRuntimeValue<Library_SpriteStudio.KeyFrame.DataParette>(DataEditor.DataKeyFrame[AttributeNo]);
-				}
-			}
-			private static Library_SpriteStudio.KeyFrame.DataCurve AnimationDataDuplicateCurve(Library_SpriteStudio.KeyFrame.DataCurve CurveOriginal)
-			{
-				if(null == CurveOriginal)
-				{
-					return(null);
-				}
-				Library_SpriteStudio.KeyFrame.DataCurve CurveOutput = new Library_SpriteStudio.KeyFrame.DataCurve();
-				CurveOutput.Kind = CurveOriginal.Kind;
-				CurveOutput.TimeStart = CurveOriginal.TimeStart;
-				CurveOutput.ValueStart = CurveOriginal.ValueStart;
-				CurveOutput.TimeEnd = CurveOriginal.TimeEnd;
-				CurveOutput.ValueEnd = CurveOriginal.ValueEnd;
-				return(CurveOutput);
-			}
-			private static _Type[] AnimationDataConvertRuntimeValue<_Type>(ArrayList DataOriginalArray)
-				where _Type : Library_SpriteStudio.KeyFrame.InterfaceData, new()
-			{
-				if(null == DataOriginalArray)
-				{
-					return(null);
-				}
-
-				int Count = DataOriginalArray.Count;
-				_Type[] DataOutput = new _Type[Count];
-
-				_Type DataInput = default(_Type);
-				for(int i=0; i<Count; i++)
-				{
-					DataInput = (_Type)DataOriginalArray[i];
-					DataOutput[i] = new _Type();
-					DataOutput[i].ObjectValue = DataInput.ObjectValue;
-
-					DataOutput[i].Kind = DataInput.Kind;
-					DataOutput[i].Time = DataInput.Time;
-					DataOutput[i].Curve = AnimationDataDuplicateCurve(DataInput.Curve);
-				}
-
-				return(DataOutput);
-			}
-		}
-
-		public static Material[] DataMaterial(	string Name,
-												string NamePath,
-												DataIntermediate.TrunkParts Data,
-												ref SettingImport DataSettingImport
-											)
-		{
-			string NamePathImportAssetSub = "";
-
-			AssetUtility.Create.Folder(NamePathSubImportTexture, NamePath);
-			AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePath);
-
-			NamePathImportAssetSub = NamePath + "/" + NamePathSubImportTexture;
-			Texture2D[] TebleTexture = TextureTable(	NamePathImportAssetSub,
-														Data.ListImage,
-														Data.ListImage.Length,
-														ref DataSettingImport
-													);
-
-			NamePathImportAssetSub = NamePath + "/" + NamePathSubImportMaterial;
-			Material[] TableMaterial = MaterialTable(	NamePathImportAssetSub,
-														TebleTexture
-													);
-
-			AssetDatabase.SaveAssets();
-
-			return(TableMaterial);
-		}
-
-		public static bool DataPrefabSprite(	string Name,
-												string NamePath,
-												DataIntermediate.TrunkParts Data,
-												Material[] TableMaterial,
-												ref SettingImport DataSettingImport,
-												Library_SpriteStudio.KindAttributeKey[][] TableMaskAttribute,
-												Library_SpriteStudio.AnimationDataRuntime.BitStatus StatusInitial
-											)
-		{
-			bool FlagExsting = false;
-			Object PrefabNow = AssetUtility.Create.Prefab(out FlagExsting, Name, NamePath);
-			if(null == PrefabNow)
-			{
-				return(true);
-			}
-
-			GameObject GameObjectControl = AssetUtility.Create.GameObject(Name + "_Control", null);
-
-			GameObject GameObjectRoot = Parts.Root(Data.ListParts[0], Data, GameObjectControl);
-			Script_SpriteStudio_PartsRoot ScriptRoot = GameObjectRoot.GetComponent<Script_SpriteStudio_PartsRoot>();
-
-			ScriptRoot.TableMaterial = TableMaterial;
-
-			GameObject[] GameObjectParts = new GameObject[Data.ListParts.Length];
-			GameObjectParts[0] = GameObjectRoot;
-			for(int i=1; i<Data.ListParts.Length; i++)
-			{
-				GameObjectParts[i] = Parts.Node(Data.ListParts[i], GameObjectRoot);
-			}
-			GameObject GameObjectParent = null;
-			int ParentNo = -1;
-			for(int i=1; i<Data.ListParts.Length; i++)
-			{
-				ParentNo = Data.ListParts[i].IDParent;
-				if(0 < ParentNo)
-				{
-					GameObjectParent = GameObjectParts[ParentNo];
-					GameObjectParts[i].transform.parent = GameObjectParent.transform;
-				}
-			}
-			Library_SpriteStudio.SpriteData DataSpriteStudio = null;
-			for(int i=0; i<Data.ListParts.Length; i++)
-			{
-				DataSpriteStudio = Parts.NodeSetAnimation(	GameObjectParts[i],
-															Data.ListParts[i],
-															ScriptRoot,
-															TableMaskAttribute,
-															StatusInitial
-														);
-
-				Parts.NodeSetCollider(	GameObjectParts[i],
-										Data.ListParts[i],
-										DataSpriteStudio,
-										ref DataSettingImport
-									);
-			}
-
-			AssetUtility.GameObjectSetActive(GameObjectControl, true);
-			AssetUtility.GameObjectSetActive(GameObjectRoot, true);
-			for(int i=0; i<GameObjectParts.Length; i++)
-			{
-				if(null != GameObjectParts[i])
-				{
-					AssetUtility.GameObjectSetActive(GameObjectParts[i], true);
-				}
-			}
-
-#if false
-			PrefabUtility.ReplacePrefab(GameObjectControl, PrefabNow, ReplacePrefabOptions.ConnectToPrefab);
-#else
-			PrefabUtility.ReplacePrefab(GameObjectControl, PrefabNow, ReplacePrefabOptions.Default);
-#endif
-			AssetDatabase.SaveAssets();
-
-			Object.DestroyImmediate(GameObjectControl);
-
-			return(true);
-		}
-
-		public static Texture2D[] TextureTable(	string NamePath,
-												DataIntermediate.PartsImage[] ListImage,
-												int Count,
-												ref SettingImport DataSettingImport
-											)
-		{
-			Texture2D[] TableTexture = new Texture2D[Count];
-			string NameFileBody = "";
-			string NameFileExtensionTexture = "";
-			string NameAsset = "";
-
-			for(int i=0; i<Count; i++)
-			{
-				NameFileBody = Path.GetFileNameWithoutExtension(ListImage[i].FileName);
-				NameFileExtensionTexture = Path.GetExtension(ListImage[i].FileName);
-
-				NameAsset = NamePath + "/" + NameFileBody + NameFileExtensionTexture;
-
-				File.FileCopyToAsset(File.NamePathToAsset(NameAsset), ListImage[i].FileName, true);
-
-				AssetDatabase.ImportAsset(NameAsset);
-				TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
-				Importer.anisoLevel = 1;
-				Importer.borderMipmap = false;
-				Importer.convertToNormalmap = false;
-				Importer.fadeout = false;
-				Importer.filterMode = FilterMode.Bilinear;
-				Importer.generateCubemap = TextureImporterGenerateCubemap.None;
-				Importer.generateMipsInLinearSpace = false;
-				Importer.grayscaleToAlpha = false;
-				Importer.isReadable = false;
-				Importer.lightmap = false;
-				Importer.linearTexture = false;
-				Importer.mipmapEnabled = false;
-				Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
-				Importer.normalmap = false;
-				Importer.npotScale = TextureImporterNPOTScale.None;
-				Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
-				Importer.textureType  = TextureImporterType.Advanced;
-				Importer.wrapMode = TextureWrapMode.Clamp;
-				AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
-				TableTexture[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
-			}
-
-			AssetDatabase.SaveAssets();
-
-			return(TableTexture);
-		}
-
-		public static Material[] MaterialTable(string NamePath, Texture2D[] TableTexture)
-		{
-			int Count = TableTexture.Length;
-			Material[] TableMaterial = new Material[Count * ShaderOperationMax];
-			string NameFileBody = "";
-			string NameAsset = "";
-			for(int i=0; i<Count; i++)
-			{
-				string NameMaterialSuffix = "";
-				int MaterialNo = 0;
-				Library_SpriteStudio.KindColorOperation	KindOperation = Library_SpriteStudio.KindColorOperation.NON;
-				NameFileBody = TableTexture[i].name;
-				for(int j=0; j<ShaderOperationMax; j++)
-				{
-					KindOperation = (Library_SpriteStudio.KindColorOperation)(j + 1);
-					NameMaterialSuffix = KindOperation.ToString();
-
-					MaterialNo = (i * ShaderOperationMax) + j;
-					NameAsset = NamePath + "/" + NameFileBody + "_" + NameMaterialSuffix + ".mat";
-
-					TableMaterial[MaterialNo] = new Material(Shader_SpriteStudioTriangleX[j]);
-					TableMaterial[MaterialNo].mainTexture = TableTexture[i];
-					AssetDatabase.CreateAsset(TableMaterial[MaterialNo], NameAsset);
-					TableMaterial[MaterialNo] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
-				}
-			}
-			AssetDatabase.SaveAssets();
-
-			return(TableMaterial);
-		}
-
-		private readonly static int[] SizePixelNormalize = {64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, -1};
-		public static bool PixelSizeCheck(int Size)
-		{
-			int SizeNow;
-			for(int i=0; ; i++)
-			{
-				SizeNow = SizePixelNormalize[i];
-				if(-1 == SizeNow)
+				/* Frame in Animation ? */
+				int AnimationNo = IndexAnimationGetFrameNo(FrameNo);
+				if(-1 == AnimationNo)
 				{
 					return(false);
 				}
-				if(SizeNow < Size)
+
+				/* Existing KeyFrame in Animation ? */
+				ArrayList ArrayKeyFrame = ListParts[NodeNo].DataAnimation.DataKeyFrame[(int)KindAttribute];
+				DataIntermediate.KeyFrame.DataBool Data = null;
+				if(null != ArrayKeyFrame)
 				{
-					continue;
-				}
-				if(SizeNow == Size)
-				{
-					return(true);
+					for(int i=0; i<ArrayKeyFrame.Count; i++)
+					{
+						Data = (DataIntermediate.KeyFrame.DataBool)ArrayKeyFrame[i];
+						if((ListInformationPlay[AnimationNo].FrameStart <= Data.Time) && (ListInformationPlay[AnimationNo].FrameEnd >= Data.Time))
+						{
+							return(true);
+						}
+					}
 				}
 				return(false);
 			}
+			private int IndexAnimationGetFrameNo(int FrameNo)
+			{
+				for(int i=0; i<ListInformationPlay.Length; i++)
+				{
+					if((ListInformationPlay[i].FrameStart <= FrameNo) && (ListInformationPlay[i].FrameEnd >= FrameNo))
+					{	/* in Range */
+						return(i);
+					}
+				}
+				return(-1);	/* Out of Range (Error) */
+			}
 		}
-	}
 
-	public static partial class AssetUtility
-	{
-		internal readonly static string NamePathRootAsset = "Assets";
-
-		public static class Create
+		/* for Cell */
+		internal class InformationCell
 		{
-			public static bool Folder(string Name, string NameParent)
+			internal Rect Area;
+			internal Vector2 Pivot;
+			internal float Rotate;
+
+			internal void CleanUp()
 			{
-				string NameFolderParent = "";
-				if(null != NameParent)
-				{
-					NameFolderParent = string.Copy(NameParent);
-				}
+				Area.x = 0.0f;
+				Area.y = 0.0f;
+				Area.width = 0.0f;
+				Area.height = 0.0f;
+				Pivot = Vector2.zero;
+				Rotate = 0.0f;
+			}
+		}
+		internal struct PartsImage
+		{
+			internal string FileName;
+			internal Hashtable CellArea;
 
-				if(null == AssetDatabase.LoadMainAssetAtPath(NameFolderParent + "/" + Name))
-				{
-					AssetDatabase.CreateFolder(NameFolderParent, Name);
-				}
+			internal void CleanUp()
+			{
+				FileName = "";
+				CellArea = null;
+			}
+		}
 
-				return(true);
+		/* for Sprite */
+		internal enum KindInheritance
+		{
+			PARENT,
+			SELF
+		};
+		internal enum KindTypeKey
+		{
+			INT,
+			FLOAT,
+			BOOL,
+			HEX,
+			DEGREE,
+			OTHER,
+		};
+		internal enum KindValueKey
+		{
+			NUMBER,
+			CHECK,
+			POINT,
+			PALETTE,
+			COLOR,
+			QUADRILATERRAL,
+			USER,
+			SOUND,
+			CELL,
+		};
+		internal enum KindInterpolation
+		{
+			NON = 0,
+			LINEAR,
+			HERMITE,
+			BEZIER,
+			ACCELERATE,
+			DECELERATE,
+		};
+		internal enum FlagDirection
+		{
+			JUSTNOW = 0x0001,
+			PAST = 0x0002,
+			FUTURE = 0x0004,
+			ALL = JUSTNOW | PAST | FUTURE,
+		};
+		internal enum KindAttributeKey
+		{	/* MEMO: Don't change the order of enumerate, "POSITION_X"-"SHOW_HIDE" */
+			POSITION_X = 0,
+			POSITION_Y,
+			POSITION_Z,
+			ROTATE_X,
+			ROTATE_Y,
+			ROTATE_Z,
+			SCALE_X,
+			SCALE_Y,
+
+			OPACITY_RATE,
+			FLIP_X,
+			FLIP_Y,
+			SHOW_HIDE,
+
+			PRIORITY,
+
+			COLOR_BLEND,
+			VERTEX_CORRECTION,
+			ORIGIN_OFFSET_X,
+			ORIGIN_OFFSET_Y,
+
+			ANCHOR_POSITION_X,
+			ANCHOR_POSITION_Y,
+			ANCHOR_SIZE_X,
+			ANCHOR_SIZE_Y,
+
+			TEXTURE_FLIP_X,
+			TEXTURE_FLIP_Y,
+
+			TEXTURE_TRANSLATE_X,
+			TEXTURE_TRANSLATE_Y,
+			TEXTURE_ROTATE,
+			TEXTURE_SCALE_X,
+			TEXTURE_SCALE_Y,
+			TEXTURE_EXPAND_WIDTH,
+			TEXTURE_EXPAND_HEIGHT,
+
+			COLLISION_RADIUS,
+
+			CELL,
+			USER_DATA,
+
+			PALETTE_CHANGE,
+			SOUND,
+
+			TERMINATOR,
+			TERMINATOR_INHELIT = (SHOW_HIDE + 1),
+		};
+		internal enum FlagAttributeKeyInherit
+		{
+			POSITION_X = (1 << KindAttributeKey.POSITION_X),
+			POSITION_Y = (1 << KindAttributeKey.POSITION_Y),
+			POSITION_Z = (1 << KindAttributeKey.POSITION_Z),
+			ROTATE_X = (1 << KindAttributeKey.ROTATE_X),
+			ROTATE_Y = (1 << KindAttributeKey.ROTATE_Y),
+			ROTATE_Z = (1 << KindAttributeKey.ROTATE_Z),
+			SCALE_X = (1 << KindAttributeKey.SCALE_X),
+			SCALE_Y = (1 << KindAttributeKey.SCALE_Y),
+
+			OPACITY_RATE = (1 << KindAttributeKey.OPACITY_RATE),
+			FLIP_X = (1 << KindAttributeKey.FLIP_X),
+			FLIP_Y = (1 << KindAttributeKey.FLIP_Y),
+			SHOW_HIDE = (1 << KindAttributeKey.SHOW_HIDE),
+
+			CLEAR = 0,
+			ALL = ((1 << KindAttributeKey.TERMINATOR_INHELIT) - 1),
+			PRESET = POSITION_X
+					| POSITION_Y
+					| POSITION_Z
+					| ROTATE_X
+					| ROTATE_Y
+					| ROTATE_Z
+					| SCALE_X
+					| SCALE_Y
+					| OPACITY_RATE
+//					| FLIP_X
+//					| FLIP_Y
+//					| SHOW_HIDE
+		};
+		internal readonly static FlagAttributeKeyInherit[] FlagParameterKeyFrameInherit = new FlagAttributeKeyInherit[(int)KindAttributeKey.TERMINATOR_INHELIT]
+		{
+			FlagAttributeKeyInherit.POSITION_X,
+			FlagAttributeKeyInherit.POSITION_Y,
+			FlagAttributeKeyInherit.POSITION_Z,
+			FlagAttributeKeyInherit.ROTATE_X,
+			FlagAttributeKeyInherit.ROTATE_Y,
+			FlagAttributeKeyInherit.ROTATE_Z,
+			FlagAttributeKeyInherit.SCALE_X,
+			FlagAttributeKeyInherit.SCALE_Y,
+
+			FlagAttributeKeyInherit.OPACITY_RATE,
+			FlagAttributeKeyInherit.FLIP_X,
+			FlagAttributeKeyInherit.FLIP_Y,
+			FlagAttributeKeyInherit.SHOW_HIDE,
+		};
+		internal readonly static KindAttributeKey[][] MaskKeyAttribute_OPSS =
+		{
+			new KindAttributeKey[]
+			{	/* NORMAL: Sprite-Node */
+				KindAttributeKey.TERMINATOR
+			},
+			new KindAttributeKey[]
+			{	/* ROOT: Root-Node */
+				KindAttributeKey.PRIORITY,
+				KindAttributeKey.VERTEX_CORRECTION,
+				KindAttributeKey.ORIGIN_OFFSET_X,
+				KindAttributeKey.ORIGIN_OFFSET_Y,
+				KindAttributeKey.TEXTURE_TRANSLATE_X,
+				KindAttributeKey.TEXTURE_TRANSLATE_Y,
+				KindAttributeKey.TEXTURE_ROTATE,
+				KindAttributeKey.TEXTURE_SCALE_X,
+				KindAttributeKey.TEXTURE_SCALE_Y,
+				KindAttributeKey.PALETTE_CHANGE,
+				KindAttributeKey.SOUND,
+
+				KindAttributeKey.TERMINATOR
+			},
+			new KindAttributeKey[]
+			{	/* NULL: NULL-Node */
+				KindAttributeKey.PRIORITY,
+				KindAttributeKey.SOUND,
+
+				KindAttributeKey.TERMINATOR
+			},
+			new KindAttributeKey[]
+			{	/* BOUND: Bound-Node (not supported SS5) */
+				KindAttributeKey.TERMINATOR
+			},
+			new KindAttributeKey[]
+			{	/* BOUND: Sound-Node (not supported SS5) */
+				KindAttributeKey.TERMINATOR
+			}
+		};
+		internal class AnimationDataEditor
+		{
+			internal KindInheritance Inheritance;
+
+			internal FlagAttributeKeyInherit FlagInheritance;
+			internal float[] RateInheritance;
+
+			internal FlagAttributeKeyInherit FlagKeyParameter;
+			internal ArrayList[] DataKeyFrame;
+
+			internal void CleanUp()
+			{
+				Inheritance = KindInheritance.PARENT;
+
+				FlagInheritance = FlagAttributeKeyInherit.CLEAR;
+				RateInheritance = null;
+
+				FlagKeyParameter = FlagAttributeKeyInherit.CLEAR;
+				DataKeyFrame = null;
+			}
+		}
+		internal struct PartsSprite
+		{
+			internal Library_SpriteStudio.KindParts PartsKind;
+			internal Library_SpriteStudio.KindParts ObjectKind;
+			internal Library_SpriteStudio.KindCollision CollisionKind;
+			internal int ID;
+			internal int IDParent;
+
+			internal string Name;
+			internal Library_SpriteStudio.KindColorOperation KindBlendTarget;
+
+			internal AnimationDataEditor DataAnimation;
+
+			internal void CleanUp()
+			{
+				PartsKind = Library_SpriteStudio.KindParts.NORMAL;
+				ObjectKind = Library_SpriteStudio.KindParts.TERMINATOR;
+				CollisionKind = Library_SpriteStudio.KindCollision.NON;
+				ID = -1;
+				IDParent = -1;
+
+				Name = "";
+				KindBlendTarget = Library_SpriteStudio.KindColorOperation.MIX;
+
+				DataAnimation = null;
 			}
 
-			public static Object Prefab(out bool FlagExsting, string Name, string NamePath)
+			internal void BootUp()
 			{
-				Object PrefabNow = null;
-				string NamePathAsset = NamePath + "/" + Name + ".prefab";
-				FlagExsting = false;
-				if(false == AssetUtility.ObjectCheckOverwrite(out PrefabNow, NamePathAsset))
-				{
-					return(null);
-				}
-
-				if(null == PrefabNow)
-				{
-					FlagExsting = false;
-					PrefabNow = PrefabUtility.CreateEmptyPrefab(NamePathAsset);
-				}
-				else
-				{
-					FlagExsting = true;
-				}
-				return(PrefabNow);
+				DataAnimation = new AnimationDataEditor();
 			}
-
-			public static GameObject GameObject(string Name, GameObject GameObjectParent)
+		}
+		internal static class ManagerDescriptionAttribute
+		{
+			internal class DescriptionAttribute
 			{
-				GameObject GameObjectNow = new GameObject(Name);
-				GameObjectNow.active = false;
-				if(null != GameObjectNow)
+				internal DataIntermediate.KindAttributeKey Attribute
 				{
-					if(null == GameObjectParent)
+					set;
+					get;
+				}
+				internal DataIntermediate.KindValueKey KindValue
+				{
+					set;
+					get;
+				}
+				internal DataIntermediate.KindTypeKey KindType
+				{
+					set;
+					get;
+				}
+				internal bool Interpolatable
+				{
+					get
 					{
-						GameObjectNow.transform.parent = null;
+						switch(KindValue)
+						{
+							case DataIntermediate.KindValueKey.CHECK:
+							case DataIntermediate.KindValueKey.USER:
+							case DataIntermediate.KindValueKey.SOUND:
+								return(false);
+						}
+						return(true);
+					}
+				}
+
+				internal DescriptionAttribute(	DataIntermediate.KindAttributeKey AttributeNew,
+												DataIntermediate.KindValueKey KindValueNew,
+												DataIntermediate.KindTypeKey KindTypeNew
+										)
+				{
+					Attribute = AttributeNew;
+					KindValue = KindValueNew;
+					KindType = KindTypeNew;
+				}
+			}
+
+			private readonly static Dictionary<string, DescriptionAttribute> ListDescriptionSSAE = new Dictionary<string, DescriptionAttribute>
+			{
+				{"POSX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.POSITION_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"POSY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.POSITION_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"POSZ",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.POSITION_Z,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"ROTX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ROTATE_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.DEGREE
+													)
+				},
+				{"ROTY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ROTATE_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.DEGREE
+													)
+				},
+				{"ROTZ",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ROTATE_Z,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.DEGREE
+													)
+				},
+
+				{"SCLX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.SCALE_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"SCLY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.SCALE_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"ALPH",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.OPACITY_RATE,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"PRIO",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.PRIORITY,
+													 	DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"FLPH",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.FLIP_X,
+														DataIntermediate.KindValueKey.CHECK,
+														DataIntermediate.KindTypeKey.BOOL
+													)
+				},
+				{"FLPV",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.FLIP_Y,
+														DataIntermediate.KindValueKey.CHECK,
+														DataIntermediate.KindTypeKey.BOOL
+													)
+				},
+				{"HIDE",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.SHOW_HIDE,
+														DataIntermediate.KindValueKey.CHECK,
+														DataIntermediate.KindTypeKey.BOOL
+													)
+				},
+
+				{"VCOL",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.COLOR_BLEND,
+														DataIntermediate.KindValueKey.COLOR,
+														DataIntermediate.KindTypeKey.OTHER
+													)
+				},
+				{"VERT",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.VERTEX_CORRECTION,
+														DataIntermediate.KindValueKey.QUADRILATERRAL,
+														DataIntermediate.KindTypeKey.OTHER
+													)
+				},
+
+				{"PVTX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"PVTY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"ANCX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ANCHOR_POSITION_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"ANCY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ANCHOR_POSITION_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"SIZX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ANCHOR_SIZE_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"SIZY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ANCHOR_SIZE_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"UVTX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"UVTY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"UVRZ",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_ROTATE,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.DEGREE
+													)
+				},
+				{"UVSX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_WIDTH,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"UVSY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_HEIGHT,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"BNDR",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.COLLISION_RADIUS,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"CELL",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.CELL,
+														DataIntermediate.KindValueKey.CELL,
+														DataIntermediate.KindTypeKey.OTHER
+													)
+				},
+				{"USER",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.USER_DATA,
+														DataIntermediate.KindValueKey.USER,
+														DataIntermediate.KindTypeKey.OTHER
+													)
+				},
+
+				{"IFLH",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_FLIP_X,
+														DataIntermediate.KindValueKey.CHECK,
+														DataIntermediate.KindTypeKey.BOOL
+													)
+				},
+				{"IFLV",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_FLIP_Y,
+														DataIntermediate.KindValueKey.CHECK,
+														DataIntermediate.KindTypeKey.BOOL
+													)
+				},
+
+				{"IMGX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"IMGY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"IMGW",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_WIDTH,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"IMGH",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_HEIGHT,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"ORFX",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_X,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+				{"ORFY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_Y,
+														DataIntermediate.KindValueKey.NUMBER,
+														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+			};
+
+			static internal DescriptionAttribute DescriptionAttributeGetTagName(string NameTag)
+			{
+				DescriptionAttribute Description;
+				return((true == ListDescriptionSSAE.TryGetValue(NameTag, out Description)) ? Description : null);
+			}
+
+			static internal DescriptionAttribute DescriptionAttributeGetKey(DataIntermediate.KindAttributeKey Key)
+			{
+				foreach (DescriptionAttribute Description in ListDescriptionSSAE.Values)
+				{
+					if(Description.Attribute == Key)
+					{
+						return(Description);
+					}
+				}
+				return(null);
+			}
+		}
+
+		internal static class KeyFrame
+		{
+			public class DataCurve
+			{
+				internal KindInterpolation Kind;
+				internal float TimeStart;
+				internal float ValueStart;
+				internal float TimeEnd;
+				internal float ValueEnd;
+
+				public bool CheckEqual(DataCurve Target)
+				{
+					if(Kind == Target.Kind)
+					{
+						if(TimeStart == Target.TimeStart)
+						{
+							if(ValueStart == Target.ValueStart)
+							{
+								if(TimeEnd == Target.TimeEnd)
+								{
+									if(ValueEnd != Target.ValueEnd)
+									{
+										return(true);
+									}
+								}
+							}
+						}
+					}
+					return(false);
+				}
+
+				public override string ToString()
+				{
+					return(	"Type: " + Kind
+							+ ", StartT: " + TimeStart
+							+ ", StartV: " + ValueStart
+							+ ", EndT: " + TimeEnd
+							+ ", EndV: " + ValueEnd
+						);
+				}
+			}
+			public interface InterfaceData
+			{
+				KindAttributeKey Kind { get; set; }
+				int Time { get; set; }
+				object ObjectValue { get; set; }
+				DataCurve Curve { get; set; }
+
+				bool ValueCheckEqual(InterfaceData Target);
+			}
+			public interface InterfaceInterpolatable
+			{
+				InterfaceInterpolatable GetInterpolated(	DataCurve Curve,
+															int Time,
+															InterfaceInterpolatable ValueStart,
+															InterfaceInterpolatable ValueEnd,
+															int TimeStart,
+															int TimeEnd
+														);
+
+				InterfaceInterpolatable Interpolate(	DataCurve Curve,
+														int Time,
+														InterfaceInterpolatable ValueStart,
+														InterfaceInterpolatable ValueEnd,
+														int TimeStart,
+														int TimeEnd
+													);
+			}
+			public class DataBase<_Type> : InterfaceData
+			{
+				protected KindAttributeKey ValueKind;
+				public KindAttributeKey	Kind
+				{
+					get { return(ValueKind); }
+					set { ValueKind = value; }
+				}
+				protected int ValueTime;
+				public int Time
+				{
+					get { return(ValueTime); }
+					set { ValueTime = value; }
+				}
+				protected DataCurve ValueCurve;
+				public DataCurve Curve
+				{
+					get { return(ValueCurve); }
+					set { ValueCurve = value; }
+				}
+				internal _Type Value;
+				public object ObjectValue
+				{
+					get{ return(Value); }
+					set{ Value = (_Type)value; }
+				}
+
+				public bool ValueCheckEqual(InterfaceData Target)
+				{
+					if((null != Curve) && (null != Target.Curve))
+					{
+						if(false == Curve.CheckEqual(Target.Curve))
+						{
+							return(false);
+						}
 					}
 					else
 					{
-						GameObjectNow.transform.parent = GameObjectParent.transform;
+						if(Curve != Target.Curve)
+						{
+							return(false);
+						}
 					}
-					GameObjectNow.name = System.String.Copy(Name);
+
+					DataBase<_Type> TargetDerived = (DataBase<_Type>)Target;
+					return(Value.Equals(TargetDerived.Value));
 				}
-				return(GameObjectNow);
-			}
-		}
-
-		public static string NamePathGet(string Name)
-		{
-			string NamePath = System.String.Copy(NamePathRootAsset);
-			if(null != Name)
-			{
-				NamePath += "/" + Name;
-			}
-
-			return(NamePath);
-		}
-
-		public static string NamePathGetSelectNow(string NamePath)
-		{
-			string NamePathAsset = "";
-			if(null == NamePath)
-			{
-				Object ObjectNow = Selection.activeObject;
-				if(null == ObjectNow)
+				public override string ToString()
 				{
-					NamePathAsset = System.String.Copy(NamePathRootAsset);
+					return(	"MyType: " + typeof(_Type)
+							+ ", ValueType: " + Kind
+							+ ", Time: " + Time
+							+ ", Value {" + ObjectValue
+							+ "}, Curve {" + Curve + "}\n"
+						);
 				}
-				else
-				{
-					NamePathAsset = AssetDatabase.GetAssetPath(ObjectNow);
-				}
-			}
-			else
-			{
-				NamePathAsset = System.String.Copy(NamePath);
 			}
 
-			return(NamePathAsset);
+			public class ValuePoint : InterfaceInterpolatable
+			{
+				internal Vector2 Point;
+				public float X
+				{
+					set	{	Point.x = value;	}
+					get	{	return(Point.x);	}
+				}
+				public float Y
+				{
+					set	{	Point.y = value;	}
+					get	{	return(Point.y);	}
+				}
+
+				public ValuePoint()
+				{
+				}
+				public ValuePoint(ValuePoint Value)
+				{
+					Point = Value.Point;
+				}
+				public ValuePoint Clone()
+				{
+					ValuePoint Value = new ValuePoint(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					return(	"X: " + X
+							+ ", Y: " + Y
+						);
+				}
+				public static ValuePoint[] CreateArray(int Count)
+				{
+					var ArrayPoint = new ValuePoint[Count];
+					for(int i=0; i<Count; i++)
+					{
+						ArrayPoint[i] = new ValuePoint();
+					}
+					return(ArrayPoint);
+				}
+				public InterfaceInterpolatable GetInterpolated(	DataCurve Curve,
+																	int TimeNow,
+																	InterfaceInterpolatable Start,
+																	InterfaceInterpolatable End,
+																	int TimeStart,
+																	int TimeEnd
+																)
+				{
+					ValuePoint Value = new ValuePoint();
+					return(Value.Interpolate(Curve, TimeNow, Start, End, TimeStart, TimeEnd));
+				}
+				public InterfaceInterpolatable Interpolate(	DataCurve Curve,
+																int TimeNow,
+																InterfaceInterpolatable Start,
+																InterfaceInterpolatable End,
+																int TimeStart,
+																int TimeEnd
+															)
+				{
+					ValuePoint ValueStart = (ValuePoint)Start;
+					ValuePoint ValueEnd = (ValuePoint)End;
+					Point.x = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.Point.x, ValueEnd.Point.x, TimeStart, TimeEnd);
+					Point.y = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.Point.y, ValueEnd.Point.y, TimeStart, TimeEnd);
+					return(this);
+				}
+				public void Scale(float Ratio)
+				{
+					Point *= Ratio;
+				}
+			}
+
+			public class ValuePalette : InterfaceInterpolatable
+			{
+				internal bool FlagUse;
+				internal int Page;
+				internal byte Block;
+				public bool Use
+				{
+					set {	FlagUse = value;	}
+					get {	return(FlagUse);	}
+				} 
+
+				public ValuePalette()
+				{
+				}
+				public ValuePalette(ValuePalette Value)
+				{
+					Page = Value.Page;
+					Block = Value.Block;
+				}
+				public ValuePalette Clone()
+				{
+					ValuePalette Value = new ValuePalette(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					return(	"FlagUse: " + FlagUse
+							+ "Page: " + Page
+							+ ", Block: " + Block
+						);
+				}
+				public InterfaceInterpolatable GetInterpolated(	DataCurve Curve,
+																	int TimeNow,
+																	InterfaceInterpolatable Start,
+																	InterfaceInterpolatable End,
+																	int TimeStart,
+																	int TimeEnd
+																)
+				{
+					ValuePalette Value = new ValuePalette();
+					return(Value.Interpolate(Curve, TimeNow, Start, End, TimeStart, TimeEnd));
+				}
+				public InterfaceInterpolatable Interpolate(	DataCurve Curve,
+																int TimeNow,
+																InterfaceInterpolatable Start,
+																InterfaceInterpolatable End,
+																int TimeStart,
+																int TimeEnd
+															)
+				{
+					ValuePalette ValueStart = (ValuePalette)Start;
+					ValuePalette ValueEnd = (ValuePalette)End;
+					FlagUse = (0.5f <= Interpolation.Interpolate<float>(	Curve,
+																			TimeNow,
+																			((true == ValueStart.FlagUse) ? 1.0f : 0.0f),
+																			((true == ValueEnd.FlagUse) ? 1.0f : 0.0f),
+																			TimeStart,
+																			TimeEnd
+																		)) ? true : false;
+					Page = (int)Interpolation.Interpolate<int>(Curve, TimeNow, ValueStart.Page, ValueEnd.Page, TimeStart, TimeEnd);
+					Block = (byte)(Interpolation.Interpolate<byte>(Curve, TimeNow, ValueStart.Block, ValueEnd.Block, TimeStart, TimeEnd));
+					return(this);
+				}
+			}
+			public class ValueColor : InterfaceInterpolatable
+			{
+				internal Library_SpriteStudio.KindColorBound Bound;
+				internal Library_SpriteStudio.KindColorOperation Operation;
+				internal Color[] VertexColor;
+				internal float[] RatePixelAlpha;
+
+				public ValueColor()
+				{
+					Bound = Library_SpriteStudio.KindColorBound.NON;
+					Operation = Library_SpriteStudio.KindColorOperation.MIX;
+					VertexColor = new Color[4];
+					RatePixelAlpha = new float[4];
+					for(int i=0; i<VertexColor.Length; i++)
+					{
+						VertexColor[i] = Color.white;
+						RatePixelAlpha[i] = 0.0f;
+					}
+				}
+				public ValueColor(ValueColor Value)
+				{
+					Bound = Value.Bound;
+					Operation = Value.Operation;
+					VertexColor = new Color[4];
+					RatePixelAlpha = new float[4];
+					for(int i=0; i<Value.VertexColor.Length; i++)
+					{
+						VertexColor[i] = Value.VertexColor[i];
+						RatePixelAlpha[i] = Value.RatePixelAlpha[i];
+					}
+				}
+				public ValueColor Clone()
+				{
+					ValueColor Value = new ValueColor(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					string Text = "Bound: " + Bound + ", Operation: " + Operation;
+					if(null != VertexColor)
+					{
+						for(int i=0; i<VertexColor.Length; i++)
+						{
+							Text += ", Color("
+									+ i
+									+ ")["
+									+ VertexColor[i].ToString()
+									+ "], PixelAlphaRate ["
+									+ RatePixelAlpha[i].ToString();
+						}
+					}
+					return(Text);
+				}
+				public InterfaceInterpolatable GetInterpolated(	DataCurve Curve,
+																	int TimeNow,
+																	InterfaceInterpolatable Start,
+																	InterfaceInterpolatable End,
+																	int TimeStart,
+																	int TimeEnd
+																)
+				{
+					ValueColor Value = null;
+					Value = new ValueColor();
+					return(Value.Interpolate(Curve, TimeNow, Start, End, TimeStart, TimeEnd));
+				}
+				public InterfaceInterpolatable Interpolate(	DataCurve Curve,
+																int TimeNow,
+																InterfaceInterpolatable Start,
+																InterfaceInterpolatable End,
+																int TimeStart,
+																int TimeEnd
+															)
+				{
+					ValueColor ValueStart = (ValueColor)Start;
+					ValueColor ValueEnd = (ValueColor)End;
+
+					if((Library_SpriteStudio.KindColorBound.NON == ValueStart.Bound) && (Library_SpriteStudio.KindColorBound.NON == ValueEnd.Bound))
+					{
+						Debug.LogError("Sprite Color-Blend Error!!");
+					}
+					else
+					{
+						for(int i=0; i<VertexColor.Length; i++)
+						{
+							VertexColor[i].r = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].r , ValueEnd.VertexColor[i].r, TimeStart, TimeEnd);
+							VertexColor[i].g = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].g , ValueEnd.VertexColor[i].g, TimeStart, TimeEnd);
+							VertexColor[i].b = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].b , ValueEnd.VertexColor[i].b, TimeStart, TimeEnd);
+							VertexColor[i].a = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].a , ValueEnd.VertexColor[i].a, TimeStart, TimeEnd);
+
+							RatePixelAlpha[i] = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
+						}
+
+						bool FlagStartParam = (1.0f > TimeNow) ? true : false;
+						if(Library_SpriteStudio.KindColorBound.NON == ValueStart.Bound)
+						{
+							for(int i=0; i<VertexColor.Length; i++)
+							{
+								VertexColor[i].r = ValueEnd.VertexColor[i].r;
+								VertexColor[i].g = ValueEnd.VertexColor[i].g;
+								VertexColor[i].b = ValueEnd.VertexColor[i].b;
+								VertexColor[i].a = ValueEnd.VertexColor[i].a;
+
+								RatePixelAlpha[i] = ValueEnd.RatePixelAlpha[i];
+							}
+							FlagStartParam = false;
+						}
+						else
+						{
+							if(Library_SpriteStudio.KindColorBound.NON == ValueEnd.Bound)
+							{
+								for(int i=0; i<VertexColor.Length; i++)
+								{
+									VertexColor[i].r = ValueStart.VertexColor[i].r;
+									VertexColor[i].g = ValueStart.VertexColor[i].g;
+									VertexColor[i].b = ValueStart.VertexColor[i].b;
+									VertexColor[i].a = ValueStart.VertexColor[i].a;
+
+									RatePixelAlpha[i] = ValueStart.RatePixelAlpha[i];
+								}
+							}
+						}
+						if (true == FlagStartParam)
+						{
+							Bound = ValueStart.Bound;
+							Operation = ValueStart.Operation;
+						}
+						else
+						{
+							Bound = ValueEnd.Bound;
+							Operation = ValueEnd.Operation;
+						}
+					}
+					return(this);
+				}
+			}
+			public class ValueQuadrilateral : InterfaceInterpolatable
+			{
+				internal ValuePoint[] Coordinate;
+
+				internal ValueQuadrilateral()
+				{
+					Coordinate = ValuePoint.CreateArray(4);
+				}
+				internal ValueQuadrilateral(ValueQuadrilateral Value)
+				{
+					Coordinate = ValuePoint.CreateArray(4);
+					for(int i=0; i<Coordinate.Length; i++)
+					{
+						Coordinate[i] = Value.Coordinate[i];
+					}
+				}
+				internal ValueQuadrilateral Clone()
+				{
+					ValueQuadrilateral Value = new ValueQuadrilateral(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					string Text = "Vertices: ";
+					for(int i=0; i<Coordinate.Length; i++)
+					{
+						Text += "[" + i + "](" + Coordinate[i].ToString() + ") ";
+					}
+					return(Text);
+				}
+				public InterfaceInterpolatable GetInterpolated(	DataCurve Curve,
+																	int TimeNow,
+																	InterfaceInterpolatable Start,
+																	InterfaceInterpolatable End,
+																	int TimeStart,
+																	int TimeEnd
+																)
+				{
+					ValueQuadrilateral Value = new ValueQuadrilateral();
+					return(Value.Interpolate(Curve, TimeNow, Start, End, TimeStart, TimeEnd));
+				}
+				public InterfaceInterpolatable Interpolate(	DataCurve Curve,
+																int TimeNow,
+																InterfaceInterpolatable Start,
+																InterfaceInterpolatable End,
+																int TimeStart,
+																int TimeEnd
+															)
+				{
+					ValueQuadrilateral ValueStart = (ValueQuadrilateral)Start;
+					ValueQuadrilateral ValueEnd = (ValueQuadrilateral)End;
+					for(int i=0; i<Coordinate.Length; i++)
+					{
+						Coordinate[i].Interpolate(Curve, TimeNow, ValueStart.Coordinate[i], ValueEnd.Coordinate[i], TimeStart, TimeEnd);
+					}
+					return(this);
+				}
+			}
+			public class ValueCell
+			{
+				internal int TextureNo;
+				internal Rect Rectangle;
+				internal Vector2 Pivot;
+
+				internal ValueCell()
+				{
+				}
+				internal ValueCell(ValueCell Value)
+				{
+					TextureNo = Value.TextureNo;
+					Rectangle = Value.Rectangle;
+					Pivot = Value.Pivot;
+				}
+				internal ValueCell Clone()
+				{
+					ValueCell Value = new ValueCell(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					return(	"TextureNo: " + TextureNo.ToString()
+							+ ", Rectangle: " + Rectangle.ToString()
+							+ ", Pivot: " + Pivot.ToString()
+						);
+				}
+			}
+			public class ValueUser
+			{
+				internal enum FlagData
+				{
+					CLEAR = 0x00000000,
+					NUMBER = 0x00000001,
+					RECTANGLE = 0x00000002,
+					COORDINATE = 0x00000004,
+					TEXT = 0x00000008,
+				};
+
+				internal FlagData Flag;
+				internal bool IsNumber
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.NUMBER)));
+					}
+				}
+				internal bool IsRectangle
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.RECTANGLE)));
+					}
+				}
+				internal bool IsCoordinate
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.COORDINATE)));
+					}
+				}
+				internal bool IsText
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.TEXT)));
+					}
+				}
+				internal int Number;
+				internal Rect Rectangle;
+				internal ValuePoint Coordinate;
+				internal string Text;
+
+				internal ValueUser()
+				{
+				}
+				internal ValueUser(ValueUser Value)
+				{
+					Flag = Value.Flag;
+					Number = Value.Number;
+					Rectangle = Value.Rectangle;
+					Coordinate = Value.Coordinate.Clone();
+					Text = System.String.Copy(Value.Text);
+				}
+				internal ValueUser Clone()
+				{
+					ValueUser Value = new ValueUser(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					return(	"IsNum: " + IsNumber.ToString()
+							+ ", Num: " + Number
+							+ ", IsRect: " + IsRectangle.ToString()
+							+ ", Rect: " + Rectangle.ToString()
+							+ ", IsPoint: " + IsCoordinate.ToString()
+							+ ", Point: X:" + Coordinate.ToString()
+							+ ", IsString: " + IsText.ToString()
+							+ ", String: " + Text
+						);
+				}
+			}
+			public class ValueSound
+			{
+				internal enum FlagData
+				{
+					CLEAR = 0x00000000,
+					NOTE = 0x00000001,
+					VOLUME = 0x00000002,
+					USERDATA = 0x00000004,
+				};
+
+				internal FlagData Flag;
+				internal uint DataSound;
+				internal byte SoundId
+				{
+					set
+					{
+						DataSound = (DataSound & 0xffffff00) | (((uint)value) & 0x000000ff);
+					}
+					get
+					{
+						return((byte)(DataSound & 0x000000ff));
+					}
+				}
+				internal byte NoteOn
+				{
+					set
+					{
+						DataSound = (DataSound & 0xffff00ff) | ((((uint)value) << 8) & 0x0000ff00);
+					}
+					get
+					{
+						return((byte)((DataSound & 0x0000ff00) >> 8));
+					}
+				}
+				internal byte Volume
+				{
+					set
+					{
+						DataSound = (DataSound & 0xff00ffff) | ((((uint)value) << 16) & 0x00ff0000);
+					}
+					get
+					{
+						return((byte)((DataSound & 0x00ff0000) >> 16));
+					}
+				}
+				internal byte LoopNum
+				{
+					set
+					{
+						DataSound = (DataSound & 0x00ffffff) | ((((uint)value) << 24) & 0x00ffffff);
+					}
+					get
+					{
+						return((byte)((DataSound & 0xff000000) >> 24));
+					}
+				}
+				internal uint UserData;
+
+				internal ValueSound()
+				{
+				}
+				internal ValueSound(ValueSound Value)
+				{
+					Flag = Value.Flag;
+					DataSound = Value.DataSound;
+					UserData = Value.UserData;
+				}
+				internal ValueSound Clone()
+				{
+					ValueSound Value = new ValueSound(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					return(	"Flags: " + Flag
+							+ ", SoundId: " + SoundId.ToString()
+							+ ", NoteOn: " + NoteOn.ToString()
+							+ ", Volume: " + Volume.ToString()
+							+ ", LoopNum: " + LoopNum.ToString()
+							+ ", UserData: " + UserData.ToString()
+						);
+				}
+			}
+
+			public class DataBool : DataBase<bool> {}
+			public class DataInt : DataBase<int> {}
+			public class DataFloat : DataBase<float> {}
+			public class DataPoint : DataBase<ValuePoint> {}
+			public class DataColor : DataBase<ValueColor> {}
+			public class DataQuadrilateral : DataBase<ValueQuadrilateral> {}
+			public class DataCell : DataBase<ValueCell> {}
+			public class DataUser : DataBase<ValueUser> {}
+			public class DataParette : DataBase<ValuePalette> {}
+			public class DataSound : DataBase<ValueSound> {}
+
+			public static _Type DataGetIndex<_Type>(_Type[] TableKeyData, int Index)
+				where _Type : InterfaceData
+			{
+				if(null == TableKeyData)
+				{
+					return(default(_Type));
+				}
+				if((0 > Index) || (TableKeyData.Length <= Index))
+				{
+					return(default(_Type));
+				}
+				return(TableKeyData[Index]);
+			}
+			public static int DataIndexGetFrame<_Type>(_Type[] TableKeyData, int FrameNo, FlagDirection Direction, int IndexTop)
+				where _Type : InterfaceData
+			{
+				_Type KeyDataNow = default(_Type);
+				int IndexPast = -1;
+				int IndexFuture = -1;
+				if((0 < TableKeyData.Length) && (-1 < IndexTop))
+				{
+					int Count = TableKeyData.Length;
+					for(int i=IndexTop; i<Count; i++)
+					{
+						KeyDataNow = TableKeyData[i];
+						if(FrameNo == KeyDataNow.Time)
+						{
+							if(0 != (Direction & FlagDirection.JUSTNOW))
+							{
+								return(i);
+							}
+						}
+						else
+						{
+							if(FrameNo < KeyDataNow.Time)
+							{
+								IndexFuture = i;
+								break;
+							}
+							IndexPast = i;
+							IndexFuture = -1;
+						}
+					}
+					if(0 != (Direction & FlagDirection.PAST))
+					{
+						if(0 == (Direction & FlagDirection.FUTURE))
+						{
+							return(IndexPast);
+						}
+					}
+					if(0 != (Direction & FlagDirection.FUTURE))
+					{
+						if(0 != (Direction & FlagDirection.PAST))
+						{
+							if(0 <= IndexPast)
+							{
+								if(0 <= IndexFuture)
+								{
+									KeyDataNow = TableKeyData[IndexPast];
+									int TimePast = KeyDataNow.Time;
+									KeyDataNow = TableKeyData[IndexFuture];
+									int TimeFuture = KeyDataNow.Time;
+									return(((TimePast - FrameNo) <= (TimeFuture - FrameNo)) ? IndexPast : IndexFuture);
+								}
+								else
+								{
+									return(IndexPast);
+								}
+							}
+							else
+							{
+								return(IndexFuture);
+							}
+						}
+						else
+						{
+							return(IndexFuture);
+						}
+					}
+				}
+				return(-1);
+			}
 		}
 
-		public static bool ObjectCheckOverwrite(out Object ObjectExsting, string NameAsset)
+		internal static class Interpolation
 		{
-			ObjectExsting = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(GameObject));
-			if(null != ObjectExsting)
+			internal static float Linear(float Start, float End, float Point)
 			{
-				if(false == EditorUtility.DisplayDialog(	"The asset already exists.\n" + NameAsset,
-															"Do you want to overwrite?",
-															"Yes",
-															"No"
-														)
-					)
-				{
-					return(false);
-				}
+				return(((End - Start) * Point) + Start);
 			}
 
-			return(true);
-		}
+			internal static float Hermite(float Start, float SpeedStart, float End, float SpeedEnd, float Point)
+			{
+				float PointPow2 = Point * Point;
+				float PointPow3 = PointPow2 * Point;
+				return(	(((2.0f * PointPow3) - (3.0f * PointPow2) + 1.0f) * Start)
+						+ (((3.0f * PointPow2) - (2.0f * PointPow3)) * End)
+						+ ((PointPow3 - (2.0f * PointPow2) + Point) * (SpeedStart - Start))
+						+ ((PointPow3 - PointPow2) * (SpeedEnd - End))
+					);
+			}
 
-		public static void GameObjectSetActive(GameObject InstanceGameObject, bool FlagSwitch)
-		{
-			InstanceGameObject.active = FlagSwitch;
+			internal static float Bezier(ref Vector2 Start, ref Vector2 VectorStart, ref Vector2 End, ref Vector2 VectorEnd, float Point)
+			{
+				float PointNow = Linear(Start.x, End.x, Point);
+				float PointTemp;
+
+				float AreaNow = 0.5f;
+				float RangeNow = 0.5f;
+
+				float Base;
+				float BasePow2;
+				float BasePow3;
+				float AreaNowPow2;
+				for(int i=0; i<8; i++)
+				{
+					Base = 1.0f - AreaNow;
+					BasePow2 = Base * Base;
+					BasePow3 = BasePow2 * Base;
+					AreaNowPow2 = AreaNow * AreaNow;
+					PointTemp = (BasePow3 * Start.x)
+								+ (3.0f * BasePow2 * AreaNow * (VectorStart.x + Start.x))
+								+ (3.0f * Base * AreaNowPow2 * (VectorEnd.x + End.x))
+								+ (AreaNow * AreaNowPow2 * End.x);
+					RangeNow *= 0.5f;
+					AreaNow += ((PointTemp > PointNow) ? (-RangeNow) : (RangeNow));
+				}
+
+				AreaNowPow2 = AreaNow * AreaNow;
+				Base = 1.0f - AreaNow;
+				BasePow2 = Base * Base;
+				BasePow3 = BasePow2 * Base;
+				return(	(BasePow3 * Start.y)
+						+ (3.0f * BasePow2 * AreaNow * (VectorStart.y + Start.y))
+						+ (3.0f * Base * AreaNowPow2 * (VectorEnd.y + End.y))
+						+ (AreaNow * AreaNowPow2 * End.y)
+					);
+			}
+
+			internal static float Accelerate(float Start, float End, float Point)
+			{
+				return(((End - Start) * (Point * Point)) + Start);
+			}
+
+			internal static float Decelerate(float Start, float End, float Point)
+			{
+				float PointInverse = 1.0f - Point;
+				float Rate = 1.0f - (PointInverse * PointInverse);
+				return(((End - Start) * Rate) + Start);
+			}
+
+			internal static float Interpolate<_Type>(	KeyFrame.DataCurve Curve,
+													int TimeNow,
+													_Type ValueStart,
+													_Type ValueEnd,
+													int TimeStart,
+													int TimeEnd)
+			{
+				if(TimeEnd <= TimeStart)
+				{
+					return(Convert.ToSingle(ValueEnd));
+				}
+				float TimeNormalize = ((float)(TimeNow - TimeStart)) / ((float)(TimeEnd - TimeStart));
+				TimeNormalize = Mathf.Clamp01(TimeNormalize);
+
+				switch(Curve.Kind)
+				{
+					case KindInterpolation.NON:
+						return(Convert.ToSingle(ValueStart));
+
+					case KindInterpolation.LINEAR:
+						return(Interpolation.Linear(Convert.ToSingle(ValueStart), Convert.ToSingle(ValueEnd), TimeNormalize));
+
+					case KindInterpolation.HERMITE:
+						return(Interpolation.Hermite(Convert.ToSingle(ValueStart), Curve.ValueStart, Convert.ToSingle(ValueEnd), Curve.ValueEnd, TimeNormalize));
+
+					case KindInterpolation.BEZIER:
+						{
+							Vector2 Start = new Vector2((float)TimeStart, Convert.ToSingle(ValueStart));
+							Vector2 VectorStart = new Vector2(Curve.TimeStart, Curve.ValueStart);
+							Vector2 End = new Vector2((float)TimeEnd, Convert.ToSingle(ValueEnd));
+							Vector2 VectorEnd = new Vector2(Curve.TimeEnd, Curve.ValueEnd);
+							return(Interpolation.Bezier(ref Start, ref VectorStart, ref End, ref VectorEnd, TimeNormalize));
+						}
+
+					case KindInterpolation.ACCELERATE:
+						return(Interpolation.Accelerate(Convert.ToSingle(ValueStart), Convert.ToSingle(ValueEnd), TimeNormalize));
+
+					case KindInterpolation.DECELERATE:
+						return(Interpolation.Decelerate(Convert.ToSingle(ValueStart), Convert.ToSingle(ValueEnd), TimeNormalize));
+
+					default:
+						break;
+				}
+				return(Convert.ToSingle(ValueStart));
+			}
 		}
 	}
 
-	public static partial class XMLUtility
+	/* Utilities Parsing XML */
+	internal static partial class XMLUtility
 	{
-		public static bool ValueGetBool<_Type>(_Type Source)
+		internal static bool ValueGetBool<_Type>(_Type Source)
 		{
 			return((0 != ValueGetInt(Source)) ? true : false);
 		}
 
-		public static byte ValueGetByte<_Type>(_Type Source)
+		internal static byte ValueGetByte<_Type>(_Type Source)
 		{
 			return(System.Convert.ToByte(Source));
 		}
 
-		public static int ValueGetInt<_Type>(_Type Source)
+		internal static int ValueGetInt<_Type>(_Type Source)
 		{
 			return(System.Convert.ToInt32(Source));
 		}
 
-		public static uint ValueGetUInt<_Type>(_Type Source)
+		internal static uint ValueGetUInt<_Type>(_Type Source)
 		{
 			return(System.Convert.ToUInt32(Source));
 		}
 
-		public static float ValueGetFloat<_Type>(_Type Source)
+		internal static float ValueGetFloat<_Type>(_Type Source)
 		{
 			return(System.Convert.ToSingle(Source));
 		}
 
-		public static double ValueGetDouble<_Type>(_Type Source)
+		internal static double ValueGetDouble<_Type>(_Type Source)
 		{
 			return(System.Convert.ToDouble(Source));
 		}
 
-		public static bool TextToBool(string Text)
+		internal static bool TextToBool(string Text)
 		{
 			bool ret = false;
 			try {
@@ -2767,33 +5008,33 @@ public static partial class LibraryEditor_SpriteStudio
 			return(ret);
 		}
 
-		public static int TextHexToInt(string Text)
+		internal static int TextHexToInt(string Text)
 		{
 			return(System.Convert.ToInt32(Text, 16));
 		}
 
-		public static uint TextHexToUInt(string Text)
+		internal static uint TextHexToUInt(string Text)
 		{
 			return(System.Convert.ToUInt32(Text, 16));
 		}
 
-		public static XmlNode XML_SelectSingleNode(XmlNode Node, string NamePath, XmlNamespaceManager Manager)
+		internal static XmlNode XML_SelectSingleNode(XmlNode Node, string NamePath, XmlNamespaceManager Manager)
 		{
 			return(Node.SelectSingleNode(NamePath, Manager));
 		}
 
-		public static string TextGetSelectSingleNode(XmlNode Node, string NamePath, XmlNamespaceManager Manager)
+		internal static string TextGetSelectSingleNode(XmlNode Node, string NamePath, XmlNamespaceManager Manager)
 		{
 			XmlNode NodeNow = XML_SelectSingleNode(Node, NamePath, Manager);
 			return((null != NodeNow) ? NodeNow.InnerText : null);
 		}
 
-		public static XmlNodeList XML_SelectNodes(XmlNode Node, string NamePath, XmlNamespaceManager Manager)
+		internal static XmlNodeList XML_SelectNodes(XmlNode Node, string NamePath, XmlNamespaceManager Manager)
 		{
 			return(Node.SelectNodes(NamePath, Manager));
 		}
 
-		public static int VersionGetHexCode(string Text)
+		internal static int VersionGetHexCode(string Text)
 		{
 			string[] Item = Text.Split('.');
 			if (3 != Item.Length)
@@ -2807,7 +5048,7 @@ public static partial class LibraryEditor_SpriteStudio
 			return((VersionMajor << 16) | (VersionMinor << 8) | Revision);
 		}
 
-		public static string VersionGetString(int VersionCode)
+		internal static string VersionGetString(int VersionCode)
 		{
 			int VersionMajor = (VersionCode >> 16) & 0xff;
 			if (0 == VersionMajor)
@@ -2820,3 +5061,4 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 	}
 }
+

@@ -1,7 +1,7 @@
 //
 //	SpriteStudio5 Player for Unity
 //
-//	Copyright(C) 2003-2013 Web Technology Corp.
+//	Copyright(C) 2003-2014 Web Technology Corp.
 //	All rights reserved.
 //
 float4	_OverlayParameter_Non;

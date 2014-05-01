@@ -1,7 +1,7 @@
 /**
 	SpriteStudio5 Player for Unity
 
-	Copyright(C) 2003-2013 Web Technology Corp. 
+	Copyright(C) 2003-2014 Web Technology Corp. 
 	All rights reserved.
 */
 using UnityEngine;
@@ -11,47 +11,29 @@ using System.Collections;
 [ExecuteInEditMode]
 public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 {
-	public Library_SpriteStudio.SpriteData SpriteStudioData;
+	public Library_SpriteStudio.AnimationData SpriteStudioData;
+	public Script_SpriteStudio_PartsRoot ScriptRoot;
 
 	void Start()
 	{
-		AppendExecStart();
 	}
 
 	void Update()
 	{
-		AppendExecUpdate();
+		/* Update User-CallBack */
+		SpriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
+
+		/* Set Matrix for Transform (to the GameObject) */
+		/* MEMO: Return-Value is ignored, 'cause NULL-Node has no Meshes. */
+		SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow);
 	}
 
 	void LateUpdate()
 	{
-		AppendExecLateUpdate();
 	}
 
 	public void BootUpForce()
 	{
-		SpriteStudioData = new Library_SpriteStudio.SpriteData();
-		SpriteStudioData.BootUp();
+		SpriteStudioData = new Library_SpriteStudio.AnimationData();
 	}
-
-	protected void AppendExecStart()
-	{
-		SpriteStudioData.BootUp();
-		SpriteStudioData.PartsSetParent(Library_SpriteStudio.Utility.SpriteStudioDataGetParent(gameObject));
-		SpriteStudioData.PartsSetRoot(Library_SpriteStudio.Utility.SpriteStudioDataGetRoot(gameObject));
-	}
-
-	protected void AppendExecUpdate()
-	{
-		if(null != SpriteStudioData)
-		{
-			SpriteStudioData.AnimationUpdate(gameObject);
-			SpriteStudioData.AnimationFixTransform(transform);
-		}
-	}
-
-	protected void AppendExecLateUpdate()
-	{
-	}
-
 }

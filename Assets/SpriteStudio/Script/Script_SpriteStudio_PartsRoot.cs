@@ -1,7 +1,7 @@
 /**
 	SpriteStudio5 Player for Unity
 
-	Copyright(C) 2003-2013 Web Technology Corp. 
+	Copyright(C) 2003-2014 Web Technology Corp. 
 	All rights reserved.
 */
 using UnityEngine;
@@ -36,7 +36,19 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		4000,	// OVERLAY
 		5000,	// (TERMINATOR)
 	};
+	public enum BitStatus
+	{
+		PLAYING = 0x800000,
+		PAUSING = 0x400000,
+		REQUEST_PLAYEND = 0x200000,
 
+		DECODE_USERDATA = 0x080000,
+
+		CLEAR = 0x000000,
+	};
+	public BitStatus Status;
+
+	/* Drawing-Mesh-Information for Simplified-SpriteDrawManager */
 	public class InformationMeshData
 	{
 		public InformationMeshData ChainNext = null;
@@ -44,6 +56,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		public Mesh DataMesh = null;
 		public Transform DataTransform = null;
 	}
+	/* Drawing-Mesh-Chain Class for Simplified-SpriteDrawManager */
 	private class ListMeshDraw
 	{
 		public int MaterialNo = -1;
@@ -160,15 +173,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			Count += ListNext.Count;
 		}
 	}
+
 	private class ParameterCallBackUserData
 	{
 		public string PartsName = null;
-		public Library_SpriteStudio.SpriteData AnimationDataParts = null;
+		public Library_SpriteStudio.AnimationData AnimationDataParts = null;
 		public int FrameNo = -1;
 		public Library_SpriteStudio.KeyFrame.ValueUser Data = null;
 	}
 
-	public Library_SpriteStudio.SpriteData SpriteStudioData;
+	public Library_SpriteStudio.AnimationData SpriteStudioData;
 	public Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay;
 	public float RateTimeAnimation;
 
@@ -182,13 +196,11 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		set
 		{
-			if((value != animationNo) && (value < ListInformationPlay.Length))
+			if((value != animationNo) && ((value < ListInformationPlay.Length) && ((0 <= ListInformationPlay.Length))))
 			{
 				AnimationStop();
-				SpriteStudioData.Status |= (Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYRANGENO
-											| Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO
-											);
-				animationNo = value;
+				FrameNoInitial = 0;
+				AnimationPlay(value, CountLoopRemain, 0, 0.0f);
 			}
 		}
 		get
@@ -203,12 +215,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		set
 		{
-			if(value != frameNoInitial)
-			{
-				SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO;
+			if((0 <= value) && ((frameNoEnd - frameNoStart) > value))
+			{	/* Valid */
+				frameNoInitial = value;
+				TimeAnimation = value * TimeFramePerSecond;
 			}
-			frameNoInitial = value;
-			TimeAnimation = (ListInformationPlay[animationNo].FrameStart + frameNoInitial) * TimeFramePerSecond;
+			else
+			{	/* Invalid */
+				frameNoInitial = 0;
+				TimeAnimation = 0.0f;
+			}
 		}
 		get
 		{
@@ -240,6 +256,15 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return(frameNoNow);
 		}
 	}
+	protected int frameNoPrevious = -1;
+	public int FrameNoPrevious
+	{
+		get
+		{
+			return(frameNoPrevious);
+		}
+	}
+
 	protected int framePerSecond;
 	public int FramePerSecond
 	{
@@ -287,10 +312,19 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public KindDrawQueue KindRenderQueueBase;
 	public int OffsetDrawQueue;
 	public float RateDrawQueueEffectZ;
-
+	
 	private Camera InstanceCameraDraw;
 	public Material[] TableMaterial;
 	private ArrayList TableListMesh;
+
+	void Awake()
+	{
+		var root = gameObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+		foreach (var MaterialNow in root.TableMaterial)
+		{
+			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
+		}
+	}
 
 	void Start()
 	{
@@ -357,17 +391,21 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	//! Start playing the animation
 	/*!
 	@param	No
-		Animation's Index
+		Animation's Index<br>
+		-1 == Now-Setting Index is not changed
 	@param	CountLoop
 		Number of looping <br>
 		0 == Not looping <br>
 		-1 == Infinity <br>
 	@param	StartFrameNo
 		Offset frame-number of starting Play in animation (0 origins). <br>
-		default: 0（Top frame in animation）
-	@param	RateFPS
-		Coefficient of time-passage of animation (When 0.0 or less is given, the now-setting is not changed) <br>
-		default: -1.0f (Setting is not changed)
+		-1 == use "FrameNoInitial" Value<br>
+		default: -1
+	@param	RateTime
+		Coefficient of time-passage of animation.<br>
+		Minus Value is given, Animation is played backwards.<br>
+		0.0f is given, the now-setting is not changed) <br>
+		default: 0.0f (Setting is not changed)
 	@retval	Return-Value
 		true == Success <br>
 		false == Failure (Error)
@@ -378,46 +416,54 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	Give "0" to "No" when the animation included in (imported "ssae") data is one. <br>
 	When the Animation's Index not existing is given, this function returns false. <br>
 	<br>
-	The update speed of animation quickens when you give a value that is bigger than 1.0f to "RateFPS".
+	The update speed of animation quickens when you give a value that is bigger than 1.0f to "RateTime".
 	*/
-	public bool AnimationPlay(int No, int CountLoop, int StartFrameNo=0, float RateTime=-1.0f)
+	public bool AnimationPlay(int No, int CountLoop, int StartFrameNo=-1, float RateTime=0.0f)
 	{
-		if((0 > No) || (ListInformationPlay.Length <= No))
+		/* Error-Check */
+		if(-1 != No)
+		{
+			animationNo = No;	/* Don't Use "AnimationNo" (occur "Stack-Overflow") */
+		}
+		if((0 > animationNo) || (ListInformationPlay.Length <= animationNo))
 		{
 			return(false);
 		}
-		if((0 > StartFrameNo) || ((ListInformationPlay[No].FrameEnd - ListInformationPlay[No].FrameStart) < StartFrameNo))
-		{
-			return(false);
-		}
 
-		CountLoopRemain = CountLoop;
+		/* Set Playing-Datas */
+		Status &= ~(BitStatus.PAUSING | BitStatus.REQUEST_PLAYEND);
+		Status |= BitStatus.PLAYING;
+		Status |= BitStatus.DECODE_USERDATA;
 
-		SpriteStudioData.Status &= ~(Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING
-									| Library_SpriteStudio.AnimationDataRuntime.BitStatus.MASK_RESET
-									);
-		AnimationNo = No;
-		SpriteStudioData.Status |= (Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYRANGENO
-									| Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO
-									| Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING
-									);
+		/* Set Animation Information */
+		frameNoStart = ListInformationPlay[animationNo].FrameStart;
+		frameNoEnd = ListInformationPlay[animationNo].FrameEnd;
+		framePerSecond = ListInformationPlay[animationNo].FramePerSecond;
 
-		frameNoStart = ListInformationPlay[AnimationNo].FrameStart;
-		frameNoEnd = ListInformationPlay[AnimationNo].FrameEnd;
-		framePerSecond = ListInformationPlay[AnimationNo].FramePerSecond;
-		frameNoNow = frameNoStart + StartFrameNo;	/* Set Status */
-		RateTimeAnimation = (0.0f <= RateTime) ? RateTime : RateTimeAnimation;
-		TimeAnimation = frameNoNow * TimeFramePerSecond;
-
-		if(0 != CountLoopRemain)
-		{
-			SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.LOOP;
+		int CountFrame = (frameNoEnd - frameNoStart) + 1;
+		if(-1 == StartFrameNo)
+		{	/* Use "FrameNoInitial" */
+			StartFrameNo = ((0 <= FrameNoInitial) && (CountFrame > FrameNoInitial)) ? FrameNoInitial : 0;
 		}
 		else
-		{
-			SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.LOOP;
+		{	/* Direct-Frame */
+			StartFrameNo = ((0 <= StartFrameNo) && (CountFrame > StartFrameNo)) ? StartFrameNo : 0;
+		}
+		frameNoNow = frameNoStart + StartFrameNo;	/* Set Status */
+		frameNoPrevious = -1;
+		RateTimeAnimation = (0.0f == RateTime) ? RateTime : RateTimeAnimation;
+		TimeAnimation = StartFrameNo * TimeFramePerSecond;
+
+		if((-1 == CountLoop) || (0 < CountLoop))
+		{	/* Value-Valid (-1 == Infinite-Loop) */
+			CountLoopRemain = CountLoop;
+		}
+		else
+		{	/* Play-once or Value-Invalid */
+			CountLoopRemain = 0;
 		}
 
+		/* UserData-CallBack Buffer Create */
 		if(null == ListCallBackUserData)
 		{
 			ListCallBackUserData = new ArrayList();
@@ -439,7 +485,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	*/
 	public void AnimationStop()
 	{
-		SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING;
+		Status &= ~BitStatus.PLAYING;
 	}
 
 	/* ******************************************************** */
@@ -459,11 +505,11 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		if(true == FlagSwitch)
 		{
-			SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING;
+			Status |= BitStatus.PAUSING;
 		}
 		else
 		{
-			SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING;
+			Status &= ~BitStatus.PAUSING;
 		}
 
 		return(true);
@@ -482,7 +528,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	*/
 	public bool AnimationCheckPlay()
 	{
-		return((0 != (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING)) ? true : false);
+		return((0 != (Status & BitStatus.PLAYING)) ? true : false);
 	}
 
 	/* ******************************************************** */
@@ -498,7 +544,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	*/
 	public bool AnimationCheckPause()
 	{
-		return(((true == AnimationCheckPlay()) && (0 != (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING))) ? true : false);
+		return(((true == AnimationCheckPlay()) && (0 != (Status & BitStatus.PAUSING))) ? true : false);
 	}
 
 	/* ******************************************************** */
@@ -514,9 +560,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	*/
 	public void BootUpForce()
 	{
-		SpriteStudioData = new Library_SpriteStudio.SpriteData();
-		SpriteStudioData.BootUp();
-
+		SpriteStudioData = new Library_SpriteStudio.AnimationData();
 		RateTimeAnimation = 1.0f;
 	}
 
@@ -554,7 +598,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	Don't use this function. <br>
 	(This function is for the animation-parts' scripts.)
 	*/
-	public void MeshAdd(int TextureNo, Library_SpriteStudio.KindColorOperation Operation, ref InformationMeshData DataMeshInformation)
+	public void MeshAdd(int TextureNo, Library_SpriteStudio.KindColorOperation Operation, InformationMeshData DataMeshInformation)
 	{
 		if(0 > TextureNo)
 		{
@@ -692,6 +736,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Name of animation-part
 	@param	AnimationDataParts
 		control data for animation-part
+	@param	FrameNoData
+		Frame-No, "User-Data" is arranged
 	@param	Data
 		Instance "User-Data"
 	@retval	Return-Value
@@ -700,7 +746,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	Don't use this function. <br>
 	(This function is for the animation-parts' scripts.)
 	*/
-	public void CallBackExecUserData(string PartsName, Library_SpriteStudio.SpriteData AnimationDataParts, Library_SpriteStudio.KeyFrame.DataUser Data)
+	public void CallBackExecUserData(string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int FrameNoData, Library_SpriteStudio.KeyFrame.ValueUser Data)
 	{
 		if(null == ListCallBackUserData)
 		{
@@ -711,17 +757,17 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		ParameterCallBackUserData Parameter = new ParameterCallBackUserData();
 		Parameter.PartsName = string.Copy(PartsName);
 		Parameter.AnimationDataParts = AnimationDataParts;
-		Parameter.FrameNo = Data.Time;
-		Parameter.Data = Data.Value;
+		Parameter.FrameNo = FrameNoData;
+		Parameter.Data = Data;
 		ListCallBackUserData.Add(Parameter);
 	}
 
 	protected void AppendExecStart()
 	{
 
-		SpriteStudioData.BootUp();
-		SpriteStudioData.PartsSetParent(null);
-		SpriteStudioData.PartsSetRoot(this);
+//		SpriteStudioData.BootUp();
+//		SpriteStudioData.PartsSetParent(null);
+//		SpriteStudioData.PartsSetRoot(this);
 		CameraGetRendering();
 
 		ListCallBackUserData = new ArrayList();
@@ -757,72 +803,116 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		{
 			if(null != ListInformationPlay)
 			{
-				if(0 != (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING))
+				if(0 != (Status & BitStatus.PLAYING))
 				{
-					if(0 == (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.PAUSING))
+					if(0 == (Status & BitStatus.PAUSING))
 					{
-						TimeAnimation += (Time.deltaTime * RateTimeAnimation);
-						frameNoNow = (int)(TimeAnimation / TimeFramePerSecond);
+						/* Get Frame Count */
+						if(-1 != frameNoPrevious)
+						{	/* Not Update, Just Starting */
+							TimeAnimation += (Time.deltaTime * RateTimeAnimation);
+							Status &= ~BitStatus.DECODE_USERDATA;
+						}
+						int FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+						int FrameCountEnd = frameNoEnd - frameNoStart;
 
-						if(frameNoNow > frameNoEnd)
-						{
-							SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.FRAMEOVER;
+						if(0.0f <= RateTimeAnimation)
+						{	/* Play normaly */
 
-							if(0 <= CountLoopRemain)
-							{
-								CountLoopRemain--;
-								if(0 > CountLoopRemain)
-								{
-									SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.LOOP;
+							if(FrameCountEnd < FrameCountNow)
+							{	/* Frame-Over */
+								/* Loop-Count Check */
+								bool FlagLoop = true;
+								if(0 <= CountLoopRemain)
+								{	/* Limited-Count Loop */
+									CountLoopRemain--;
+									if(0 > CountLoopRemain)
+									{
+										FlagLoop = false;
+									}
+								}
+
+								/* ReCalculate Frame */
+								if(true == FlagLoop)
+								{	/* Loop */
+									int FrameCountFull = FrameCountEnd + 1;
+									TimeAnimation -= ((float)FrameCountFull * TimeFramePerSecond);
+									FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+								}
+								else
+								{	/* End */
+									TimeAnimation = ((float)FrameCountEnd) * TimeFramePerSecond;
+									FrameCountNow = FrameCountEnd;
+									Status |= BitStatus.REQUEST_PLAYEND;
 								}
 							}
 
-							if(0 != (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.LOOP))
+							/* Frame-No Set */
+							int FrameNoNew = frameNoStart + FrameCountNow;
+							if(FrameNoNew != frameNoNow)
 							{
-								int PlayLength = (frameNoEnd - frameNoStart) + 1;
-								TimeAnimation -= ((float)PlayLength * TimeFramePerSecond);
-								frameNoNow -= PlayLength;
-
-								SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO;
+								Status |= BitStatus.DECODE_USERDATA;
 							}
-							else
-							{
-								TimeAnimation = ((float)frameNoEnd) * TimeFramePerSecond;
-								frameNoNow = frameNoEnd;
-
-								if(0 == (SpriteStudioData.Status & (Library_SpriteStudio.AnimationDataRuntime.BitStatus.CALLFUNCTION_PLAYEND | Library_SpriteStudio.AnimationDataRuntime.BitStatus.ENDFUNCTION_PLAYEND)))
-								{
-									SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.CALLFUNCTION_PLAYEND;
-									SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.ENDFUNCTION_PLAYEND;
-								}
-							}
+							frameNoPrevious = frameNoNow;
+							frameNoNow = FrameNoNew;
 						}
 						else
-						{
-							SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.FRAMEOVER;
+						{	/* Play backwards */
+							if(0 > FrameCountNow)
+							{	/* Frame-Over */
+								/* Loop-Count Check */
+								bool FlagLoop = true;
+								if(0 <= CountLoopRemain)
+								{	/* Limited-Count Loop */
+									CountLoopRemain--;
+									if(0 > CountLoopRemain)
+									{
+										FlagLoop = false;
+									}
+								}
+
+								/* ReCalculate Frame */
+								if(true == FlagLoop)
+								{	/* Loop */
+									int FrameCountFull = FrameCountEnd + 1;
+									TimeAnimation += ((float)FrameCountFull * TimeFramePerSecond);
+									FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+								}
+								else
+								{	/* End */
+									TimeAnimation = 0.0f;
+									FrameCountNow = 0;
+									Status |= BitStatus.REQUEST_PLAYEND;
+								}
+							}
+
+							/* Frame-No Set */
+							int FrameNoNew = frameNoStart + FrameCountNow;
+							if(FrameNoNew != frameNoNow)
+							{
+								Status |= BitStatus.DECODE_USERDATA;
+							}
+							frameNoPrevious = frameNoNow;
+							frameNoNow = FrameNoNew;
 						}
+
+						/* Update User-CallBack */
+						SpriteStudioData.UpdateUserData(frameNoNow, gameObject, this);
+
+						/* Update GameObject */
+						SpriteStudioData.UpdateGameObject(gameObject, frameNoNow);
 					}
 				}
-
-				SpriteStudioData.AnimationUpdate(gameObject);
-				SpriteStudioData.AnimationFixTransform(transform);
 			}
 		}
 	}
 
 	protected void AppendExecLateUpdate()
 	{
+		/* Execute Simplified-SpriteDrawManager */
 		int Count = 0;
 		MeshFilter InstanceMeshFilter = GetComponent<MeshFilter>();
 		MeshRenderer InstanceMeshRenderer = GetComponent<MeshRenderer>();
-
-		if(0 != (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.PLAYING))
-		{
-			SpriteStudioData.Status &= ~(	Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYRANGENO
-											| Library_SpriteStudio.AnimationDataRuntime.BitStatus.REFRESH_PLAYFRAMENO
-										);
-		}
-
 		if(null != TableListMesh)
 		{
 			ListMeshDraw ListMesh = null;
@@ -927,6 +1017,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			TableListMesh.Clear();
 		}
 
+		/* Excute "UserData CallBack" */
 		if((null != ListCallBackUserData) && (null != functionUserData))
 		{
 			Count = ListCallBackUserData.Count;
@@ -947,17 +1038,20 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			ListCallBackUserData.Clear();
 		}
 
-		if((null != functionPlayEnd) && (0 != (SpriteStudioData.Status & Library_SpriteStudio.AnimationDataRuntime.BitStatus.CALLFUNCTION_PLAYEND)))
+		/* Excute "Play-End CallBack" */
+		if(0 != (Status & BitStatus.REQUEST_PLAYEND))
 		{
-			SpriteStudioData.Status &= ~Library_SpriteStudio.AnimationDataRuntime.BitStatus.CALLFUNCTION_PLAYEND;
-			SpriteStudioData.Status |= Library_SpriteStudio.AnimationDataRuntime.BitStatus.ENDFUNCTION_PLAYEND;
-			if(false == (functionPlayEnd(transform.parent.gameObject)))
+			Status = BitStatus.CLEAR;
+			if(null != functionPlayEnd)
 			{
-				InstanceMeshFilter.sharedMesh.Clear();
-				Object.DestroyImmediate(InstanceMeshFilter.sharedMesh);
-				InstanceMeshFilter.sharedMesh = null;
+				if(false == (functionPlayEnd(transform.parent.gameObject)))
+				{
+					InstanceMeshFilter.sharedMesh.Clear();
+					Object.DestroyImmediate(InstanceMeshFilter.sharedMesh);
+					InstanceMeshFilter.sharedMesh = null;
 
-				Destroy(transform.parent.gameObject);
+					Destroy(transform.parent.gameObject);
+				}
 			}
 		}
 	}

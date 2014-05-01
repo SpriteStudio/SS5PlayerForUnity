@@ -1,7 +1,7 @@
 /**
 	SpriteStudio5 Player for Unity
 
-	Copyright(C) 2003-2013 Web Technology Corp. 
+	Copyright(C) 2003-2014 Web Technology Corp. 
 	All rights reserved.
 */
 using UnityEngine;
@@ -127,11 +127,7 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 
 			EditorGUILayout.Space();
 			Data.RateTimeAnimation = EditorGUILayout.FloatField("Rate Time-Progress", Data.RateTimeAnimation);
-			EditorGUILayout.LabelField("(Don't set Negative-Value)");
-			if(0.0f > Data.RateTimeAnimation)
-			{
-				Data.RateTimeAnimation = 1.0f;
-			}
+			EditorGUILayout.LabelField("(set Negative-Value, Play Backwards.)");
 
 			EditorGUILayout.Space();
 			Data.CountLoopRemain = EditorGUILayout.IntField("Loop Count", Data.CountLoopRemain);

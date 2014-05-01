@@ -9,7 +9,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 400000}
   - 20: {fileID: 2000000}
-  m_Layer: 0
+  m_Layer: 1
   m_Name: Camera2D Pixel (1080p)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24,7 +24,7 @@ GameObject:
   serializedVersion: 3
   m_Component:
   - 4: {fileID: 400002}
-  m_Layer: 0
+  m_Layer: 1
   m_Name: View
   m_TagString: Untagged
   m_Icon: {fileID: 0}
