@@ -12,6 +12,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	public float CollisionThicknessZ = 1.0f;
 	public bool FlagAttachRigidBody = true;
 	public bool FlagAttachControlGameObject = true;
+	public bool FlagConfirmOverWrite = true;
 
 	[MenuItem("Custom/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
@@ -28,8 +29,13 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		EditorGUILayout.LabelField(" to Collider");
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
-		FlagAttachControlGameObject = EditorGUILayout.Toggle("Attach GameObject", FlagAttachControlGameObject);
-		EditorGUILayout.LabelField(" (GameObject is attached to \"Root-Node\"'s parent)");
+		FlagAttachControlGameObject = EditorGUILayout.Toggle("Create Control-Prefab", FlagAttachControlGameObject);
+		EditorGUILayout.LabelField(" Control-Prefab is GameObject attached the script");
+		EditorGUILayout.LabelField("    for \"Auto-Developping Body-Data-Prefab (Script_LinkPrefab.cs)\".");
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		FlagConfirmOverWrite = EditorGUILayout.Toggle("Confirm Overwrite-Prefab", FlagConfirmOverWrite);
+		EditorGUILayout.Space();
 		EditorGUILayout.Space();
 		if(true == GUILayout.Button("Import"))
 		{
@@ -38,6 +44,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			SettingImport.CollisionThicknessZ = CollisionThicknessZ;
 			SettingImport.FlagAttachRigidBody = FlagAttachRigidBody;
 			SettingImport.FlagAttachControlGameObject = FlagAttachControlGameObject;
+			SettingImport.FlagConfirmOverWrite = FlagConfirmOverWrite;
 			LibraryEditor_SpriteStudio.Menu.ImportSSPJ(SettingImport);
 
 			Close();

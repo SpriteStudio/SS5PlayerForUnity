@@ -32,6 +32,7 @@ public static partial class LibraryEditor_SpriteStudio
 		public float CollisionThicknessZ;
 		public bool FlagAttachRigidBody;
 		public bool FlagAttachControlGameObject;
+		public bool FlagConfirmOverWrite;
 	}
 	public static partial class Menu
 	{
@@ -1574,11 +1575,11 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 
 		/* Confirm Overwrite */
-		internal static bool ObjectCheckOverwrite(out UnityEngine.Object ObjectExisting, string NameAsset, Type TypeObject)
+		internal static bool ObjectCheckOverwrite(out UnityEngine.Object ObjectExisting, string NameAsset, Type TypeObject, bool FlagComfirmOverwrite)
 		{
 			ObjectExisting = AssetDatabase.LoadAssetAtPath(NameAsset, TypeObject);
-			if(null != ObjectExisting)
-			{	/* Existing */
+			if((null != ObjectExisting) && (true == FlagComfirmOverwrite))
+			{	/* Existing & Overwrite-Cheking */
 				if(false == EditorUtility.DisplayDialog(	"The asset already exists.\n" + NameAsset,
 															"Do you want to overwrite?",
 															"Yes",
@@ -1621,12 +1622,12 @@ public static partial class LibraryEditor_SpriteStudio
 				return(true);
 			}
 
-			internal static UnityEngine.Object Prefab(GameObject GameObjectInstanceTop, string Name, string NamePath)
+			internal static UnityEngine.Object Prefab(GameObject GameObjectInstanceTop, string Name, string NamePath, bool FlagComfirmOverwrite)
 			{
 				/* Check Existing */
 				UnityEngine.Object PrefabNow = null;
 				string NamePathAsset = NamePath + "/" + Name + ".prefab";
-				if(false == AssetUtility.ObjectCheckOverwrite(out PrefabNow, NamePathAsset, typeof(GameObject)))
+				if(false == AssetUtility.ObjectCheckOverwrite(out PrefabNow, NamePathAsset, typeof(GameObject), FlagComfirmOverwrite))
 				{	/* Exist & Cancel */
 					Debug.Log("SSAE-Create-Prefab: Not-Overwritten Prefab[" + NamePathAsset + "]");
 					return(PrefabNow);
@@ -1724,6 +1725,9 @@ public static partial class LibraryEditor_SpriteStudio
 						GameObjectNow.transform.parent = GameObjectParent.transform;
 					}
 					GameObjectNow.name = System.String.Copy(Name);
+					GameObjectNow.transform.localPosition = Vector3.zero;
+					GameObjectNow.transform.localEulerAngles = Vector3.zero;
+					GameObjectNow.transform.localScale = Vector3.one;
 				}
 				return(GameObjectNow);
 			}
@@ -1967,7 +1971,7 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Create Prefab */
-				UnityEngine.Object PrefabNow = AssetUtility.Create.Prefab(GameObjectRoot, Name, NamePath + "/" + NamePathSubImportPrefab);
+				UnityEngine.Object PrefabNow = AssetUtility.Create.Prefab(GameObjectRoot, Name, NamePath + "/" + NamePathSubImportPrefab, DataSettingImport.FlagConfirmOverWrite);
 				if(null == PrefabNow)
 				{
 					return(false);
@@ -2001,7 +2005,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 						/* Create Control Prefab */
 						/* MEMO: can't to be confirmed Overwrite */
-						PrefabNow = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath);
+						PrefabNow = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath, DataSettingImport.FlagConfirmOverWrite);
 						if(null == PrefabNow)
 						{
 							Debug.LogError("Miss-Creating[" + Name + "]");
