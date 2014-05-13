@@ -112,17 +112,22 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 			}
 			Data.AnimationNo = EditorGUILayout.IntPopup("Animation Name", Data.AnimationNo, NameAnimation, IndexAnimation);
 
-			Data.FrameNoInitial = EditorGUILayout.IntField("Start Offset Frame-No", Data.FrameNoInitial);
+			int FrameNoEnd = Data.ListInformationPlay[Data.AnimationNo].FrameEnd - Data.ListInformationPlay[Data.AnimationNo].FrameStart;
+			int FrameNoInitial = EditorGUILayout.IntField("Start Offset Frame-No", Data.FrameNoInitial);
+//			int FrameNoInitial = EditorGUILayout.IntSlider("Start Offset Frame-No", Data.FrameNoInitial, 0, FrameNoEnd);
 			EditorGUILayout.LabelField("(This-Value influences only at Initial)");
 			EditorGUILayout.LabelField("(Don't set Negative-Value or OverRun-Value)");
-			if(0 > Data.FrameNoInitial)
+			if(0 > FrameNoInitial)
 			{
-				Data.FrameNoInitial = 0;
+				FrameNoInitial = 0;
 			}
-			int FrameNoEnd = Data.ListInformationPlay[Data.AnimationNo].FrameEnd - Data.ListInformationPlay[Data.AnimationNo].FrameStart;
-			if(FrameNoEnd < Data.FrameNoInitial)
+			if(FrameNoEnd < FrameNoInitial)
 			{
-				Data.FrameNoInitial = FrameNoEnd;
+				FrameNoInitial = FrameNoEnd;
+			}
+			if(Data.FrameNoInitial != FrameNoInitial)
+			{
+				Data.FrameNoInitial = FrameNoInitial;
 			}
 
 			EditorGUILayout.Space();
