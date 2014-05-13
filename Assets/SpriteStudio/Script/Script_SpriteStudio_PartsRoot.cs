@@ -451,7 +451,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 		frameNoNow = frameNoStart + StartFrameNo;	/* Set Status */
 		frameNoPrevious = -1;
-		RateTimeAnimation = (0.0f == RateTime) ? RateTime : RateTimeAnimation;
+		RateTimeAnimation = (0.0f == RateTime) ? RateTimeAnimation : RateTime;
 		TimeAnimation = StartFrameNo * TimeFramePerSecond;
 
 		if((-1 == CountLoop) || (0 < CountLoop))
