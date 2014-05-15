@@ -248,7 +248,7 @@ public static class Library_SpriteStudio
 				for(int i=0; i<VertexColor.Length; i++)
 				{
 					VertexColor[i] = Color.white;
-					RatePixelAlpha[i] = 0.0f;
+					RatePixelAlpha[i] = 1.0f;
 				}
 			}
 		}
