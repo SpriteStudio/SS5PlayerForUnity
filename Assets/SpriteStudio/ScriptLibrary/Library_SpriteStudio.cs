@@ -114,6 +114,31 @@ public static class Library_SpriteStudio
 		new Vector3(0.0f, 0.0f, 1.0f)
 	};
 
+	private readonly static int[,] VertexCollrctionOrderVertex = new int[4, (int)VertexNo.TERMINATOR2]
+	{
+		{	/* Normal */
+			(int)VertexNo.LU,
+			(int)VertexNo.RU,
+			(int)VertexNo.RD,
+			(int)VertexNo.LD,
+		}, {	/* Flip-X */
+			(int)VertexNo.RU,
+			(int)VertexNo.LU,
+			(int)VertexNo.LD,
+			(int)VertexNo.RD,
+		}, {	/* Flip-Y */
+			(int)VertexNo.LD,
+			(int)VertexNo.RD,
+			(int)VertexNo.RU,
+			(int)VertexNo.LU,
+		}, {	/* FlipX&Y */
+			(int)VertexNo.RD,
+			(int)VertexNo.LD,
+			(int)VertexNo.LU,
+			(int)VertexNo.RU,
+		}
+	};
+
 	public static class Utility
 	{
 		public static int VertexNoSearchMappingUV(Mesh InstanceMesh, ref Vector2 MappingUV)
@@ -661,6 +686,7 @@ public static class Library_SpriteStudio
 			Vector2 RateScaleMesh = Vector2.one;
 			Vector2 PivotMesh = Vector2.zero;
 			Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
+			int	VertexCollectionIndexTableNo = 0;
 
 			/* Main-Texture Data Get */
 			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].TextureNo, KindBlendTarget);
@@ -685,8 +711,24 @@ public static class Library_SpriteStudio
 			{
 				RateScaleTexture.x = (true == AnimationDataFlags[FrameNo].IsTextureFlipX) ? -1.0f : 1.0f;
 				RateScaleTexture.y = (true == AnimationDataFlags[FrameNo].IsTextureFlipY) ? -1.0f : 1.0f;
-				RateScaleMesh.x = (true == AnimationDataFlags[FrameNo].IsFlipX) ? -1.0f : 1.0f;
-				RateScaleMesh.y = (true == AnimationDataFlags[FrameNo].IsFlipY) ? -1.0f : 1.0f;
+				if(true == AnimationDataFlags[FrameNo].IsFlipX)
+				{
+					RateScaleMesh.x = -1.0f;
+					VertexCollectionIndexTableNo += 1;
+				}
+				else
+				{
+					RateScaleMesh.x = 1.0f;
+				}
+				if(true == AnimationDataFlags[FrameNo].IsFlipY)
+				{
+					RateScaleMesh.y = -1.0f;
+					VertexCollectionIndexTableNo += 2;
+				}
+				else
+				{
+					RateScaleMesh.y = 1.0f;
+				}
 			}
 			if(0 < AnimationDataTextureScale.Length)
 			{
@@ -749,10 +791,8 @@ public static class Library_SpriteStudio
 			Vector3[] DataCoordinate = new Vector3[CountVertexData];
 			if((int)VertexNo.TERMINATOR4 == CountVertexData)	/* Vertex-Coordinate */
 			{	/* 4-Triangles Mesh */
-				/* Accommodate Pivot's-Offset */
-				Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
-				PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
-				PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
+				/* Get SpriteSize & Pivot */
+				SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
 
 				/* Get Coordinates */
 				/* MEMO: No Check "AnimationDataVertexCorrection.Length", 'cause 4-Triangles-Mesh necessarily has "AnimationDataVertexCorrection" */
@@ -761,20 +801,20 @@ public static class Library_SpriteStudio
 				float Top = (-PivotMesh.y) * RateScaleMesh.y;
 				float Bottom = (RectCell.height - PivotMesh.y) * RateScaleMesh.y;
 
-				DataCoordinate[(int)VertexNo.LU] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.LU].x,
-																-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.LU].y,
+				DataCoordinate[(int)VertexNo.LU] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].x,
+																-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].y,
 																0.0f
 															);
-				DataCoordinate[(int)VertexNo.RU] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.RU].x,
-																-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.RU].y,
+				DataCoordinate[(int)VertexNo.RU] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].x,
+																-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].y,
 																0.0f
 															);
-				DataCoordinate[(int)VertexNo.RD] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.RD].x,
-																-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.RD].y,
+				DataCoordinate[(int)VertexNo.RD] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].x,
+																-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].y,
 																0.0f
 															);
-				DataCoordinate[(int)VertexNo.LD] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.LD].x,
-																-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[(int)VertexNo.LD].y,
+				DataCoordinate[(int)VertexNo.LD] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].x,
+																-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].y,
 																0.0f
 															);
 				Vector3 CoordinateLURU = (DataCoordinate[(int)VertexNo.LU] + DataCoordinate[(int)VertexNo.RU]) * 0.5f;
@@ -790,10 +830,8 @@ public static class Library_SpriteStudio
 			}
 			else
 			{	/* 2-Triangles Mesh */
-				/* Accommodate Pivot's-Offset */
-				Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
-				PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
-				PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
+				/* Get SpriteSize & Pivot */
+				SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
 
 				/* Get Coordinates */
 				float Left = (-PivotMesh.x) * RateScaleMesh.x;
@@ -807,6 +845,33 @@ public static class Library_SpriteStudio
 				DataCoordinate[(int)VertexNo.LD] = new Vector3(Left, -Bottom, 0.0f);
 			}
 			MeshNow.vertices = DataCoordinate;
+		}
+		private void SpriteRecalcSizeAndPivot(ref Vector2 PivotMesh, ref Rect RectCell, ref Vector2 RateScaleMesh, int FrameNo)
+		{
+			Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
+			PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
+			PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
+
+			/* Arbitrate Anchor-Size */
+			if(0 < AnimationDataAnchorSize.Length)
+			{
+				float RatePivot;
+				Vector2 AnchorSize = AnimationDataAnchorSize[FrameNo];
+				if(0.0f <= AnchorSize.x)
+				{
+					RatePivot = PivotMesh.x / RectCell.width;
+					RectCell.x = 0.0f;
+					RectCell.width = AnchorSize.x;
+					PivotMesh.x = AnchorSize.x * RatePivot;
+				}
+				if(0.0f <= AnchorSize.y)
+				{
+					RatePivot = PivotMesh.y / RectCell.height;
+					RectCell.y = 0.0f;
+					RectCell.height = AnchorSize.y;
+					PivotMesh.y = AnchorSize.y * RatePivot;
+				}
+			}
 		}
 		private static void CoordinateGetDiagonalIntersection(out Vector3 Output, ref Vector3 LU, ref Vector3 RU, ref Vector3 LD, ref Vector3 RD)
 		{

@@ -2171,7 +2171,7 @@ public static partial class LibraryEditor_SpriteStudio
 																							);
 				DataRuntime.AnimationDataAnchorSize =  AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_X],
 																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_Y],
-																							Vector2.one
+																							new Vector2(-1.0f, -1.0f)
 																						);
 
 				DataRuntime.AnimationDataTextureTranslate = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_X],
