@@ -200,7 +200,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			{
 				AnimationStop();
 				FrameNoInitial = 0;
-				AnimationPlay(value, CountLoopRemain, 0, 0.0f);
+//				AnimationPlay(value, CountLoopRemain, 0, 0.0f);
 			}
 		}
 		get

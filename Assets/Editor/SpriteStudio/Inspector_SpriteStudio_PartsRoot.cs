@@ -101,6 +101,7 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 		FoldOutPlayInformation = EditorGUILayout.Foldout(FoldOutPlayInformation, "Initial/Preview Play Setting");
 		if(true == FoldOutPlayInformation)
 		{
+			bool FlagUpdate = false;
 			EditorGUI.indentLevel = LevelIndent + 1;
 
 			string[] NameAnimation = new string[Data.ListInformationPlay.Length];
@@ -110,7 +111,12 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 				IndexAnimation[i] = i;
 				NameAnimation[i] = Data.ListInformationPlay[i].Name;
 			}
-			Data.AnimationNo = EditorGUILayout.IntPopup("Animation Name", Data.AnimationNo, NameAnimation, IndexAnimation);
+			int AnimationNo = EditorGUILayout.IntPopup("Animation Name", Data.AnimationNo, NameAnimation, IndexAnimation);
+			if(Data.AnimationNo != AnimationNo)
+			{
+				Data.AnimationNo = AnimationNo;
+				FlagUpdate = true;
+			}
 
 			int FrameNoEnd = Data.ListInformationPlay[Data.AnimationNo].FrameEnd - Data.ListInformationPlay[Data.AnimationNo].FrameStart;
 			int FrameNoInitial = EditorGUILayout.IntField("Start Offset Frame-No", Data.FrameNoInitial);
@@ -128,6 +134,7 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 			if(Data.FrameNoInitial != FrameNoInitial)
 			{
 				Data.FrameNoInitial = FrameNoInitial;
+				FlagUpdate = true;
 			}
 
 			EditorGUILayout.Space();
@@ -149,9 +156,14 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 				Data.FrameNoInitial = 0;
 				Data.RateTimeAnimation = 1.0f;
 				Data.CountLoopRemain = -1;
+				FlagUpdate = true;
 			}
 
 			EditorGUI.indentLevel = LevelIndent;
+
+			if(true == FlagUpdate){
+				Data.AnimationPlay(AnimationNo, Data.CountLoopRemain, -1, 0.0f);
+			}
 		}
 		EditorGUILayout.Space();
 
