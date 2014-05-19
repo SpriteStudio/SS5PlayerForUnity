@@ -107,6 +107,11 @@ public static partial class LibraryEditor_SpriteStudio
 
 			/* Importing Base-Folder Get & Create Destination-Folders */
 			string NamePathBase = AssetUtility.NamePathGetSelectNow(null);
+			if( true == String.IsNullOrEmpty(NamePathBase) )
+			{
+				Debug.LogError("SSPJ Importing Error: Please select the folder you want to store in before import.");
+				goto Menu_ImportSSPJ_ErrorEnd;
+			}
 			DataOutput[0].CreateDestinationFolders(NamePathBase);
 			StepNow++;
 
@@ -1558,8 +1563,9 @@ public static partial class LibraryEditor_SpriteStudio
 			{	/* Now Selected Path in "Project" */
 				UnityEngine.Object ObjectNow = Selection.activeObject;
 				if(null == ObjectNow)
-				{	/* No Selected */
-					NamePathAsset = System.String.Copy(NamePathRootAsset);
+				{	/* No Selected *//* Error */
+//					NamePathAsset = System.String.Copy(NamePathRootAsset);
+					NamePathAsset = "";
 				}
 				else
 				{	/* Selected */
