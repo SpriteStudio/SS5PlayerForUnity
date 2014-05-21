@@ -1990,8 +1990,6 @@ public static partial class LibraryEditor_SpriteStudio
 				UnityEngine.Object.DestroyImmediate(GameObjectRoot);
 
 				/* "Control" Node Attached Prefab Create */
-				/* MEMO: When the prefab existing, Not Update it. */
-				if(true == DataSettingImport.FlagAttachControlGameObject)
 				{
 					/* Existing Check */
 					string NameControl = Name + NamePrefabControlSuffix;
@@ -1999,30 +1997,49 @@ public static partial class LibraryEditor_SpriteStudio
 					UnityEngine.Object ObjectExisting = AssetDatabase.LoadAssetAtPath(NamePathAssetControl, typeof(GameObject));
 					if(null == ObjectExisting)
 					{	/* No existing */
-						/* "Control" Node(GameObject)s Create (on Scene) */
-						GameObject GameObjectControl = AssetUtility.Create.GameObject(NameControl, null);
-						AssetUtility.GameObjectSetActive(GameObjectControl, true);
-
-						/*  Attach Link-Prefab Script */
-						Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.AddComponent<Script_LinkPrefab>();
-						ScriptLinkPrefab.LinkPrefab = PrefabNow;
-						ScriptLinkPrefab.FlagDeleteScript = false;
-						ScriptLinkPrefab.FlagAutoDevelop = true;
-
-						/* Create Control Prefab */
-						/* MEMO: can't to be confirmed Overwrite */
-						PrefabNow = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath, DataSettingImport.FlagConfirmOverWrite);
-						if(null == PrefabNow)
+						if(true == DataSettingImport.FlagAttachControlGameObject)
 						{
-							Debug.LogError("Miss-Creating[" + Name + "]");
-							return(false);
+							/* "Control" Node(GameObject)s Create (on Scene) */
+							GameObject GameObjectControl = AssetUtility.Create.GameObject(NameControl, null);
+							AssetUtility.GameObjectSetActive(GameObjectControl, true);
+
+							/*  Attach Link-Prefab Script */
+							Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.AddComponent<Script_LinkPrefab>();
+							ScriptLinkPrefab.LinkPrefab = PrefabNow;
+							ScriptLinkPrefab.FlagDeleteScript = false;
+							ScriptLinkPrefab.FlagAutoDevelop = true;
+
+							/* Create Control Prefab */
+							/* MEMO: can't to be confirmed Overwrite */
+							PrefabNow = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath, DataSettingImport.FlagConfirmOverWrite);
+							if(null == PrefabNow)
+							{
+								Debug.LogError("Miss-Creating[" + Name + "]");
+								return(false);
+							}
+
+							/* Fixing Created Assets */
+							AssetDatabase.SaveAssets();
+
+							/* Deleting Tempolary-Instance */
+							UnityEngine.Object.DestroyImmediate(GameObjectControl);
 						}
+					}
+					else
+					{	/* Existing */
+						/* Overwrite SpritePrefab-Link */
+						GameObject GameObjectControl = (GameObject)ObjectExisting;
+						if(null != GameObjectControl)
+						{
+							Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.GetComponent<Script_LinkPrefab>();
+							if(null != ScriptLinkPrefab)
+							{
+								ScriptLinkPrefab.LinkPrefab = PrefabNow;
+							}
 
-						/* Fixing Created Assets */
-						AssetDatabase.SaveAssets();
-
-						/* Deleting Tempolary-Instance */
-						UnityEngine.Object.DestroyImmediate(GameObjectControl);
+							/* Fixing Created Assets */
+							AssetDatabase.SaveAssets();
+						}
 					}
 				}
 
