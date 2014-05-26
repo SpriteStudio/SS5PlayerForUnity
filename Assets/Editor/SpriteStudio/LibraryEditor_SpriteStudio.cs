@@ -1685,7 +1685,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 							PartsRoot.RateTimeAnimation = 1.0f;
 							PartsRoot.AnimationNo = 0;
-							PartsRoot.CountLoopRemain = -1;
+							PartsRoot.PlayTimes = 0;
 							PartsRoot.FrameNoInitial = 0;
 
 							PartsRoot.KindRenderQueueBase = Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING;
@@ -4486,12 +4486,28 @@ public static partial class LibraryEditor_SpriteStudio
 					{
 						for(int i=0; i<VertexColor.Length; i++)
 						{
+#if false
+							/* MEMO: Ver.5.0-5.2 */
 							VertexColor[i].r = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].r , ValueEnd.VertexColor[i].r, TimeStart, TimeEnd);
 							VertexColor[i].g = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].g , ValueEnd.VertexColor[i].g, TimeStart, TimeEnd);
 							VertexColor[i].b = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].b , ValueEnd.VertexColor[i].b, TimeStart, TimeEnd);
 							VertexColor[i].a = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].a , ValueEnd.VertexColor[i].a, TimeStart, TimeEnd);
 
 							RatePixelAlpha[i] = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
+#else
+							/* MEMO: Ver.5.2- or Ver -4.x */
+							float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, (float)TimeStart, (float)TimeEnd, TimeStart, TimeEnd);
+							int RateTimeNow = (int)Rate;
+							DataCurve CurveLinear = Curve;
+							CurveLinear.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindInterpolation.LINEAR;
+
+							VertexColor[i].r = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].r , ValueEnd.VertexColor[i].r, TimeStart, TimeEnd);
+							VertexColor[i].g = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].g , ValueEnd.VertexColor[i].g, TimeStart, TimeEnd);
+							VertexColor[i].b = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].b , ValueEnd.VertexColor[i].b, TimeStart, TimeEnd);
+							VertexColor[i].a = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].a , ValueEnd.VertexColor[i].a, TimeStart, TimeEnd);
+
+							RatePixelAlpha[i] = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
+#endif
 						}
 
 						bool FlagStartParam = (TimeEnd > TimeNow) ? true : false;
@@ -4588,10 +4604,24 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					ValueQuadrilateral ValueStart = (ValueQuadrilateral)Start;
 					ValueQuadrilateral ValueEnd = (ValueQuadrilateral)End;
+#if false
+					/* MEMO: Ver.5.0-5.2 */
 					for(int i=0; i<Coordinate.Length; i++)
 					{
 						Coordinate[i].Interpolate(Curve, TimeNow, ValueStart.Coordinate[i], ValueEnd.Coordinate[i], TimeStart, TimeEnd);
 					}
+#else
+					/* MEMO: Ver.5.2- or Ver -4.x */
+					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, (float)TimeStart, (float)TimeEnd, TimeStart, TimeEnd);
+					int RateTimeNow = (int)Rate;
+					DataCurve CurveLinear = Curve;
+					CurveLinear.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindInterpolation.LINEAR;
+
+					for(int i=0; i<Coordinate.Length; i++)
+					{
+						Coordinate[i].Interpolate(CurveLinear, RateTimeNow, ValueStart.Coordinate[i], ValueEnd.Coordinate[i], TimeStart, TimeEnd);
+					}
+#endif
 					return(this);
 				}
 			}
