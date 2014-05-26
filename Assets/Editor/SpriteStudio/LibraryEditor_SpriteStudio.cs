@@ -4494,7 +4494,7 @@ public static partial class LibraryEditor_SpriteStudio
 							RatePixelAlpha[i] = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
 						}
 
-						bool FlagStartParam = (1.0f > TimeNow) ? true : false;
+						bool FlagStartParam = (TimeEnd > TimeNow) ? true : false;
 						if(Library_SpriteStudio.KindColorBound.NON == ValueStart.Bound)
 						{
 							for(int i=0; i<VertexColor.Length; i++)
