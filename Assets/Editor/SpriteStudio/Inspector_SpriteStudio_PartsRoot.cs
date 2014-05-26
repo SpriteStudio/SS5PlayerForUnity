@@ -142,12 +142,8 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 			EditorGUILayout.LabelField("(set Negative-Value, Play Backwards.)");
 
 			EditorGUILayout.Space();
-			Data.CountLoopRemain = EditorGUILayout.IntField("Loop Count", Data.CountLoopRemain);
-			EditorGUILayout.LabelField("(0: No Loop / -1: Infinity)");
-			if(-2 > Data.CountLoopRemain)
-			{
-				Data.CountLoopRemain = -1;
-			}
+			Data.PlayTimes = EditorGUILayout.IntField("Number of Plays", Data.PlayTimes);
+			EditorGUILayout.LabelField("(1: No Loop / 0: Infinite Loop)");
 
 			EditorGUILayout.Space();
 			if(true == GUILayout.Button("Reset (Reinitialize)"))
@@ -155,14 +151,14 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 				Data.AnimationNo = 0;
 				Data.FrameNoInitial = 0;
 				Data.RateTimeAnimation = 1.0f;
-				Data.CountLoopRemain = -1;
+				Data.PlayTimes = 0;
 				FlagUpdate = true;
 			}
 
 			EditorGUI.indentLevel = LevelIndent;
 
 			if(true == FlagUpdate){
-				Data.AnimationPlay(AnimationNo, Data.CountLoopRemain, -1, 0.0f);
+				Data.AnimationPlay(AnimationNo, Data.PlayTimes, -1, 0.0f);
 			}
 		}
 		EditorGUILayout.Space();
