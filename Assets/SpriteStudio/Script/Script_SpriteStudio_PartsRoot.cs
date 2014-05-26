@@ -189,6 +189,17 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	/* CAUTION!: Don't set values from Code(Read-Only in principle). Use Function"AnimationPlay". */
 	/*           "AnimationNo","CountLoopRemain" and "FrameNoStartOffset" are defined public for Setting on Inspector. */
 	public int CountLoopRemain;
+	public int PlayTimes
+	{
+		set
+		{
+			CountLoopRemain = (value < 0) ? -1 : (value - 1);
+		}
+		get
+		{
+			return(CountLoopRemain + 1);
+		}
+	}
 
 	[SerializeField]
 	protected int animationNo;
@@ -200,7 +211,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			{
 				AnimationStop();
 				FrameNoInitial = 0;
-//				AnimationPlay(value, CountLoopRemain, 0, 0.0f);
 			}
 		}
 		get
@@ -393,10 +403,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	@param	No
 		Animation's Index<br>
 		-1 == Now-Setting Index is not changed
-	@param	CountLoop
-		Number of looping <br>
-		0 == Not looping <br>
-		-1 == Infinity <br>
+	@param	PlayTimes
+		0 == Infinite-looping <br>
+		1 == Not looping <br>
+		2 <= Number of Plays
 	@param	StartFrameNo
 		Offset frame-number of starting Play in animation (0 origins). <br>
 		-1 == use "FrameNoInitial" Value<br>
@@ -418,7 +428,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	<br>
 	The update speed of animation quickens when you give a value that is bigger than 1.0f to "RateTime".
 	*/
-	public bool AnimationPlay(int No, int CountLoop, int StartFrameNo=-1, float RateTime=0.0f)
+	public bool AnimationPlay(int No, int PlayTimes, int StartFrameNo=-1, float RateTime=0.0f)
 	{
 		/* Error-Check */
 		if(-1 != No)
@@ -454,6 +464,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		RateTimeAnimation = (0.0f == RateTime) ? RateTimeAnimation : RateTime;
 		TimeAnimation = StartFrameNo * TimeFramePerSecond;
 
+		int	CountLoop = PlayTimes - 1;
 		if((-1 == CountLoop) || (0 < CountLoop))
 		{	/* Value-Valid (-1 == Infinite-Loop) */
 			CountLoopRemain = CountLoop;
@@ -780,7 +791,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			framePerSecond = 0;
 		}
 
-		AnimationPlay(animationNo, CountLoopRemain, frameNoInitial, RateTimeAnimation);
+		int	PlayTimes = CountLoopRemain + 1;
+		AnimationPlay(animationNo, PlayTimes, frameNoInitial, RateTimeAnimation);
 	}
 	private void CameraGetRendering()
 	{
