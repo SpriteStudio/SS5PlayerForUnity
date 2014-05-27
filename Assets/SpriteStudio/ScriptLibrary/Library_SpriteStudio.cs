@@ -767,6 +767,7 @@ public static class Library_SpriteStudio
 			Color32[] DataColor32 = new Color32[CountVertexData];
 			if(0 < AnimationDataColorBlend.Length)	/* Blending-Color & Opacity*/
 			{	/* Animation-Data */
+#if false
 				for(int i=0; i<CountVertexData; i++)
 				{
 					DataUV2[i] = new Vector2(	AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
@@ -774,6 +775,28 @@ public static class Library_SpriteStudio
 											);
 					DataColor32[i] = AnimationDataColorBlend[FrameNo].VertexColor[i];
 				}
+#else
+				if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlend[FrameNo].Bound)
+				{
+					for(int i=0; i<CountVertexData; i++)
+					{
+						DataUV2[i] = new Vector2(	AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
+													(float)AnimationDataColorBlend[FrameNo].Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
+												);
+						DataColor32[i] = AnimationDataColorBlend[FrameNo].VertexColor[i];
+					}
+				}
+				else
+				{	/* Default (Same as "No Datas" ) */
+					Color32 ColorDefault = Color.white;
+					float OperationDefault = (float)KindColorOperation.NON + 0.01f;	/* "+0.01f" for Rounding-off-Error */
+					for(int i=0; i<CountVertexData; i++)
+					{
+						DataUV2[i] = new Vector2(RateOpacity, OperationDefault);
+						DataColor32[i] = ColorDefault;
+					}
+				}
+#endif
 			}
 			else
 			{	/* Default (No Datas) */

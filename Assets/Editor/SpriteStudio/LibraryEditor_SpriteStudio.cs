@@ -4496,17 +4496,16 @@ public static partial class LibraryEditor_SpriteStudio
 							RatePixelAlpha[i] = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
 #else
 							/* MEMO: Ver.5.2- or Ver -4.x */
-							float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, (float)TimeStart, (float)TimeEnd, TimeStart, TimeEnd);
-							int RateTimeNow = (int)Rate;
-							DataCurve CurveLinear = Curve;
-							CurveLinear.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindInterpolation.LINEAR;
+							float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
+							Rate = (0.0f > Rate) ? 0.0f : Rate;
+							Rate = (1.0f < Rate) ? 1.0f : Rate;
 
-							VertexColor[i].r = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].r , ValueEnd.VertexColor[i].r, TimeStart, TimeEnd);
-							VertexColor[i].g = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].g , ValueEnd.VertexColor[i].g, TimeStart, TimeEnd);
-							VertexColor[i].b = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].b , ValueEnd.VertexColor[i].b, TimeStart, TimeEnd);
-							VertexColor[i].a = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.VertexColor[i].a , ValueEnd.VertexColor[i].a, TimeStart, TimeEnd);
+							VertexColor[i].r = Interpolation.Linear(ValueStart.VertexColor[i].r, ValueEnd.VertexColor[i].r, Rate);
+							VertexColor[i].g = Interpolation.Linear(ValueStart.VertexColor[i].g, ValueEnd.VertexColor[i].g, Rate);
+							VertexColor[i].b = Interpolation.Linear(ValueStart.VertexColor[i].b, ValueEnd.VertexColor[i].b, Rate);
+							VertexColor[i].a = Interpolation.Linear(ValueStart.VertexColor[i].a, ValueEnd.VertexColor[i].a, Rate);
 
-							RatePixelAlpha[i] = Interpolation.Interpolate<float>(CurveLinear, RateTimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
+							RatePixelAlpha[i] = Interpolation.Linear(ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], Rate);
 #endif
 						}
 
@@ -4612,14 +4611,14 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 #else
 					/* MEMO: Ver.5.2- or Ver -4.x */
-					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, (float)TimeStart, (float)TimeEnd, TimeStart, TimeEnd);
-					int RateTimeNow = (int)Rate;
-					DataCurve CurveLinear = Curve;
-					CurveLinear.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindInterpolation.LINEAR;
+					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
+					Rate = (0.0f > Rate) ? 0.0f : Rate;
+					Rate = (1.0f < Rate) ? 1.0f : Rate;
 
 					for(int i=0; i<Coordinate.Length; i++)
 					{
-						Coordinate[i].Interpolate(CurveLinear, RateTimeNow, ValueStart.Coordinate[i], ValueEnd.Coordinate[i], TimeStart, TimeEnd);
+						Coordinate[i].X = Interpolation.Linear(ValueStart.Coordinate[i].X, ValueEnd.Coordinate[i].X, Rate);
+						Coordinate[i].Y = Interpolation.Linear(ValueStart.Coordinate[i].Y, ValueEnd.Coordinate[i].Y, Rate);
 					}
 #endif
 					return(this);
