@@ -4612,8 +4612,8 @@ public static partial class LibraryEditor_SpriteStudio
 #else
 					/* MEMO: Ver.5.2- or Ver -4.x */
 					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
-					Rate = (0.0f > Rate) ? 0.0f : Rate;
-					Rate = (1.0f < Rate) ? 1.0f : Rate;
+//					Rate = (0.0f > Rate) ? 0.0f : Rate;
+//					Rate = (1.0f < Rate) ? 1.0f : Rate;
 
 					for(int i=0; i<Coordinate.Length; i++)
 					{
