@@ -3419,7 +3419,7 @@ public static partial class LibraryEditor_SpriteStudio
 				FlagAttributeKeyInherit FlagInherit = DataRuntimeParentGetInherit(NodeNo);
 				if(0 != (FlagInherit & (FlagAttributeKeyInherit.FLIP_X | FlagAttributeKeyInherit.FLIP_Y | FlagAttributeKeyInherit.SHOW_HIDE)))
 				{
-					if((null == DataFlags) && (Library_SpriteStudio.KindParts.NORMAL == this.ListParts[NodeNo].PartsKind))
+					if((null == DataFlags) && (Library_SpriteStudio.KindParts.NORMAL == ListParts[NodeNo].PartsKind))
 					{	/* Normal(Sprite)-Parts only */
 						/* Create New Frame-Datas */
 						DataFlags = new Library_SpriteStudio.KeyFrame.ValueBools[Count];
@@ -3537,17 +3537,11 @@ public static partial class LibraryEditor_SpriteStudio
 				int NodeNoParent = ListParts[NodeNo].IDParent;
 				while(-1 != NodeNoParent)
 				{
-					if(0 != (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagData))
-					{	/* Parent-Node has datas. */
-						return(ListDataRuntime[NodeNoParent].AnimationDataFlags);	/* valid-datas */
-					}
-					else
-					{	/* Parent-Node has no-datas. */
-						bool FlagInheritData = (0 != (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagData));
-						if((KindInheritance.SELF == ListParts[NodeNoParent].DataAnimation.Inheritance) && (false == FlagInheritData))
-						{	/* Parent-Node doesn't inherit datas */
-							FlagRoot = (0 == NodeNoParent) ? true : false;	/* Root-Node */
-							return(ListDataRuntime[NodeNoParent].AnimationDataFlags);	/* null or valid-datas */
+					if(null != ListDataRuntime[NodeNoParent].AnimationDataFlags)
+					{
+						if(0 < ListDataRuntime[NodeNoParent].AnimationDataFlags.Length)
+						{	/* Valid-Node */
+							return(ListDataRuntime[NodeNoParent].AnimationDataFlags);
 						}
 					}
 					NodeNoParent = ListParts[NodeNoParent].IDParent;
@@ -4612,8 +4606,7 @@ public static partial class LibraryEditor_SpriteStudio
 #else
 					/* MEMO: Ver.5.2- or Ver -4.x */
 					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
-//					Rate = (0.0f > Rate) ? 0.0f : Rate;
-//					Rate = (1.0f < Rate) ? 1.0f : Rate;
+					/* MEMO: VertexCorrection is not Clampped (0.0 - 1.0). */
 
 					for(int i=0; i<Coordinate.Length; i++)
 					{
