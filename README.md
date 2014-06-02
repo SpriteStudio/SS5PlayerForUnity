@@ -2,7 +2,7 @@
 
 #  SpriteStudio5 Player for Unity
 
-  Copyright(C) 2013 Web Technology Corp. All rights reserved.
+  Copyright(C) Web Technology Corp. All rights reserved.
 
 ==============================================================================
 
@@ -28,9 +28,12 @@
 - SpriteStudio で設定した当たり判定(一部除く)がコライダに変換される。
 - 頂点変形が綺麗
  - １パーツ当たり２トライアングルから４トライアングルに増やしたため、例えば台形変形時に斜線状に折れる現象が緩和されている。
-- 補間計算は実行時に行う。
- - アニメーション情報を持つアセットのサイズは小さくなるが、実行時のCPU処理負荷が高くなる。  
- ※ __インポート時に事前計算する方法に修正する予定__
+
+## v0.92 からの主な変更点
+
+- 上書きインポートした際にプレハブへのリンクがMissingせず維持されます。
+- 補間計算をインポート時に行うようにしたため、実行時のCPU負荷を大幅に下がっています。
+ - ※ その分アニメーション情報を持つアセットのサイズが大きくなります
 
 ## データのインポート手順
 
@@ -444,11 +447,15 @@ public bool AnimationCheckPause()
 
 - アンカー機能
 
+## 既知の不具合
+
+https://github.com/SpriteStudio/SS5PlayerForUnity/issues?labels=bug&milestone=&page=&state=open
+
 ==============================================================================
 
 株式会社ウェブテクノロジ  
 http://www.webtech.co.jp/  
-Copyright(C) 2013 Web Technology Corp.  
+Copyright(C) Web Technology Corp.  
 
 ==============================================================================
 
