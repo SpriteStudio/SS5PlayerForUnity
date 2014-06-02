@@ -2,6 +2,13 @@ SpriteStudio5 Player for Unity
 
 Change log
 
+1.00.0 (2014/06/02)
+ [fix] 上書きインポートした際にプレハブへのリンクがMissingせず維持されます。
+ [mod] 補間計算をインポート時に行うようにしたため、実行時のCPU負荷を大幅に下がっています。
+  - ※ その分アニメーション情報を持つアセットのサイズが大きくなります。
+ [new] サイズアトリビュートの再生に対応しました。
+ [fix] その他 https://github.com/SpriteStudio/SS5PlayerForUnity/issues?milestone=2&state=closed
+
 0.92.1 (2013/10/25)
  [fix] Perspectiveカメラを通して見た時にメッシュが切れる。
 
