@@ -8,3 +8,5 @@
 *.sln
 *.pidb
 *.userprefs
+Assets/_TEST.meta
+Assets/_TEST/
