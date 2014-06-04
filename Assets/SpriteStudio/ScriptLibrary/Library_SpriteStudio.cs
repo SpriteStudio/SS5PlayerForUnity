@@ -1003,7 +1003,7 @@ public static class Library_SpriteStudio
 
 		void OnTriggerEnter(Collider Pair)
 		{
-			if(null == functionOnTriggerEnter)
+			if(null != functionOnTriggerEnter)
 			{
 				functionOnTriggerEnter(collider, Pair);
 			}
@@ -1011,7 +1011,7 @@ public static class Library_SpriteStudio
 
 		void OnTriggerExit(Collider Pair)
 		{
-			if(null == functionOnTriggerEnd)
+			if(null != functionOnTriggerEnd)
 			{
 				functionOnTriggerEnter(collider, Pair);
 			}
@@ -1019,7 +1019,7 @@ public static class Library_SpriteStudio
 
 		void OnTriggerStay(Collider Pair)
 		{
-			if(null == functionOnTriggerStay)
+			if(null != functionOnTriggerStay)
 			{
 				functionOnTriggerStay(collider, Pair);
 			}
@@ -1027,7 +1027,7 @@ public static class Library_SpriteStudio
 
 		void OnCollisionEnter(Collision Contacts)
 		{
-			if(null == functionOnCollisionEnter)
+			if(null != functionOnCollisionEnter)
 			{
 				functionOnCollisionEnter(collider, Contacts);
 			}
@@ -1035,7 +1035,7 @@ public static class Library_SpriteStudio
 
 		void OnCollisionExit(Collision Contacts)
 		{
-			if(null == functionOnCollisionEnd)
+			if(null != functionOnCollisionEnd)
 			{
 				functionOnCollisionEnd(collider, Contacts);
 			}
@@ -1043,7 +1043,7 @@ public static class Library_SpriteStudio
 
 		void OnCollisionStay(Collision Contacts)
 		{
-			if(null == functionOnCollisionStay)
+			if(null != functionOnCollisionStay)
 			{
 				functionOnCollisionStay(collider, Contacts);
 			}
