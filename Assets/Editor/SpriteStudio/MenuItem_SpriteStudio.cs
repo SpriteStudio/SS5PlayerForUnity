@@ -54,8 +54,8 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Custom/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.00 (Candidate)";
-		EditorUtility.DisplayDialog(	"SpriteStudio5 Player for Unity",
+		string VersionText = "1.00";
+		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
 										+ "Copyright(C) Web Technology Corp.",
