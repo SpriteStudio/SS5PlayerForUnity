@@ -11,6 +11,9 @@
 本ソフトウェアは OPTPiX SpriteStudio 5 で作成したアニメーションを Unity 上で
 再生するためのプレイヤープログラムのパッケージです。
 
+## FAQ
+https://github.com/SpriteStudio/SS5PlayerForUnity/wiki/FAQ
+
 ## SSPlayer for Unity との主な違い
 
 - OPTPiX SpriteStudio 5 形式のデータを直接インポートする
