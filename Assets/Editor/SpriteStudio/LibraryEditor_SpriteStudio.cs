@@ -178,6 +178,11 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 	}
 
+	/// <summary>
+	/// The parts currently processed while importing.
+	/// </summary>
+	static	internal string	CurrentProcessingPartsName;
+
 	/* Functions for Parsing OPSS(SS5) Datas */
 	internal static class ParseOPSS
 	{
@@ -1911,6 +1916,8 @@ public static partial class LibraryEditor_SpriteStudio
 												ref LibraryEditor_SpriteStudio.SettingImport DataSettingImport
 											)
 			{
+				CurrentProcessingPartsName = "";
+
 				/* "Root" Node(GameObject)s Create (on Scene) */
 				GameObject GameObjectRoot = AssetUtility.Create.GameObjectNode(this, ListParts[0], null);
 				Script_SpriteStudio_PartsRoot ScriptRoot = GameObjectRoot.GetComponent<Script_SpriteStudio_PartsRoot>();
@@ -1945,6 +1952,7 @@ public static partial class LibraryEditor_SpriteStudio
 					for(int i=0; i<ListParts.Length; i++)
 					{
 						/* Create Animation-Data for Runtime */
+						CurrentProcessingPartsName = ListParts[i].Name;
 						DataSpriteStudio = NodeSetAnimation(GameObjectParts[i], ListParts[i], ScriptRoot);
 						if(null == DataSpriteStudio)
 						{
@@ -1955,6 +1963,7 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Attach Collider (to GameObject) */
 						NodeSetCollider(GameObjectParts[i], ListParts[i], DataSpriteStudio, ref DataSettingImport);
 					}
+					CurrentProcessingPartsName = "";
 
 					/* Solving Inherit-Attributes */
 					/* MEMO: Child-nodes only (Parent-node need not solve) */
@@ -2287,6 +2296,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Vector3.X keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2350,6 +2364,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Vector3.Y keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2413,6 +2432,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Vector3.Z keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2500,6 +2524,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Vector2.X keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2563,6 +2592,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Vector3.Y keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2650,6 +2684,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Float keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2738,6 +2777,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Color keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2844,6 +2888,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Quadrilateral keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
@@ -2939,6 +2988,11 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{	/* Same Animation */
+							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
+							{
+								Debug.LogError("Cell keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+								return(null);
+							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
 							{	/* Padding to Start-Frames  */
 								for(int j=ListInformationPlay[IndexAnimationStart].FrameStart; j<=DataStart.Time; j++)
