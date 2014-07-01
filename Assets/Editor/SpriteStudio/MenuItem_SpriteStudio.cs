@@ -9,10 +9,10 @@ using UnityEditor;
 
 public sealed class MenuItem_SpriteStudio : EditorWindow
 {
-	public float CollisionThicknessZ = 1.0f;
-	public bool FlagAttachRigidBody = true;
-	public bool FlagAttachControlGameObject = true;
-	public bool FlagConfirmOverWrite = true;
+	static public float CollisionThicknessZ = 1.0f;
+	static public bool FlagAttachRigidBody = true;
+	static public bool FlagAttachControlGameObject = true;
+	static public bool FlagConfirmOverWrite = true;
 
 	[MenuItem("Custom/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
