@@ -1693,6 +1693,7 @@ public static partial class LibraryEditor_SpriteStudio
 							PartsRoot.PlayTimes = 0;
 							PartsRoot.FrameNoInitial = 0;
 
+#if false
 							PartsRoot.KindRenderQueueBase = Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING;
 							PartsRoot.OffsetDrawQueue = 0;
 							PartsRoot.RateDrawQueueEffectZ = 250.0f;
@@ -1702,6 +1703,7 @@ public static partial class LibraryEditor_SpriteStudio
 							InstanceMeshRenderer.enabled = true;
 							InstanceMeshRenderer.castShadows = false;
 							InstanceMeshRenderer.receiveShadows = false;
+#endif
 						}
 						break;
 

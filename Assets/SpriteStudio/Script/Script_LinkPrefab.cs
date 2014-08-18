@@ -12,8 +12,8 @@ using UnityEditor;
 #endif
 using System.Collections;
 
-[System.Serializable]
 [ExecuteInEditMode]
+[System.Serializable]
 public class Script_LinkPrefab : MonoBehaviour
 {
 	public bool FlagAutoDevelop;

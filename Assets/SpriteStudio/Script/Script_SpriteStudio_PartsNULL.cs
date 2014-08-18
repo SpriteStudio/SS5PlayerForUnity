@@ -7,8 +7,8 @@
 using UnityEngine;
 using System.Collections;
 
-[System.Serializable]
 [ExecuteInEditMode]
+[System.Serializable]
 public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 {
 	public Library_SpriteStudio.AnimationData SpriteStudioData;

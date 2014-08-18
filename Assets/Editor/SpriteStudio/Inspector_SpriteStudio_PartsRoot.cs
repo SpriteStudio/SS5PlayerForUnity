@@ -11,19 +11,6 @@ using System.Collections;
 [CustomEditor(typeof(Script_SpriteStudio_PartsRoot))]
 public class Inspector_SpriteStudio_PartsRoot : Editor
 {
-	private static readonly string[] NameDrawKind =
-	{
-		"Shader Setting (Initial)",
-		"User Setting",
-		"Back Ground",
-		"Geometry",
-		"Alpha Test",
-		"Transparent",
-		"Overlay",
-//		"(TERMINATOR)"
-	};
-
-	private static bool FoldOutDrawSetting;
 	private static bool FoldOutAnimationInformation;
 	private static bool FoldOutPlayInformation;
 	private static bool FoldOutMaterialTable;
@@ -160,52 +147,6 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 			if(true == FlagUpdate){
 				Data.AnimationPlay(AnimationNo, Data.PlayTimes, -1, 0.0f);
 			}
-		}
-		EditorGUILayout.Space();
-
-		FoldOutDrawSetting = EditorGUILayout.Foldout(FoldOutDrawSetting, "Rendering Setting");
-		if(true == FoldOutDrawSetting)
-		{
-			EditorGUI.indentLevel = LevelIndent + 1;
-
-			int CountKindQueue = (int)Script_SpriteStudio_PartsRoot.KindDrawQueue.OVERLAY + 1;
-			int[] IndexDrawKind = new int[CountKindQueue];
-			for(int i=0; i<CountKindQueue; i++)
-			{
-				IndexDrawKind[i] = i;
-			}
-			int KindRenderQueueBaseNo = (int)Data.KindRenderQueueBase;
-			KindRenderQueueBaseNo = EditorGUILayout.IntPopup("Render-Queue Base", KindRenderQueueBaseNo, NameDrawKind, IndexDrawKind);
-			Data.KindRenderQueueBase = (Script_SpriteStudio_PartsRoot.KindDrawQueue)KindRenderQueueBaseNo;
-			EditorGUI.indentLevel = LevelIndent + 2;
-			EditorGUILayout.LabelField("Details [" + NameDrawKind[KindRenderQueueBaseNo] + "]");
-			switch((Script_SpriteStudio_PartsRoot.KindDrawQueue)KindRenderQueueBaseNo)
-			{
-				case Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING:
-					EditorGUILayout.LabelField("- Value Base: Defined Tag\"Queue\" in Shader (Default: Transparent)");
-					EditorGUILayout.LabelField("- Offset Range: Depend on Tag\"Queue\"(Default: 0-999)");
-					break;
-
-				case Script_SpriteStudio_PartsRoot.KindDrawQueue.USER_SETTING:
-					EditorGUILayout.LabelField("- Value Base: 0");
-					EditorGUILayout.LabelField("- Offset Range: 1000-4999");
-					break;
-
-				default:
-					EditorGUILayout.LabelField("- Value Base: " + Script_SpriteStudio_PartsRoot.ValueKindDrawQueue[KindRenderQueueBaseNo]);
-					EditorGUILayout.LabelField("- Offset Range: 0-" + (Script_SpriteStudio_PartsRoot.ValueKindDrawQueue[KindRenderQueueBaseNo+1] - Script_SpriteStudio_PartsRoot.ValueKindDrawQueue[KindRenderQueueBaseNo]-1));
-					break;
-			}
-			EditorGUI.indentLevel = LevelIndent + 1;
-
-			EditorGUILayout.Space();
-			Data.OffsetDrawQueue = EditorGUILayout.IntField("Render-Queue Offset", Data.OffsetDrawQueue);
-
-			EditorGUILayout.Space();
-			Data.RateDrawQueueEffectZ = EditorGUILayout.FloatField("Rate Z Effect", Data.RateDrawQueueEffectZ);
-			EditorGUILayout.LabelField("(\"This-Value x ViewPort-Z\" Added to Offset)");
-
-			EditorGUI.indentLevel = LevelIndent;
 		}
 		EditorGUILayout.Space();
 

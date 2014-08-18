@@ -7,33 +7,31 @@
 using UnityEngine;
 using System.Collections;
 
-[System.Serializable]
 [ExecuteInEditMode]
+[System.Serializable]
 public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 {
+	/* Variables & Propaties */
 	public Library_SpriteStudio.AnimationDataSprite SpriteStudioData;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 
-	void Awake()
-	{
-	}
-
+	/* Functions */
 	void Start()
 	{
 		MeshCreate();
-		DataMeshInformation = new Script_SpriteStudio_PartsRoot.InformationMeshData();
+		DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
 	}
 
 	void Update()
 	{
-		/* Create Mesh (when Mesh is Lost) */
+		/* Boot-Check */
 		if(null == dataMesh)
 		{
 			MeshCreate();
 		}
 		if(null == DataMeshInformation)
 		{
-			DataMeshInformation = new Script_SpriteStudio_PartsRoot.InformationMeshData();
+			DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
 		}
 
 		/* Update User-CallBack */
@@ -47,6 +45,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		{	/* Show the Sprite */
 			DataMeshInformation.DataMesh = dataMesh;
 			DataMeshInformation.DataTransform = transform;
+			DataMeshInformation.PartsInstance = null;
 			SpriteStudioData.DrawEntry(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
 		}
 	}
