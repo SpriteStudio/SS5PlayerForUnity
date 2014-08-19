@@ -99,7 +99,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		get
 		{
-			return(frameNoEnd);
+			return(frameNoStart);
 		}
 	}
 	protected int frameNoEnd;
