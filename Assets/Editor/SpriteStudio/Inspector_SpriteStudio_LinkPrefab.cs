@@ -8,12 +8,12 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-[CustomEditor(typeof(Script_LinkPrefab))]
-public class Inspector_LinkPrefab : Editor
+[CustomEditor(typeof(Script_SpriteStudio_LinkPrefab))]
+public class Inspector_SpriteStudio_LinkPrefab : Editor
 {
 	public override void OnInspectorGUI()
 	{
-		Script_LinkPrefab Data = (Script_LinkPrefab)target;
+		Script_SpriteStudio_LinkPrefab Data = (Script_SpriteStudio_LinkPrefab)target;
 
 		EditorGUILayout.LabelField("[SpriteStudio Prefab Instantiate Script]");
 		EditorGUILayout.Space();

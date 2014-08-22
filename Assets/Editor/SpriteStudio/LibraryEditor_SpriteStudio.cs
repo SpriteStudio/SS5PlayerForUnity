@@ -33,9 +33,25 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagAttachRigidBody;
 		public bool FlagAttachControlGameObject;
 		public bool FlagConfirmOverWrite;
+		public bool FlagCreateProjectFolder;
 	}
 	public static partial class Menu
 	{
+		/* Information for Containing "Instance"-Parts */
+		public class InformationInstance
+		{
+			public int ID;
+			public string NameInstanceSSAE;
+			public string NameInstanceAnimation;
+
+			public InformationInstance()
+			{
+				ID = -1;
+				NameInstanceSSAE = "";
+				NameInstanceAnimation = "";
+			}
+		}
+
 		public static void ImportSSPJ(SettingImport DataSettingImport)
 		{
 			/* Select Project,Imported(.sspj) */
@@ -96,9 +112,12 @@ public static partial class LibraryEditor_SpriteStudio
 									StepFull
 								);
 
+				/* Create Data-Trunk */
 				DataOutput[i] = new DataIntermediate.TrunkParts();
+				DataOutput[i].BootUp();
 				DataOutput[i].ListImage = DataListImage;
 
+				/* Convert Data */
 				if(false == ParseOPSS.ImportSSAE(ref DataOutput[i], InformationSSPJ.NameDirectorySSAE, (string)InformationSSPJ.ListSSAE[i], InformationSSPJ))
 				{
 					goto Menu_ImportSSPJ_ErrorEnd;
@@ -112,7 +131,9 @@ public static partial class LibraryEditor_SpriteStudio
 				Debug.LogError("SSPJ Importing Error: Please select the folder you want to store in before import.");
 				goto Menu_ImportSSPJ_ErrorEnd;
 			}
-			DataOutput[0].CreateDestinationFolders(NamePathBase);
+			NamePathBase = DataOutput[0].CreateDestinationFolders(	NamePathBase,
+																	(true == DataSettingImport.FlagCreateProjectFolder) ? NameFileBody : null
+																);
 			StepNow++;
 
 			/* Materials Creating */
@@ -125,6 +146,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 			/* Animations Creating */
 			string FileNameBodySSAE = "";
+			Count = InformationSSPJ.ListSSAE.Count;
 			for(int i=0; i<Count; i++)
 			{
 				/* Progress-Bar Update */
@@ -134,14 +156,102 @@ public static partial class LibraryEditor_SpriteStudio
 									StepFull
 								);
 
-				/* Prefab Create */
+				/* GameObjects Create */
 				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
-				bool DataPrefab = DataOutput[i].CreateDataPrefabSprite(	FileNameBodySSAE,
+				if(false == DataOutput[i].CreateDataGameObjectSprite(	FileNameBodySSAE,
 																		NamePathBase,
 																		TableMaterial,
 																		ref DataSettingImport
-																	);
-				if(false == DataPrefab)
+																	)
+					)
+				{
+					if(null != DataOutput[i].GameObjectRoot)
+					{
+						UnityEngine.Object.DestroyImmediate(DataOutput[i].GameObjectRoot);
+						DataOutput[i].GameObjectRoot = null;
+					}
+
+					Debug.LogError("SSAE-Convert-GameObject Error:" + FileNameBodySSAE);
+					goto Menu_ImportSSPJ_ErrorEnd;
+				}
+			}
+
+			/* Solving Prefab-Create-Order */
+			int[] OrderCreatePrefab = new int[Count];
+			for(int i=0; i<Count; i++)
+			{
+				OrderCreatePrefab[i] = -1;
+			}
+			{
+				/* Set "Has no Instance-Pars" Animation */
+				int IndexNow = 0;
+				for(int i=0; i<Count; i++)
+				{
+					if(0 >= DataOutput[i].ListPartsInstance.Count)
+					{	/* Has no Instance-Parts */
+						OrderCreatePrefab[IndexNow] = i;
+						IndexNow++;
+					}
+				}
+
+				/* Set "Has Instance-Parts" */
+				bool FlagAllInstanceExist = false;
+				bool FlagAlreadyOrdered = false;
+				while(Count > IndexNow)
+				{
+					for(int i=0; i<Count; i++)
+					{
+						/* Check Already-Ordered */
+						FlagAlreadyOrdered = false;
+						for(int j=0; j<IndexNow; j++)
+						{
+							if(i == OrderCreatePrefab[j])
+							{	/* Already Set */
+								FlagAlreadyOrdered = true;
+								break;
+							}
+						}
+						if(true == FlagAlreadyOrdered)
+						{
+							continue;
+						}
+
+						/* Check Calling-InstanceParts are ordered */
+						if(false == OrderCheckInstancePartsPrefabed(	ref FlagAllInstanceExist,
+																		DataOutput[i].ListPartsInstance,
+																		OrderCreatePrefab,
+																		IndexNow,
+																		InformationSSPJ
+																	)
+							)
+						{	/* Error (Not Found SSAE-Name) */
+							Debug.LogError("Instance Calling Data Name:" + FileNameBodySSAE);
+							goto Menu_ImportSSPJ_ErrorEnd;
+						}
+
+						if(true == FlagAllInstanceExist)
+						{	/* All Instance-Parts Orderd */
+							OrderCreatePrefab[IndexNow] = i;
+							IndexNow++;
+							break;	/* Break for-Loop */
+						}
+					}
+				}
+			}
+
+			/* Prefab Create */
+			int IndexOrder;
+			for(int i=0; i<Count; i++)
+			{
+				IndexOrder = OrderCreatePrefab[i];
+				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[IndexOrder]);
+				if(false == DataOutput[IndexOrder].CreateDataPrefabSprite(	DataOutput,
+																			FileNameBodySSAE,
+																			NamePathBase,
+																			InformationSSPJ,
+																			ref DataSettingImport
+																		)
+					)
 				{
 					Debug.LogError("SSAE-Convert-Prefab Error:" + FileNameBodySSAE);
 					goto Menu_ImportSSPJ_ErrorEnd;
@@ -161,7 +271,6 @@ public static partial class LibraryEditor_SpriteStudio
 										);
 			return;
 		}
-
 		private static void ProgressBarUpdate(string NowTaskName, int Step, int StepFull)
 		{
 			if((-1 == Step) || (-1 == StepFull))
@@ -175,6 +284,42 @@ public static partial class LibraryEditor_SpriteStudio
 													(float)Step / (float)StepFull
 												);
 			}
+		}
+		private static bool OrderCheckInstancePartsPrefabed(	ref bool FlagExistAll,
+																ArrayList ArrayInstanceInformation,
+																int[] OrderIndex,
+																int CountOrdered,
+																ParseOPSS.InformationSSPJ InformationSSPJ
+			)
+		{
+			LibraryEditor_SpriteStudio.Menu.InformationInstance InformationInstance = null;
+			int Count = ArrayInstanceInformation.Count;
+			int IndexInstance = -1;
+			bool FlagExist = false;
+			FlagExistAll = true;
+			for(int i=0; i<Count; i++)
+			{
+				InformationInstance = ArrayInstanceInformation[i] as LibraryEditor_SpriteStudio.Menu.InformationInstance;
+				IndexInstance = InformationSSPJ.ArraySearchFileNameBody(InformationSSPJ.ListSSAE, InformationInstance.NameInstanceSSAE);
+				if(-1 == IndexInstance)
+				{	/* Instance-Parts is not in SSPJ */
+					Debug.LogError("Instance PartsName is not found Error:" + InformationSSPJ.ListSSAE);
+					FlagExistAll = false;
+					return(false);
+				}
+
+				FlagExist = false;
+				for(int j=0; j<CountOrdered; j++)
+				{
+					if(IndexInstance == OrderIndex[j])
+					{
+						FlagExist = true;
+						break;
+					}
+				}
+				FlagExistAll = (false == FlagExist) ? false : FlagExistAll;
+			}
+			return(true);
 		}
 	}
 
@@ -357,7 +502,8 @@ public static partial class LibraryEditor_SpriteStudio
 				for(int i=0; i<ListFileName.Count; i++)
 				{
 					string FileNameNow = ListFileName[i] as string;
-					if(0 == FileName.CompareTo(FileNameNow))
+					string FileNameBody = Path.GetFileNameWithoutExtension(FileNameNow);
+					if(0 == FileName.CompareTo(FileNameBody))
 					{
 						return(i);
 					}
@@ -464,7 +610,6 @@ public static partial class LibraryEditor_SpriteStudio
 
 				InformationCellMap.CellArea.Add(Key, Cell);
 			}
-
 			return(true);
 
 		ParseOPSS_ImportSSCE_ErrorEnd:;
@@ -622,16 +767,54 @@ public static partial class LibraryEditor_SpriteStudio
 
 			CountAnimation = 0;
 			int FrameNoStart = 0;
+			int CountLabel = 0;
+			Library_SpriteStudio.AnimationInformationPlay.InformationLabel InformationLabel = null;
+			ArrayList ArrayLabel = new ArrayList();
 			foreach(XmlNode NodeAnimation in NodeList)
 			{
+				/* Collection Labels */
+				ArrayLabel.Clear();
+				XmlNodeList NodeListLabel = XMLUtility.XML_SelectNodes(NodeAnimation, "labels/value", ManagerNameSpace);
+				string NameLabel = "";
+				int FrameLabel = 0;
+				foreach(XmlNode NodeLabel in NodeListLabel)
+				{
+					NameLabel = XMLUtility.TextGetSelectSingleNode(NodeLabel, "name", ManagerNameSpace);
+					FrameLabel = XMLUtility.ValueGetInt(XMLUtility.TextGetSelectSingleNode(NodeLabel, "time", ManagerNameSpace));
+					if(false == Library_SpriteStudio.AnimationInformationPlay.NameCheckDefault(NameLabel))
+					{
+						InformationLabel = new Library_SpriteStudio.AnimationInformationPlay.InformationLabel();
+						InformationLabel.Name = string.Copy(NameLabel);
+						InformationLabel.FrameNo = FrameLabel;
+						ArrayLabel.Add(InformationLabel);
+					}
+					else
+					{
+						Debug.LogWarning("SSAE-Import Warning: Label-Name is reserved. Ignored. Name[" + NameLabel
+											+ "]: Frame[" + FrameLabel + "]"
+										);
+					}
+				}
+				CountLabel = ArrayLabel.Count;
+
+				/* Create Information */
 				DataTrunk.ListInformationPlay[CountAnimation].Name = string.Copy(XMLUtility.TextGetSelectSingleNode(NodeAnimation, "name", ManagerNameSpace));
 				DataTrunk.ListInformationPlay[CountAnimation].FrameStart = FrameNoStart;
 				DataTrunk.ListInformationPlay[CountAnimation].FrameEnd = XMLUtility.ValueGetInt(XMLUtility.TextGetSelectSingleNode(NodeAnimation, "settings/frameCount", ManagerNameSpace));
 				DataTrunk.ListInformationPlay[CountAnimation].FrameEnd += FrameNoStart;
 				DataTrunk.ListInformationPlay[CountAnimation].FrameEnd--;
 				DataTrunk.ListInformationPlay[CountAnimation].FramePerSecond = XMLUtility.ValueGetInt(XMLUtility.TextGetSelectSingleNode(NodeAnimation, "settings/fps", ManagerNameSpace));
+				DataTrunk.ListInformationPlay[CountAnimation].Label = new Library_SpriteStudio.AnimationInformationPlay.InformationLabel[CountLabel];
+				for(int j=0; j<CountLabel; j++)
+				{
+					InformationLabel = ArrayLabel[j] as Library_SpriteStudio.AnimationInformationPlay.InformationLabel;
+					DataTrunk.ListInformationPlay[CountAnimation].Label[j] = new Library_SpriteStudio.AnimationInformationPlay.InformationLabel();
+					DataTrunk.ListInformationPlay[CountAnimation].Label[j].Name = string.Copy(InformationLabel.Name);
+					DataTrunk.ListInformationPlay[CountAnimation].Label[j].FrameNo = InformationLabel.FrameNo;
+				}
 				DataTrunk.CountFrameFull = DataTrunk.ListInformationPlay[CountAnimation].FrameEnd + 1;
 
+				/* Decode Animation-Datas */
 				if(false == ImportSSAESetAnimation(ref DataTrunk, CountAnimation, FrameNoStart, CellMapNo, NodeAnimation, ManagerNameSpace))
 				{
 					goto ParseOPSS_ImportSSAE_ErrorEnd_NoMessage;
@@ -640,6 +823,7 @@ public static partial class LibraryEditor_SpriteStudio
 				FrameNoStart = (((DataTrunk.ListInformationPlay[CountAnimation].FrameEnd + 9) / 10) + 1) * 10;
 				CountAnimation++;
 			}
+			ArrayLabel.Clear();
 
 			return(true);
 
@@ -713,6 +897,10 @@ public static partial class LibraryEditor_SpriteStudio
 
 				case "normal":
 					DataParts.PartsKind = Library_SpriteStudio.KindParts.NORMAL;
+					break;
+
+				case "instance":
+					DataParts.PartsKind = Library_SpriteStudio.KindParts.INSTANCE;
 					break;
 
 				default:
@@ -844,6 +1032,11 @@ public static partial class LibraryEditor_SpriteStudio
 									);
 					goto case "mix";
 			}
+
+			ValueText = XMLUtility.TextGetSelectSingleNode(NodeParts, "refAnimePack", ManagerNameSpace);
+			DataParts.InstanceNameSSAE = (null != ValueText) ? String.Copy(ValueText) : "";
+			ValueText = XMLUtility.TextGetSelectSingleNode(NodeParts, "refAnime", ManagerNameSpace);
+			DataParts.InstanceNameAnimation = (null != ValueText) ? String.Copy(ValueText) : "";
 
 			return(true);
 		}
@@ -1445,6 +1638,85 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 							break;
 
+						case DataIntermediate.KindValueKey.INSTANCE:
+							{
+								DataIntermediate.KeyFrame.ValueInstance Value = new DataIntermediate.KeyFrame.ValueInstance();
+								Value.Flag = LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.CLEAR;
+
+								Value.PlayCount = -1;
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/infinity", ManagerNameSpace);
+								if(null != ValueText)
+								{	/* Check */
+									if(true == XMLUtility.ValueGetBool(ValueText))
+									{
+										Value.PlayCount = 0;
+									}
+								}
+								if(-1 == Value.PlayCount)
+								{	/* Loop-Limited */
+									ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/loopNum", ManagerNameSpace);
+									Value.PlayCount = (null == ValueText) ? 1 : XMLUtility.ValueGetInt(ValueText);
+								}
+
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/reverse", ManagerNameSpace);
+								if(null == ValueText)
+								{	/* Play Normaly */
+									Value.Flag &= ~LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.REVERSE;
+								}
+								else
+								{	/* Check */
+									Value.Flag = (true == XMLUtility.ValueGetBool(ValueText)) ?
+													(Value.Flag | LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.REVERSE)
+													: (Value.Flag & ~LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.REVERSE);
+								}
+								
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/pingpong", ManagerNameSpace);
+								if(null == ValueText)
+								{	/* Play Normaly */
+									Value.Flag &= ~LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.PINGPONG;
+								}
+								else
+								{	/* Check */
+									Value.Flag = (true == XMLUtility.ValueGetBool(ValueText)) ?
+													(Value.Flag | LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.PINGPONG)
+													: (Value.Flag & ~LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.PINGPONG);
+								}
+								
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/independent", ManagerNameSpace);
+								if(null == ValueText)
+								{	/* Play Normaly */
+									Value.Flag &= ~LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.INDEPENDENT;
+								}
+								else
+								{	/* Check */
+									Value.Flag = (true == XMLUtility.ValueGetBool(ValueText)) ?
+													(Value.Flag | LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.INDEPENDENT)
+													: (Value.Flag & ~LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.INDEPENDENT);
+								}
+
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/startLabel", ManagerNameSpace);
+								Value.LabelStart = (null == ValueText) ? string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart) : string.Copy(ValueText);
+						
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/startOffset", ManagerNameSpace);
+								Value.OffsetStart = (null == ValueText) ? 0 : XMLUtility.ValueGetInt(ValueText);
+
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/endLabel", ManagerNameSpace);
+								Value.LabelEnd = (null == ValueText) ? string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd) : string.Copy(ValueText);
+
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/endOffset", ManagerNameSpace);
+								Value.OffsetEnd = (null == ValueText) ? 0 : XMLUtility.ValueGetInt(ValueText);
+
+								ValueText = XMLUtility.TextGetSelectSingleNode(NodeKey, "value/speed", ManagerNameSpace);
+								Value.RateTime = (null == ValueText) ? 1.0f : (float)XMLUtility.ValueGetDouble(ValueText);
+
+								DataIntermediate.KeyFrame.DataInstance DataInstance = new DataIntermediate.KeyFrame.DataInstance();
+								DataInstance.Value = Value;
+								KeyData = DataInstance;
+
+								FlagEnableInterpolation = false;
+							}
+							break;
+
 						case DataIntermediate.KindValueKey.POINT:
 						case DataIntermediate.KindValueKey.SOUND:
 						case DataIntermediate.KindValueKey.PALETTE:
@@ -1686,22 +1958,33 @@ public static partial class LibraryEditor_SpriteStudio
 								PartsRoot.ListInformationPlay[i].FrameStart = Trunk.ListInformationPlay[i].FrameStart;
 								PartsRoot.ListInformationPlay[i].FrameEnd = Trunk.ListInformationPlay[i].FrameEnd;
 								PartsRoot.ListInformationPlay[i].FramePerSecond = Trunk.ListInformationPlay[i].FramePerSecond;
+
+								int CountLabel = Trunk.ListInformationPlay[i].Label.Length;
+								if(0 == CountLabel)
+								{
+									PartsRoot.ListInformationPlay[i].Label = null;
+								}
+								else
+								{
+									PartsRoot.ListInformationPlay[i].Label = new Library_SpriteStudio.AnimationInformationPlay.InformationLabel[CountLabel];
+									for(int j=0; j<CountLabel; j++)
+									{
+										PartsRoot.ListInformationPlay[i].Label[j] = new Library_SpriteStudio.AnimationInformationPlay.InformationLabel();
+										PartsRoot.ListInformationPlay[i].Label[j].Name = string.Copy(Trunk.ListInformationPlay[i].Label[j].Name);
+										PartsRoot.ListInformationPlay[i].Label[j].FrameNo = Trunk.ListInformationPlay[i].Label[j].FrameNo;
+									}
+								}
 							}
 
 							PartsRoot.RateTimeAnimation = 1.0f;
 							PartsRoot.AnimationNo = 0;
 							PartsRoot.PlayTimes = 0;
 							PartsRoot.FrameNoInitial = 0;
-
-							PartsRoot.KindRenderQueueBase = Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING;
-							PartsRoot.OffsetDrawQueue = 0;
-							PartsRoot.RateDrawQueueEffectZ = 250.0f;
-
-							GameObjectNow.AddComponent<MeshFilter>();
-							MeshRenderer InstanceMeshRenderer = GameObjectNow.AddComponent<MeshRenderer>();
-							InstanceMeshRenderer.enabled = true;
-							InstanceMeshRenderer.castShadows = false;
-							InstanceMeshRenderer.receiveShadows = false;
+							PartsRoot.NameLabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
+							PartsRoot.OffsetFrameStart = 0;
+							PartsRoot.NameLabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
+							PartsRoot.OffsetFrameEnd = 0;
+							PartsRoot.Status = Script_SpriteStudio_PartsRoot.BitStatus.CLEAR;
 						}
 						break;
 
@@ -1716,8 +1999,14 @@ public static partial class LibraryEditor_SpriteStudio
 
 					case Library_SpriteStudio.KindParts.SOUND:	/* Sound-Node (not Supported SS5) */
 						break;
-				}
 
+					case Library_SpriteStudio.KindParts.INSTANCE:	/* Instance-Node */
+						{
+							GameObjectNow.AddComponent<Script_SpriteStudio_PartsInstance>();
+							GameObjectNow.AddComponent<Script_SpriteStudio_LinkPrefab>();
+						}
+						break;
+				}
 				return(GameObjectNow);
 			}
 
@@ -1757,17 +2046,42 @@ public static partial class LibraryEditor_SpriteStudio
 			internal PartsSprite[] ListParts = null;
 			internal PartsImage[] ListImage = null;
 			internal Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay = null;
+			internal ArrayList ListPartsInstance = null;
+
 			internal int CountNode = -1;
 			internal int CountFrameFull = -1;
 			internal bool FlameFlipForImageOnly = false;
 
-			/* Create Destination Folders */
-			internal void CreateDestinationFolders(string NamePath)
+			internal GameObject GameObjectRoot = null;
+			internal UnityEngine.Object PrefabData = null;
+
+			internal void BootUp()
 			{
+				ListPartsInstance = new ArrayList();
+				ListPartsInstance.Clear();
+
+				GameObjectRoot = null;
+				PrefabData = null;
+			}
+
+			/* Create Destination Folders */
+			internal string CreateDestinationFolders(string NamePath, string NamePathSubFolder)
+			{
+				string NamePathBase = String.Copy(NamePath);
+
+				/* Create Project-Name Folder */
+				if(null != NamePathSubFolder)
+				{
+					AssetUtility.Create.Folder(NamePathSubFolder, NamePathBase);
+					NamePathBase += "/" + NamePathSubFolder;
+				}
+
 				/* Create Destination-Folders */
-				AssetUtility.Create.Folder(NamePathSubImportTexture, NamePath);
-				AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePath);
-				AssetUtility.Create.Folder(NamePathSubImportPrefab, NamePath);
+				AssetUtility.Create.Folder(NamePathSubImportTexture, NamePathBase);
+				AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePathBase);
+				AssetUtility.Create.Folder(NamePathSubImportPrefab, NamePathBase);
+
+				return(NamePathBase);
 			}
 
 			/* Create Assets (Materials & Textures) */
@@ -1908,18 +2222,22 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
-			/* Create Prefab (Sprite-Data) */
-			private readonly static string NamePrefabControlSuffix = "_Control";
-			public bool CreateDataPrefabSprite(	string Name,
-												string NamePath,
-												Material[] TableMaterial,
-												ref LibraryEditor_SpriteStudio.SettingImport DataSettingImport
-											)
+			/* Create GameObjects */
+			public bool CreateDataGameObjectSprite(	string Name,
+													string NamePath,
+													Material[] TableMaterial,
+													ref LibraryEditor_SpriteStudio.SettingImport DataSettingImport
+												)
 			{
 				CurrentProcessingPartsName = "";
 
 				/* "Root" Node(GameObject)s Create (on Scene) */
-				GameObject GameObjectRoot = AssetUtility.Create.GameObjectNode(this, ListParts[0], null);
+				GameObjectRoot = AssetUtility.Create.GameObjectNode(this, ListParts[0], null);
+				if(null == GameObjectRoot)
+				{	/* Error */
+					return(false);
+				}
+				ListParts[0].GameObjectParts = GameObjectRoot;
 				Script_SpriteStudio_PartsRoot ScriptRoot = GameObjectRoot.GetComponent<Script_SpriteStudio_PartsRoot>();
 				ScriptRoot.TableMaterial = TableMaterial;
 
@@ -1930,6 +2248,7 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					/* Create GameObjects and Attach Script */
 					GameObjectParts[i] = AssetUtility.Create.GameObjectNode(this, ListParts[i], GameObjectRoot);
+					ListParts[i].GameObjectParts = GameObjectParts[i];
 				}
 
 				/* Set Parent-Child-Relation */
@@ -1985,9 +2304,46 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 				}
 
+				return(true);
+			}
+
+			/* Create Prefab (Sprite-Data) */
+			private readonly static string NamePrefabControlSuffix = "_Control";
+			public bool CreateDataPrefabSprite( DataIntermediate.TrunkParts[] ArrayTrankParts,
+												string Name,
+												string NamePath,
+												ParseOPSS.InformationSSPJ InformationSSPJ,
+												ref LibraryEditor_SpriteStudio.SettingImport DataSettingImport
+											)
+			{
+				/* Set Prefab-Ref.("Instance"-Parts) */
+				{
+					int Count = ListPartsInstance.Count;
+					GameObject GameObjectPartsInstance = null;
+					LibraryEditor_SpriteStudio.Menu.InformationInstance InformationInstance = null;
+					Script_SpriteStudio_LinkPrefab ScriptLinkPrefab = null;
+					for(int i=0; i<Count; i++)
+					{
+						/* Get "Instance"-Parts */
+						InformationInstance = ListPartsInstance[i] as LibraryEditor_SpriteStudio.Menu.InformationInstance;
+						GameObjectPartsInstance = GameObjectGetID(InformationInstance.ID);
+						ScriptLinkPrefab = GameObjectPartsInstance.GetComponent<Script_SpriteStudio_LinkPrefab>();
+						if(null != ScriptLinkPrefab)
+						{
+							int IndexPrefab = InformationSSPJ.ArraySearchFileNameBody(InformationSSPJ.ListSSAE, InformationInstance.NameInstanceSSAE);
+							if(0 <= IndexPrefab)
+							{
+								ScriptLinkPrefab.LinkPrefab = ArrayTrankParts[IndexPrefab].PrefabData;
+								ScriptLinkPrefab.FlagDeleteScript = false;
+								ScriptLinkPrefab.FlagAutoDevelop = false;
+							}
+						}
+					}
+				}
+
 				/* Create Prefab */
-				UnityEngine.Object PrefabNow = AssetUtility.Create.Prefab(GameObjectRoot, Name, NamePath + "/" + NamePathSubImportPrefab, DataSettingImport.FlagConfirmOverWrite);
-				if(null == PrefabNow)
+				PrefabData = AssetUtility.Create.Prefab(GameObjectRoot, Name, NamePath + "/" + NamePathSubImportPrefab, DataSettingImport.FlagConfirmOverWrite);
+				if(null == PrefabData)
 				{
 					return(false);
 				}
@@ -2013,15 +2369,15 @@ public static partial class LibraryEditor_SpriteStudio
 							AssetUtility.GameObjectSetActive(GameObjectControl, true);
 
 							/*  Attach Link-Prefab Script */
-							Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.AddComponent<Script_LinkPrefab>();
-							ScriptLinkPrefab.LinkPrefab = PrefabNow;
+							Script_SpriteStudio_LinkPrefab ScriptLinkPrefab = GameObjectControl.AddComponent<Script_SpriteStudio_LinkPrefab>();
+							ScriptLinkPrefab.LinkPrefab = PrefabData;
 							ScriptLinkPrefab.FlagDeleteScript = false;
 							ScriptLinkPrefab.FlagAutoDevelop = true;
 
 							/* Create Control Prefab */
 							/* MEMO: can't to be confirmed Overwrite */
-							PrefabNow = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath, DataSettingImport.FlagConfirmOverWrite);
-							if(null == PrefabNow)
+							UnityEngine.Object PrefabControl = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath, DataSettingImport.FlagConfirmOverWrite);
+							if(null == PrefabControl)
 							{
 								Debug.LogError("Miss-Creating[" + Name + "]");
 								return(false);
@@ -2040,10 +2396,10 @@ public static partial class LibraryEditor_SpriteStudio
 						GameObject GameObjectControl = (GameObject)ObjectExisting;
 						if(null != GameObjectControl)
 						{
-							Script_LinkPrefab ScriptLinkPrefab = GameObjectControl.GetComponent<Script_LinkPrefab>();
+							Script_SpriteStudio_LinkPrefab ScriptLinkPrefab = GameObjectControl.GetComponent<Script_SpriteStudio_LinkPrefab>();
 							if(null != ScriptLinkPrefab)
 							{
-								ScriptLinkPrefab.LinkPrefab = PrefabNow;
+								ScriptLinkPrefab.LinkPrefab = PrefabData;
 							}
 
 							/* Fixing Created Assets */
@@ -2054,6 +2410,17 @@ public static partial class LibraryEditor_SpriteStudio
 
 				return(true);
 			}
+			private GameObject GameObjectGetID(int NodeID)
+			{
+				for(int i=0; i<ListParts.Length; i++)
+				{
+					if(NodeID == ListParts[i].ID)
+					{
+						return(ListParts[i].GameObjectParts);
+					}
+				}
+				return(null);
+			}
 			private Library_SpriteStudio.AnimationData NodeSetAnimation(GameObject GameObjectParts, PartsSprite DataParts, Script_SpriteStudio_PartsRoot ScriptRoot)
 			{
 				Library_SpriteStudio.AnimationData DataSpriteStudio = null;
@@ -2062,7 +2429,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 				Script_SpriteStudio_Triangle2 ComponentScript_Triangle2 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle2>();
 				if(null != ComponentScript_Triangle2)
-				{
+				{	/* Normal (Triangle-2) */
 					ComponentScript_Triangle2.BootUpForce();
 					DataSpriteStudio = ComponentScript_Triangle2.SpriteStudioData;
 					DataSpriteStudio.ID = DataParts.ID;
@@ -2077,7 +2444,7 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					Script_SpriteStudio_Triangle4 ComponentScript_Triangle4 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle4>();
 					if(null != ComponentScript_Triangle4)
-					{
+					{	/* Normal (Triangle-4) */
 						ComponentScript_Triangle4.BootUpForce();
 						DataSpriteStudio = ComponentScript_Triangle4.SpriteStudioData;
 						DataSpriteStudio.ID = DataParts.ID;
@@ -2092,7 +2459,7 @@ public static partial class LibraryEditor_SpriteStudio
 					{
 						Script_SpriteStudio_PartsNULL ComponentScript_PartsNULL = GameObjectParts.GetComponent<Script_SpriteStudio_PartsNULL>();
 						if(null != ComponentScript_PartsNULL)
-						{
+						{	/* NULL */
 							ComponentScript_PartsNULL.BootUpForce();
 							DataSpriteStudio = ComponentScript_PartsNULL.SpriteStudioData;
 							DataSpriteStudio.ID = DataParts.ID;
@@ -2104,20 +2471,42 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{
-							Script_SpriteStudio_PartsRoot ComponentScript_PartsRoot = GameObjectParts.GetComponent<Script_SpriteStudio_PartsRoot>();
-							if(null != ComponentScript_PartsRoot)
-							{
-								ComponentScript_PartsRoot.BootUpForce();
-								DataSpriteStudio = ComponentScript_PartsRoot.SpriteStudioData;
+							Script_SpriteStudio_PartsInstance ComponentScript_PartsInstance = GameObjectParts.GetComponent<Script_SpriteStudio_PartsInstance>();
+							if(null != ComponentScript_PartsInstance)
+							{	/* Instance */
+								ComponentScript_PartsInstance.BootUpForce();
+								DataSpriteStudio = ComponentScript_PartsInstance.SpriteStudioData;
 								DataSpriteStudio.ID = DataParts.ID;
 
-								MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.ROOT];
-								FlagRoot = true;
+								ComponentScript_PartsInstance.ScriptRoot = ScriptRoot;
+
+								MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.INSTANCE];
+								FlagRoot = false;
+
+								/* Add Informarion to Array */
+								LibraryEditor_SpriteStudio.Menu.InformationInstance Information = new LibraryEditor_SpriteStudio.Menu.InformationInstance();
+								Information.ID = DataParts.ID;
+								Information.NameInstanceSSAE = String.Copy(DataParts.InstanceNameSSAE);
+								Information.NameInstanceAnimation = String.Copy(DataParts.InstanceNameAnimation);
+								ListPartsInstance.Add(Information);
 							}
 							else
-							{	/* Node is Invalid */
-								Debug.LogError("SSAE-Create-Animation-Data Error: Animation[" + DataParts.Name + "] Invalid Node-Kind.");
-								return(null);
+							{
+								Script_SpriteStudio_PartsRoot ComponentScript_PartsRoot = GameObjectParts.GetComponent<Script_SpriteStudio_PartsRoot>();
+								if(null != ComponentScript_PartsRoot)
+								{	/* Root */
+									ComponentScript_PartsRoot.BootUpForce();
+									DataSpriteStudio = ComponentScript_PartsRoot.SpriteStudioData;
+									DataSpriteStudio.ID = DataParts.ID;
+
+									MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.ROOT];
+									FlagRoot = true;
+								}
+								else
+								{	/* Node is Invalid */
+									Debug.LogError("SSAE-Create-Animation-Data Error: Animation[" + DataParts.Name + "] Invalid Node-Kind.");
+									return(null);
+								}
 							}
 						}
 					}
@@ -2227,6 +2616,7 @@ public static partial class LibraryEditor_SpriteStudio
 																							);
 				DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeCell(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL]);
 				DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeUserData(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
+				DataRuntime.AnimationDataInstance = AnimationDataConvertRuntimeInstance(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
 
 				return(true);
 			}
@@ -3104,6 +3494,109 @@ public static partial class LibraryEditor_SpriteStudio
 
 				return(DataOutput);
 			}
+			private Library_SpriteStudio.KeyFrame.ValueInstance[] AnimationDataConvertRuntimeInstance(ArrayList DataOriginalArray)
+			{
+				if(null == DataOriginalArray)
+				{	/* Attribute doesn't exist */
+					return(null);
+				}
+
+				/* Create & Initialize All Frames */
+				Library_SpriteStudio.KeyFrame.ValueInstance[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueInstance[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueInstance();
+				}
+
+				/* Set Frames */
+				DataIntermediate.KeyFrame.DataInstance DataOriginal;
+				int CountKeyFrame;
+				int IndexKeyBase;
+				int IndexKeyNow;
+				int IndexAnimation;
+				int IndexAnimationNow;
+
+				if(null != DataOriginalArray)
+				{
+					/* Set Key-Frames */
+					CountKeyFrame = DataOriginalArray.Count;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						/* Create Data-Body */
+						DataOriginal = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
+						IndexKeyBase = DataOriginal.Time;
+						DataOutput[IndexKeyBase].Information = new Library_SpriteStudio.KeyFrame.ValueInstance.InformationPlay();
+						
+						/* Copy Data-Body */ 
+						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
+						DataOutput[IndexKeyBase].Information.Flag = Library_SpriteStudio.KeyFrame.ValueInstance.InformationPlay.FlagData.CLEAR;
+						DataOutput[IndexKeyBase].Information.Flag |= (true == DataOriginal.Value.IsPingPong) ? Library_SpriteStudio.KeyFrame.ValueInstance.InformationPlay.FlagData.PINGPONG : 0;
+						DataOutput[IndexKeyBase].Information.Flag |= (true == DataOriginal.Value.IsIndependent) ? Library_SpriteStudio.KeyFrame.ValueInstance.InformationPlay.FlagData.INDEPENDENT : 0;
+
+						DataOutput[IndexKeyBase].Information.LabelStart = string.Copy(DataOriginal.Value.LabelStart);
+						DataOutput[IndexKeyBase].Information.OffsetStart = DataOriginal.Value.OffsetStart;
+						DataOutput[IndexKeyBase].Information.LabelEnd = string.Copy(DataOriginal.Value.LabelEnd);
+						DataOutput[IndexKeyBase].Information.OffsetEnd = DataOriginal.Value.OffsetEnd;
+						DataOutput[IndexKeyBase].Information.PlayCount = DataOriginal.Value.PlayCount;
+						DataOutput[IndexKeyBase].Information.RateTime = DataOriginal.Value.RateTime;
+						DataOutput[IndexKeyBase].Information.RateTime *= (true == DataOriginal.Value.IsReverse) ? -1.0f : 1.0f;
+					}
+
+					/* Solving All-KeyFrame */
+					CountKeyFrame = DataOutput.Length;
+					IndexKeyBase = -1;
+					for(int i=0; i<CountKeyFrame; i++)
+					{
+						IndexAnimation = IndexAnimationGetFrameNo(i);
+						if(-1 == IndexAnimation)
+						{	/* Animation Range Over */
+							IndexKeyBase = -1;	/* Clear Base-Key */
+							continue;
+						}
+						
+						if(-1 == DataOutput[i].FrameNoBase)
+						{	/* Not-Solved Frame */
+							if(-1 == IndexKeyBase)
+							{	/* Before First Valid-KeyData */
+								continue;
+							}
+
+							DataOutput[i].FrameNoBase = IndexKeyBase;
+							DataOutput[i].Information = DataOutput[IndexKeyBase].Information;	/* Library_SpriteStudio.KeyFrame.DummyValueInstance; */
+						}
+						else
+						{	/* Valid Key-Data */
+							/* Solving Previous Frames */
+							IndexKeyBase = i;
+							IndexKeyNow = i - 1;
+							for( ; ; )
+							{
+								if(IndexKeyNow < 0)
+								{	/* Data Range Over */
+									break;
+								}
+								
+								if(-1 != DataOutput[IndexKeyNow].FrameNoBase)
+								{	/* Already Solved */
+									break;
+								}
+
+								IndexAnimationNow = IndexAnimationGetFrameNo(IndexKeyNow);
+								if((-1 == IndexAnimationNow) || (IndexAnimation != IndexAnimationNow))
+								{	/**/
+									break;
+								}
+								DataOutput[IndexKeyNow].FrameNoBase = IndexKeyBase;
+								DataOutput[IndexKeyNow].Information = DataOutput[IndexKeyBase].Information;	/* Library_SpriteStudio.KeyFrame.DummyValueInstance; */
+
+								IndexKeyNow--;
+							}
+						}
+					}
+				}
+
+				return(DataOutput);
+			}
 			private Library_SpriteStudio.KeyFrame.ValueBools[] AnimationDataConvertRuntimeBools(	ArrayList DataOriginalArrayHide,
 																									ArrayList DataOriginalArrayFlipX,
 																									ArrayList DataOriginalArrayFlipY,
@@ -3717,6 +4210,7 @@ public static partial class LibraryEditor_SpriteStudio
 			USER,
 			SOUND,
 			CELL,
+			INSTANCE,
 		};
 		internal enum KindInterpolation
 		{
@@ -3777,6 +4271,8 @@ public static partial class LibraryEditor_SpriteStudio
 
 			CELL,
 			USER_DATA,
+
+			INSTANCE,
 
 			PALETTE_CHANGE,
 			SOUND,
@@ -3855,8 +4351,22 @@ public static partial class LibraryEditor_SpriteStudio
 			},
 			new KindAttributeKey[]
 			{	/* NULL: NULL-Node */
+#if false
 				KindAttributeKey.PRIORITY,
 				KindAttributeKey.SOUND,
+#else
+				KindAttributeKey.PRIORITY,
+				KindAttributeKey.VERTEX_CORRECTION,
+				KindAttributeKey.ORIGIN_OFFSET_X,
+				KindAttributeKey.ORIGIN_OFFSET_Y,
+				KindAttributeKey.TEXTURE_TRANSLATE_X,
+				KindAttributeKey.TEXTURE_TRANSLATE_Y,
+				KindAttributeKey.TEXTURE_ROTATE,
+				KindAttributeKey.TEXTURE_SCALE_X,
+				KindAttributeKey.TEXTURE_SCALE_Y,
+				KindAttributeKey.PALETTE_CHANGE,
+				KindAttributeKey.SOUND,
+#endif
 
 				KindAttributeKey.TERMINATOR
 			},
@@ -3867,7 +4377,22 @@ public static partial class LibraryEditor_SpriteStudio
 			new KindAttributeKey[]
 			{	/* BOUND: Sound-Node (not supported SS5) */
 				KindAttributeKey.TERMINATOR
-			}
+			},
+			new KindAttributeKey[]
+			{	/* INSTANCE: Instance-Node */
+				KindAttributeKey.VERTEX_CORRECTION,
+				KindAttributeKey.ORIGIN_OFFSET_X,
+				KindAttributeKey.ORIGIN_OFFSET_Y,
+				KindAttributeKey.TEXTURE_TRANSLATE_X,
+				KindAttributeKey.TEXTURE_TRANSLATE_Y,
+				KindAttributeKey.TEXTURE_ROTATE,
+				KindAttributeKey.TEXTURE_SCALE_X,
+				KindAttributeKey.TEXTURE_SCALE_Y,
+				KindAttributeKey.PALETTE_CHANGE,
+				KindAttributeKey.SOUND,
+
+				KindAttributeKey.TERMINATOR
+			},
 		};
 		internal class AnimationDataEditor
 		{
@@ -3892,29 +4417,40 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 		internal struct PartsSprite
 		{
-			internal Library_SpriteStudio.KindParts PartsKind;
-			internal Library_SpriteStudio.KindParts ObjectKind;
-			internal Library_SpriteStudio.KindCollision CollisionKind;
 			internal int ID;
 			internal int IDParent;
 
+			internal Library_SpriteStudio.KindParts PartsKind;
+			internal Library_SpriteStudio.KindParts ObjectKind;
+			internal Library_SpriteStudio.KindCollision CollisionKind;
+
+			internal GameObject GameObjectParts;
 			internal string Name;
 			internal Library_SpriteStudio.KindColorOperation KindBlendTarget;
 
 			internal AnimationDataEditor DataAnimation;
 
+			internal string InstanceNameSSAE;
+			internal string InstanceNameAnimation;
+
 			internal void CleanUp()
 			{
-				PartsKind = Library_SpriteStudio.KindParts.NORMAL;
-				ObjectKind = Library_SpriteStudio.KindParts.TERMINATOR;
-				CollisionKind = Library_SpriteStudio.KindCollision.NON;
 				ID = -1;
 				IDParent = -1;
 
+				PartsKind = Library_SpriteStudio.KindParts.NORMAL;
+				ObjectKind = Library_SpriteStudio.KindParts.TERMINATOR;
+				CollisionKind = Library_SpriteStudio.KindCollision.NON;
+
+				GameObjectParts = null;
 				Name = "";
 				KindBlendTarget = Library_SpriteStudio.KindColorOperation.MIX;
 
 				DataAnimation = null;
+
+				InstanceNameSSAE = null;
+				InstanceNameAnimation = null;
+
 			}
 
 			internal void BootUp()
@@ -4165,6 +4701,12 @@ public static partial class LibraryEditor_SpriteStudio
 				{"ORFY",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_Y,
 														DataIntermediate.KindValueKey.NUMBER,
 														DataIntermediate.KindTypeKey.FLOAT
+													)
+				},
+
+				{"IPRM",	new DescriptionAttribute(	DataIntermediate.KindAttributeKey.INSTANCE,
+														DataIntermediate.KindValueKey.INSTANCE,
+														DataIntermediate.KindTypeKey.OTHER
 													)
 				},
 			};
@@ -4856,6 +5398,80 @@ public static partial class LibraryEditor_SpriteStudio
 						);
 				}
 			}
+			public class ValueInstance
+			{
+				internal enum FlagData
+				{
+					CLEAR = 0x00000000,
+
+					PINGPONG = 0x00000001,
+					INDEPENDENT = 0x00000002,
+
+					REVERSE = 0x00000004,
+				};
+
+				internal FlagData Flag;
+				internal bool IsPingPong
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.PINGPONG)));
+					}
+				}
+				internal bool IsIndependent
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.INDEPENDENT)));
+					}
+				}
+				internal bool IsReverse
+				{
+					get
+					{
+						return((0 != (Flag & FlagData.REVERSE)));
+					}
+				}
+
+				internal int PlayCount;
+				internal float RateTime;
+				internal int OffsetStart;
+				internal int OffsetEnd;
+				internal string LabelStart;
+				internal string LabelEnd;
+
+				internal ValueInstance()
+				{
+				}
+				internal ValueInstance(ValueInstance Value)
+				{
+					Flag = Value.Flag;
+					PlayCount = Value.PlayCount;
+					RateTime = Value.RateTime;
+					OffsetStart = Value.OffsetStart;
+					OffsetEnd = Value.OffsetEnd;
+					LabelStart = System.String.Copy(Value.LabelStart);
+					LabelEnd = System.String.Copy(Value.LabelEnd);
+				}
+				internal ValueInstance Clone()
+				{
+					ValueInstance Value = new ValueInstance(this);
+					return(Value);
+				}
+				public override string ToString()
+				{
+					return(	"IsPingPong: " + IsPingPong.ToString()
+							+ ", IsIndependent: " + IsIndependent.ToString()
+							+ ", IsReverse: " + IsReverse.ToString()
+							+ ", PlayCount: " + PlayCount.ToString()
+							+ ", RateTime: " + RateTime.ToString()
+							+ ", LabelStart: " + LabelStart
+							+ ", OffsetStart: " + OffsetStart.ToString()
+							+ ", LabelEnd: " + LabelEnd
+							+ ", OffsetEnd: " + OffsetEnd.ToString()
+						);
+				}
+			}
 
 			public class DataBool : DataBase<bool> {}
 			public class DataInt : DataBase<int> {}
@@ -4867,6 +5483,7 @@ public static partial class LibraryEditor_SpriteStudio
 			public class DataUser : DataBase<ValueUser> {}
 			public class DataParette : DataBase<ValuePalette> {}
 			public class DataSound : DataBase<ValueSound> {}
+			public class DataInstance : DataBase<ValueInstance> {}
 
 			public static _Type DataGetIndex<_Type>(_Type[] TableKeyData, int Index)
 				where _Type : InterfaceData

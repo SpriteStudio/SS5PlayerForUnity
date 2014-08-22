@@ -11,19 +11,6 @@ using System.Collections;
 [CustomEditor(typeof(Script_SpriteStudio_PartsRoot))]
 public class Inspector_SpriteStudio_PartsRoot : Editor
 {
-	private static readonly string[] NameDrawKind =
-	{
-		"Shader Setting (Initial)",
-		"User Setting",
-		"Back Ground",
-		"Geometry",
-		"Alpha Test",
-		"Transparent",
-		"Overlay",
-//		"(TERMINATOR)"
-	};
-
-	private static bool FoldOutDrawSetting;
 	private static bool FoldOutAnimationInformation;
 	private static bool FoldOutPlayInformation;
 	private static bool FoldOutMaterialTable;
@@ -117,26 +104,177 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 				Data.AnimationNo = AnimationNo;
 				FlagUpdate = true;
 			}
+			int CountLabel = Data.ListInformationPlay[AnimationNo].Label.Length;
+			bool FlagLabelSelectable = (0 < CountLabel) ? true : false;
 
-			int FrameNoEnd = Data.ListInformationPlay[Data.AnimationNo].FrameEnd - Data.ListInformationPlay[Data.AnimationNo].FrameStart;
-			int FrameNoInitial = EditorGUILayout.IntField("Start Offset Frame-No", Data.FrameNoInitial);
-//			int FrameNoInitial = EditorGUILayout.IntSlider("Start Offset Frame-No", Data.FrameNoInitial, 0, FrameNoEnd);
-			EditorGUILayout.LabelField("(This-Value influences only at Initial)");
-			EditorGUILayout.LabelField("(Don't set Negative-Value or OverRun-Value)");
+			int FrameNoStart = 0;
+			int FrameNoEnd = Data.ListInformationPlay[AnimationNo].FrameEnd - Data.ListInformationPlay[AnimationNo].FrameStart;
+			int FrameNoStartRange = FrameNoStart;
+			int FrameNoEndRange = FrameNoEnd;
+			EditorGUILayout.LabelField("Animation Frames: " + FrameNoStart.ToString() + " to " + FrameNoEnd.ToString());
+			EditorGUILayout.Space();
+
+			string[] NameLabel = null;
+			int[] IndexLabel = null;
+			int[] FrameNoLabel = null;
+			int LabelStart = -1;
+			int LabelEnd = -1;
+			if(true == FlagLabelSelectable)
+			{
+				CountLabel += 2;	/* +2 ... "_start" and "_end" (Reserved-Labels) */
+				NameLabel = new string[CountLabel];
+				IndexLabel = new int[CountLabel];
+				FrameNoLabel = new int[CountLabel];
+
+				NameLabel[0] = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
+				IndexLabel[0] = 0;
+				FrameNoLabel[0] = 0;
+				for(int j=1; j<(CountLabel-1); j++)
+				{
+					IndexLabel[j] = j;
+					NameLabel[j] = string.Copy(Data.ListInformationPlay[AnimationNo].Label[j-1].Name);
+					FrameNoLabel[j] = Data.ListInformationPlay[AnimationNo].Label[j-1].FrameNo;
+				}
+				NameLabel[CountLabel - 1] = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
+				IndexLabel[CountLabel - 1] = CountLabel - 1;
+				FrameNoLabel[CountLabel - 1] = FrameNoEnd;
+
+				for(int j=0; j<CountLabel; j++)
+				{
+					if(0 == string.Compare(NameLabel[j], Data.NameLabelStart))
+					{
+						LabelStart = j;
+					}
+					if(0 == string.Compare(NameLabel[j], Data.NameLabelEnd))
+					{
+						LabelEnd = j;
+					}
+				}
+				if(-1 == LabelStart)
+				{
+					LabelStart = 0;
+				}
+				if(-1 == LabelEnd)
+				{
+					LabelEnd = CountLabel - 1;
+				}
+			}
+			else
+			{
+				CountLabel = 2;
+				
+				NameLabel = new string[CountLabel];
+				IndexLabel = new int[CountLabel];
+				FrameNoLabel = new int[CountLabel];
+				
+				NameLabel[0] = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
+				IndexLabel[0] = 0;
+				FrameNoLabel[0] = 0;
+
+				NameLabel[1] = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
+				IndexLabel[1] = CountLabel - 1;
+				FrameNoLabel[1] = FrameNoEnd;
+			}
+		
+			EditorGUILayout.Space();
+			if(true == FlagLabelSelectable)
+			{
+				int LabelOld = LabelStart;
+				LabelStart = EditorGUILayout.IntPopup("Range Start Label", LabelOld, NameLabel, IndexLabel);
+				if((LabelOld != LabelStart) || (true == string.IsNullOrEmpty(Data.NameLabelStart)))
+				{
+					Data.NameLabelStart = string.Copy(NameLabel[IndexLabel[LabelStart]]);
+					FlagUpdate = true;
+				}
+				FrameNoStartRange = FrameNoLabel[LabelStart];
+			}
+
+			int OffsetOld = Data.OffsetFrameStart - FrameNoStart;
+			int OffsetNew = EditorGUILayout.IntField("Range Start Offset: ", OffsetOld);
+			if((FrameNoStartRange + OffsetNew) >= FrameNoEnd)
+			{
+				OffsetNew = FrameNoEnd - FrameNoStartRange - 1;
+			}
+			if(OffsetOld != OffsetNew)
+			{
+				Data.OffsetFrameStart = OffsetNew;
+				FlagUpdate = true;
+			}
+
+			EditorGUILayout.LabelField(	"Range Start: (" + FrameNoStartRange.ToString()
+										+ " + " 
+										+ OffsetNew.ToString()
+										+ ")="
+										+ (FrameNoStartRange + OffsetNew).ToString()
+									);
+			FrameNoStartRange += OffsetNew;
+			EditorGUILayout.Space();
+
+			if(true == FlagLabelSelectable)
+			{
+				int LabelOld = LabelEnd;
+				LabelEnd = EditorGUILayout.IntPopup("Range End Lable", LabelOld, NameLabel, IndexLabel);
+				if((LabelOld != LabelEnd) || (true == string.IsNullOrEmpty(Data.NameLabelEnd)))
+				{
+					Data.NameLabelEnd = string.Copy(NameLabel[IndexLabel[LabelEnd]]);
+					FlagUpdate = true;
+				}
+				FrameNoEndRange = FrameNoLabel[LabelEnd];
+			}
+
+			OffsetOld = Data.OffsetFrameEnd;
+			OffsetNew = EditorGUILayout.IntField("Range End Offset", OffsetOld);
+			if((FrameNoEndRange + OffsetNew) >= FrameNoEnd)
+			{
+				OffsetNew = 0;
+			}
+			if((FrameNoEndRange + OffsetNew) <= FrameNoStartRange)
+			{
+				OffsetNew = (FrameNoStartRange - FrameNoEndRange) + 1;
+			}
+			if(OffsetOld != OffsetNew)
+			{
+				Data.OffsetFrameEnd = OffsetNew;
+				FlagUpdate = true;
+			}
+
+			EditorGUILayout.LabelField(	"Range End: (" + FrameNoEndRange.ToString()
+										+ " + " 
+										+ OffsetNew.ToString()
+										+ ")="
+										+ (FrameNoEndRange + OffsetNew).ToString()
+									);
+			FrameNoEndRange += OffsetNew;
+			EditorGUILayout.Space();
+
+			int FrameNoInitialOld = Data.FrameNoInitial;
+			if(0 > FrameNoInitialOld)
+			{
+				FrameNoInitialOld = 0;
+			}
+			if((FrameNoEnd - FrameNoStart) < FrameNoInitialOld)
+			{
+				FrameNoInitialOld = FrameNoEnd - FrameNoStart;
+			}
+			int FrameNoInitial = EditorGUILayout.IntField("Initial Start Offset", FrameNoInitialOld);
+			EditorGUILayout.LabelField(	"Valid Value Range: 0 to " + (FrameNoEndRange - FrameNoStartRange).ToString());
 			if(0 > FrameNoInitial)
 			{
 				FrameNoInitial = 0;
 			}
-			if(FrameNoEnd < FrameNoInitial)
+			if((FrameNoEndRange - FrameNoStartRange) < FrameNoInitial)
 			{
-				FrameNoInitial = FrameNoEnd;
+				FrameNoInitial = FrameNoEndRange - FrameNoStartRange;
 			}
-			if(Data.FrameNoInitial != FrameNoInitial)
+			if(FrameNoInitialOld != FrameNoInitial)
 			{
 				Data.FrameNoInitial = FrameNoInitial;
 				FlagUpdate = true;
 			}
 
+			EditorGUILayout.Space();
+			Data.StatusStylePigpong = EditorGUILayout.Toggle("Play-Pingpong", Data.StatusStylePigpong);
+			
 			EditorGUILayout.Space();
 			Data.RateTimeAnimation = EditorGUILayout.FloatField("Rate Time-Progress", Data.RateTimeAnimation);
 			EditorGUILayout.LabelField("(set Negative-Value, Play Backwards.)");
@@ -152,60 +290,19 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 				Data.FrameNoInitial = 0;
 				Data.RateTimeAnimation = 1.0f;
 				Data.PlayTimes = 0;
+				Data.StatusStylePigpong = false;
+				Data.NameLabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
+				Data.OffsetFrameStart = 0;
+				Data.NameLabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
+				Data.OffsetFrameEnd = 0;
 				FlagUpdate = true;
 			}
 
 			EditorGUI.indentLevel = LevelIndent;
 
 			if(true == FlagUpdate){
-				Data.AnimationPlay(AnimationNo, Data.PlayTimes, -1, 0.0f);
+				Data.AnimationPlay();
 			}
-		}
-		EditorGUILayout.Space();
-
-		FoldOutDrawSetting = EditorGUILayout.Foldout(FoldOutDrawSetting, "Rendering Setting");
-		if(true == FoldOutDrawSetting)
-		{
-			EditorGUI.indentLevel = LevelIndent + 1;
-
-			int CountKindQueue = (int)Script_SpriteStudio_PartsRoot.KindDrawQueue.OVERLAY + 1;
-			int[] IndexDrawKind = new int[CountKindQueue];
-			for(int i=0; i<CountKindQueue; i++)
-			{
-				IndexDrawKind[i] = i;
-			}
-			int KindRenderQueueBaseNo = (int)Data.KindRenderQueueBase;
-			KindRenderQueueBaseNo = EditorGUILayout.IntPopup("Render-Queue Base", KindRenderQueueBaseNo, NameDrawKind, IndexDrawKind);
-			Data.KindRenderQueueBase = (Script_SpriteStudio_PartsRoot.KindDrawQueue)KindRenderQueueBaseNo;
-			EditorGUI.indentLevel = LevelIndent + 2;
-			EditorGUILayout.LabelField("Details [" + NameDrawKind[KindRenderQueueBaseNo] + "]");
-			switch((Script_SpriteStudio_PartsRoot.KindDrawQueue)KindRenderQueueBaseNo)
-			{
-				case Script_SpriteStudio_PartsRoot.KindDrawQueue.SHADER_SETTING:
-					EditorGUILayout.LabelField("- Value Base: Defined Tag\"Queue\" in Shader (Default: Transparent)");
-					EditorGUILayout.LabelField("- Offset Range: Depend on Tag\"Queue\"(Default: 0-999)");
-					break;
-
-				case Script_SpriteStudio_PartsRoot.KindDrawQueue.USER_SETTING:
-					EditorGUILayout.LabelField("- Value Base: 0");
-					EditorGUILayout.LabelField("- Offset Range: 1000-4999");
-					break;
-
-				default:
-					EditorGUILayout.LabelField("- Value Base: " + Script_SpriteStudio_PartsRoot.ValueKindDrawQueue[KindRenderQueueBaseNo]);
-					EditorGUILayout.LabelField("- Offset Range: 0-" + (Script_SpriteStudio_PartsRoot.ValueKindDrawQueue[KindRenderQueueBaseNo+1] - Script_SpriteStudio_PartsRoot.ValueKindDrawQueue[KindRenderQueueBaseNo]-1));
-					break;
-			}
-			EditorGUI.indentLevel = LevelIndent + 1;
-
-			EditorGUILayout.Space();
-			Data.OffsetDrawQueue = EditorGUILayout.IntField("Render-Queue Offset", Data.OffsetDrawQueue);
-
-			EditorGUILayout.Space();
-			Data.RateDrawQueueEffectZ = EditorGUILayout.FloatField("Rate Z Effect", Data.RateDrawQueueEffectZ);
-			EditorGUILayout.LabelField("(\"This-Value x ViewPort-Z\" Added to Offset)");
-
-			EditorGUI.indentLevel = LevelIndent;
 		}
 		EditorGUILayout.Space();
 

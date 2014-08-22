@@ -7,33 +7,32 @@
 using UnityEngine;
 using System.Collections;
 
-[System.Serializable]
 [ExecuteInEditMode]
+[System.Serializable]
 public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 {
+	/* Variables & Propaties */
 	public Library_SpriteStudio.AnimationDataSprite SpriteStudioData;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
+	public bool FlagHideForce;
 
-	void Awake()
-	{
-	}
-
+	/* Functions */
 	void Start()
 	{
 		MeshCreate();
-		DataMeshInformation = new Script_SpriteStudio_PartsRoot.InformationMeshData();
+		DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
 	}
 
 	void Update()
 	{
-		/* Create Mesh (when Mesh is Lost) */
+		/* Boot-Check */
 		if(null == dataMesh)
 		{
 			MeshCreate();
 		}
 		if(null == DataMeshInformation)
 		{
-			DataMeshInformation = new Script_SpriteStudio_PartsRoot.InformationMeshData();
+			DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
 		}
 
 		/* Update User-CallBack */
@@ -43,10 +42,11 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		SpriteStudioData.UpdateMesh(dataMesh, ScriptRoot.FrameNoNow, ScriptRoot);
 
 		/* Set Matrix for Transform (to the GameObject) */
-		if(true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow))
+		if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow)) && (false == FlagHideForce))
 		{	/* Show the Sprite */
 			DataMeshInformation.DataMesh = dataMesh;
 			DataMeshInformation.DataTransform = transform;
+			DataMeshInformation.PartsInstance = null;
 			SpriteStudioData.DrawEntry(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
 		}
 	}
@@ -58,6 +58,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 	public void BootUpForce()
 	{
 		SpriteStudioData = new Library_SpriteStudio.AnimationDataSprite();
+		FlagHideForce = false;
 	}
 
 	private void MeshCreate()
