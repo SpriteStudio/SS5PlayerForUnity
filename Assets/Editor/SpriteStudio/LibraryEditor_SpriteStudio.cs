@@ -25,6 +25,55 @@ public static partial class LibraryEditor_SpriteStudio
 		Shader.Find("Custom/SpriteStudio5/Mul")
 	};
 
+	/* Utility for Inspectors */
+	public static class Utility
+	{
+		public static void HideSetForce(GameObject InstanceGameObject, bool FlagSwitch, bool FlagSetChild, bool FlagSetInstance)
+		{
+			GameObject InstanceGameObjectNow = InstanceGameObject;
+			Transform InstanceTransform = InstanceGameObjectNow.transform;
+			Script_SpriteStudio_Triangle2 ScriptTriangle2 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle2>();
+			if(null != ScriptTriangle2)
+			{
+				ScriptTriangle2.FlagHideForce = FlagSwitch;
+				EditorUtility.SetDirty(ScriptTriangle2);
+			}
+			else
+			{
+				Script_SpriteStudio_Triangle4 ScriptTriangle4 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle4>();
+				if(null != ScriptTriangle4)
+				{
+					ScriptTriangle4.FlagHideForce = FlagSwitch;
+					EditorUtility.SetDirty(ScriptTriangle4);
+				}
+				else
+				{
+					Script_SpriteStudio_PartsInstance ScriptInstasnce = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsInstance>();
+					if(null != ScriptInstasnce)
+					{
+						ScriptInstasnce.FlagHideForce = FlagSwitch;
+						EditorUtility.SetDirty(ScriptInstasnce);
+					}
+					else
+					{
+						Script_SpriteStudio_PartsRoot ScriptRoot = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsRoot>();
+						if((false == FlagSetInstance) && (null != ScriptRoot.PartsRootOrigin))
+						{	/* "Instance"-Object */
+							return;
+						}
+					}
+				}
+			}
+			if(true == FlagSetChild)
+			{
+				for(int i=0; i<InstanceTransform.childCount; i++)
+				{
+					HideSetForce(InstanceTransform.GetChild(i).gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
+				}
+			}
+		}
+	}
+	
 	/* Interfaces between Unity's-Menu-Script and OPSS(SS5)Data-Importing-Script */
 	public struct SettingImport
 	{
@@ -2436,6 +2485,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 					ComponentScript_Triangle2.SpriteStudioData.KindBlendTarget = DataParts.KindBlendTarget;
 					ComponentScript_Triangle2.ScriptRoot = ScriptRoot;
+					ComponentScript_Triangle2.FlagHideForce = false;
 
 					MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.NORMAL];
 					FlagRoot = false;
@@ -2451,6 +2501,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 						ComponentScript_Triangle4.SpriteStudioData.KindBlendTarget = DataParts.KindBlendTarget;
 						ComponentScript_Triangle4.ScriptRoot = ScriptRoot;
+						ComponentScript_Triangle4.FlagHideForce = false;
 
 						MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.NORMAL];
 						FlagRoot = false;
@@ -2479,6 +2530,7 @@ public static partial class LibraryEditor_SpriteStudio
 								DataSpriteStudio.ID = DataParts.ID;
 
 								ComponentScript_PartsInstance.ScriptRoot = ScriptRoot;
+								ComponentScript_PartsInstance.FlagHideForce = false;
 
 								MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.INSTANCE];
 								FlagRoot = false;

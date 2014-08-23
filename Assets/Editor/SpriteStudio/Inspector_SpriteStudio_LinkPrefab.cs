@@ -48,5 +48,10 @@ public class Inspector_SpriteStudio_LinkPrefab : Editor
 		EditorGUILayout.LabelField("[CAUTION] Above This Object is stored");
 		EditorGUILayout.LabelField("in Prefab, Click \"Erase Developped-Prefab\".");
 		EditorGUILayout.Space();
+
+		if(true == GUI.changed)
+		{
+			EditorUtility.SetDirty(target);
+		}
 	}
 }

@@ -79,5 +79,10 @@ public class Inspector_SpriteStudio_DrawManagerView : Editor
 			EditorGUI.indentLevel = LevelIndent;
 		}
 		EditorGUILayout.Space();
+
+		if(true == GUI.changed)
+		{
+			EditorUtility.SetDirty(target);
+		}
 	}
 }

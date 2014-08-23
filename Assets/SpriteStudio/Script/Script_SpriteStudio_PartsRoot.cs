@@ -227,8 +227,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	private Camera InstanceCameraDraw;
 	private Script_SpriteStudio_DrawManagerView InstanceDrawManagerView;
 	private Script_SpriteStudio_PartsRoot partsRootOrigin = null;
-	internal Script_SpriteStudio_PartsRoot PartsRootOrigin
-	{
+	public Script_SpriteStudio_PartsRoot PartsRootOrigin
+	{	/* Caution!: Public-Scope for Editor & Inspector */
 		get
 		{
 			return(partsRootOrigin);
@@ -860,6 +860,28 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public bool AnimationCheckPause()
 	{
 		return(((true == AnimationCheckPlay()) && (0 != (Status & BitStatus.PAUSING))) ? true : false);
+	}
+
+	/* ******************************************************** */
+	//! Force-Hide Set
+	/*!
+	@param	FlagSwitch
+		true == Force-Hide Set (Hide)<br>
+		false == Force-Hide Reset (Show. State of animation is followed.)<br>
+	@param	FlagSetChild
+		true == Children are set same state.<br>
+		false == only oneself.<br>
+	@param	FlagSetInstance
+		true == "Instance"-Objects are set same state.<br>
+		false == "Instance"-Objects are ignored.<br>
+	@retval	Return-Value
+		(None)
+	
+	The state of "Force-Hide" is set, it is not concerned with the state of animation.
+	*/
+	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=true)
+	{
+		Library_SpriteStudio.Utility.HideSetForce(gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
 	}
 
 	/* ******************************************************** */

@@ -270,7 +270,50 @@ public static class Library_SpriteStudio
 				InstanceTransform = InstanceTransform.parent;
 			}
 			return(InstanceRoot);
-		}	}
+		}
+
+		public static void HideSetForce(GameObject InstanceGameObject, bool FlagSwitch, bool FlagSetChild, bool FlagSetInstance)
+		{
+			GameObject InstanceGameObjectNow = InstanceGameObject;
+			Transform InstanceTransform = InstanceGameObjectNow.transform;
+			Script_SpriteStudio_Triangle2 ScriptTriangle2 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle2>();
+			if(null != ScriptTriangle2)
+			{
+				ScriptTriangle2.FlagHideForce = FlagSwitch;
+			}
+			else
+			{
+				Script_SpriteStudio_Triangle4 ScriptTriangle4 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle4>();
+				if(null != ScriptTriangle4)
+				{
+					ScriptTriangle4.FlagHideForce = FlagSwitch;
+				}
+				else
+				{
+					Script_SpriteStudio_PartsInstance ScriptInstasnce = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsInstance>();
+					if(null != ScriptInstasnce)
+					{
+						ScriptInstasnce.FlagHideForce = FlagSwitch;
+					}
+					else
+					{
+						Script_SpriteStudio_PartsRoot ScriptRoot = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsRoot>();
+						if((false == FlagSetInstance) && (null != ScriptRoot.PartsRootOrigin))
+						{	/* "Instance"-Object */
+							return;
+						}
+					}
+				}
+			}
+			if(true == FlagSetChild)
+			{
+				for(int i=0; i<InstanceTransform.childCount; i++)
+				{
+					HideSetForce(InstanceTransform.GetChild(i).gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
+				}
+			}
+		}
+	}
 
 	public static class KeyFrame
 	{

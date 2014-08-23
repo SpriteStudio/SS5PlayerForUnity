@@ -14,6 +14,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	/* Variables & Propaties */
 	public Library_SpriteStudio.AnimationData SpriteStudioData;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
+	public bool FlagHideForce;
 
 	int AnimationNo;
 
@@ -94,7 +95,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 			bool FlagValidInstanceData = SpriteStudioData.UpdateInstanceData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot, this);
 
 			/* Set Matrix for Transform (to the GameObject) */
-			if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData))
+			if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
 			{	/* Show Instance */
 				/* MEMO: "Instance"-Parts has no mesh */
 				DataMeshInformation.DataMesh = null;
@@ -107,6 +108,28 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 
 	void LateUpdate()
 	{
+	}
+
+	/* ******************************************************** */
+	//! Force-Hide Set
+	/*!
+	@param	FlagSwitch
+		true == Force-Hide Set (Hide)<br>
+		false == Force-Hide Reset (Show. State of animation is followed.)<br>
+	@param	FlagSetChild
+		true == Children are set same state.<br>
+		false == only oneself.<br>
+	@param	FlagSetInstance
+		true == "Instance"-Objects are set same state.<br>
+		false == "Instance"-Objects are ignored.<br>
+	@retval	Return-Value
+		(None)
+	
+	The state of "Force-Hide" is set, it is not concerned with the state of animation.
+	*/
+	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=true)
+	{
+		Library_SpriteStudio.Utility.HideSetForce(gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
 	}
 
 	/* ******************************************************** */
