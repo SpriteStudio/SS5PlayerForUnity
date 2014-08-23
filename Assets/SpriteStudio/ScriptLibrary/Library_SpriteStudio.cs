@@ -357,19 +357,34 @@ public static class Library_SpriteStudio
 		[System.Serializable]
 		public class ValueCell
 		{
-			/* Renewal, as same as ValueInstance */
-			public int TextureNo;
-			public Rect Rectangle;
-			public Vector2 Pivot;
+			[System.Serializable]
+			public class  InformationCell
+			{
+				/* Renewal, as same as ValueInstance */
+				public int TextureNo;
+				public Rect Rectangle;
+				public Vector2 Pivot;
+				public Vector2 SizeOriginal;
 
+				public InformationCell()
+				{
+					TextureNo = -1;
+					Rectangle.x = 0.0f;
+					Rectangle.y = 0.0f;
+					Rectangle.width = 0.0f;
+					Rectangle.height = 0.0f;
+					Pivot = Vector2.zero;
+					SizeOriginal = Vector2.zero;
+				}
+			}
+
+			public int FrameNoBase;
+			public InformationCell Information;
+			
 			public ValueCell()
 			{
-				TextureNo = -1;
-				Rectangle.x = 0.0f;
-				Rectangle.y = 0.0f;
-				Rectangle.width = 0.0f;
-				Rectangle.height = 0.0f;
-				Pivot = Vector2.zero;
+				FrameNoBase = -1;
+				Information = null;
 			}
 		}
 
@@ -1356,7 +1371,7 @@ public static class Library_SpriteStudio
 								Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
 								if(0 < AnimationDataCell.Length)
 								{
-									RectCell = AnimationDataCell[FrameNo].Rectangle;
+									RectCell = AnimationDataCell[FrameNo].Information.Rectangle;
 								}
 
 								Vector2 RateScaleMesh = Vector2.one;
@@ -1459,21 +1474,26 @@ public static class Library_SpriteStudio
 			}
 #endif
 			/* Main-Texture Data Get */
-			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].TextureNo, KindBlendTarget);
+			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].Information.TextureNo, KindBlendTarget);
 			if(null != MaterialNow)
 			{
+#if false
 				Texture InstanceTexture = MaterialNow.mainTexture;
 				SizeTexture.x = (float)InstanceTexture.width;
 				SizeTexture.y = (float)InstanceTexture.height;
+#else
+				SizeTexture.x = AnimationDataCell[FrameNo].Information.SizeOriginal.x;
+				SizeTexture.y = AnimationDataCell[FrameNo].Information.SizeOriginal.y;
+#endif
 			}
 
 			/* Cell-Data Get */
 			if(0 < AnimationDataCell.Length)
 			{
-				RectCell = AnimationDataCell[FrameNo].Rectangle;
+				RectCell = AnimationDataCell[FrameNo].Information.Rectangle;
 				PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
 
-				PivotMesh = AnimationDataCell[FrameNo].Pivot;
+				PivotMesh = AnimationDataCell[FrameNo].Information.Pivot;
 			}
 
 			/* Disolve Flipping & Texture-Scaling */
@@ -1687,7 +1707,7 @@ public static class Library_SpriteStudio
 		public void DrawEntry(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 		{
 			float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
-			int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].TextureNo : -1;
+			int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].Information.TextureNo : -1;
 
 			MeshDataInformation.Priority = PriorityGet(Priority, ID);
 			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
