@@ -148,6 +148,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 		InstanceGameObjectPartsRootSub = InstanceGameObjectSub;
 		scriptPartsRootSub = InstanceGameObjectSub.GetComponent<Script_SpriteStudio_PartsRoot>();
 		scriptPartsRootSub.PartsRootOrigin = PartsRootGetOrigin(ScriptRoot);
+		scriptPartsRootSub.NodeSetControl(null);
 	}
 
 	/* ******************************************************** */

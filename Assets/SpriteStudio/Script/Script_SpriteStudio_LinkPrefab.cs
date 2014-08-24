@@ -94,6 +94,14 @@ public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 			{	/* "Instance"-Parts */
 				ScriptPartsInstance.LinkSetPartsInstance(Instance);
 			}
+			else
+			{	/* Control-Node */
+				Script_SpriteStudio_PartsRoot ScriptRoot = Instance.GetComponent<Script_SpriteStudio_PartsRoot>();
+				if(null != ScriptRoot)
+				{
+					ScriptRoot.NodeSetControl(gameObject);
+				}
+			}
 		}
 	}
 

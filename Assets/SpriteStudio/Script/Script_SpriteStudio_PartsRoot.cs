@@ -226,6 +226,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 	private Camera InstanceCameraDraw;
 	private Script_SpriteStudio_DrawManagerView InstanceDrawManagerView;
+	private GameObject InstanceGameObjectControl = null;
 	private Script_SpriteStudio_PartsRoot partsRootOrigin = null;
 	public Script_SpriteStudio_PartsRoot PartsRootOrigin
 	{	/* Caution!: Public-Scope for Editor & Inspector */
@@ -583,11 +584,19 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			Status = BitStatus.CLEAR;
 			if(null != functionPlayEnd)
 			{
-				if(false == functionPlayEnd(transform.parent.gameObject))
-				{
-					/* MEMO: if I have no Control-Node ??? */
-					/* MEMO: Timing is OK ??? */
-					Object.Destroy(transform.parent.gameObject);
+				if(null == InstanceGameObjectControl)
+				{	/* has no Control-Node */
+					if(false == functionPlayEnd(gameObject))
+					{
+						Object.Destroy(gameObject);
+					}
+				}
+				else
+				{	/* has Control-Node */
+					if(false == functionPlayEnd(InstanceGameObjectControl))
+					{
+						Object.Destroy(InstanceGameObjectControl);
+					}
 				}
 			}
 		}
@@ -969,6 +978,22 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		float TimeRange = (float)FrameCount * TimeFramePerSecond;
 		TimeAnimation = (TimeElapsed * RateTimePlay) % TimeRange;
 		Status |= BitStatus.IGNORE_LOOP;
+	}
+
+	/* ******************************************************** */
+	//! Force-Set Offset-Time
+	/*!
+	@param	GameObjectControl
+		Control-GameObject
+	@retval	Return-Value
+		(None)
+
+	Don't use this function. <br>
+	(This function is for the Link-Prefab-Parts' scripts.)
+	*/
+	internal void NodeSetControl(GameObject GameObjectControl)
+	{
+		InstanceGameObjectControl = GameObjectControl;
 	}
 
 	/* ******************************************************** */
