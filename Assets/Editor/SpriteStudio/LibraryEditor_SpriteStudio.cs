@@ -2667,9 +2667,9 @@ public static partial class LibraryEditor_SpriteStudio
 				DataRuntime.AnimationDataCollisionRadius = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLLISION_RADIUS],
 																								0.0f
 																							);
-				DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeCell(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL], TableMaterial);
-				DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeUserData(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
-				DataRuntime.AnimationDataInstance = AnimationDataConvertRuntimeInstance(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
+				DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeCell(ref DataRuntime.ArrayDataBodyCell, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL], TableMaterial);
+				DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeUserData(ref DataRuntime.ArrayDataBodyUser, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
+				DataRuntime.AnimationDataInstance = AnimationDataConvertRuntimeInstance(ref DataRuntime.ArrayDataBodyInstance, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
 
 				return(true);
 			}
@@ -3365,11 +3365,45 @@ public static partial class LibraryEditor_SpriteStudio
 				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.RD] = Data.Coordinate[2].Point;
 				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.LD] = Data.Coordinate[3].Point;
 			}
-			private Library_SpriteStudio.KeyFrame.ValueCell[] AnimationDataConvertRuntimeCell(ArrayList DataOriginalArray, Material[] TableMaterial)
+			private Library_SpriteStudio.KeyFrame.ValueCell[] AnimationDataConvertRuntimeCell(	ref Library_SpriteStudio.KeyFrame.ValueCell.Data[] ArrayDataBody,
+																								ArrayList DataOriginalArray,
+																								Material[] TableMaterial
+																							)
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
+					ArrayDataBody = null;
 					return(null);
+				}
+
+				/* Create Body-Data Array */
+				int Count = DataOriginalArray.Count;
+				ArrayDataBody = new Library_SpriteStudio.KeyFrame.ValueCell.Data[Count];
+					
+				DataIntermediate.KeyFrame.DataCell DataOriginal;
+				for(int i=0; i<Count; i++)
+				{
+					DataOriginal = (DataIntermediate.KeyFrame.DataCell)DataOriginalArray[i];
+					ArrayDataBody[i] = new Library_SpriteStudio.KeyFrame.ValueCell.Data();
+						
+					/* Copy Data-Body */ 
+					int TextureNo = DataOriginal.Value.TextureNo;
+					ArrayDataBody[i].TextureNo = TextureNo;
+					ArrayDataBody[i].Rectangle.x = DataOriginal.Value.Rectangle.x;
+					ArrayDataBody[i].Rectangle.y = DataOriginal.Value.Rectangle.y;
+					ArrayDataBody[i].Rectangle.width = DataOriginal.Value.Rectangle.width;
+					ArrayDataBody[i].Rectangle.height = DataOriginal.Value.Rectangle.height;
+					ArrayDataBody[i].Pivot = DataOriginal.Value.Pivot;
+					if(0 > TextureNo)
+					{	/* Error */
+						ArrayDataBody[i].SizeOriginal = Vector2.zero;
+					}
+					else
+					{
+						int MaterialNo = TextureNo * ((int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1);
+						ArrayDataBody[i].SizeOriginal.x = TableMaterial[MaterialNo].mainTexture.width;
+						ArrayDataBody[i].SizeOriginal.y = TableMaterial[MaterialNo].mainTexture.height;
+					}
 				}
 
 				/* Create & Initialize All Frames */
@@ -3379,7 +3413,6 @@ public static partial class LibraryEditor_SpriteStudio
 					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueCell();
 				}
 				/* Set Frames */
-				DataIntermediate.KeyFrame.DataCell DataOriginal;
 				int CountKeyFrame;
 				int IndexKeyBase;
 				int IndexKeyNow;
@@ -3395,28 +3428,8 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Create Data-Body */
 						DataOriginal = (DataIntermediate.KeyFrame.DataCell)DataOriginalArray[i];
 						IndexKeyBase = DataOriginal.Time;
-						DataOutput[IndexKeyBase].DataBody = new Library_SpriteStudio.KeyFrame.ValueCell.Data();
-						
-						/* Copy Data-Body */ 
-						int TextureNo = DataOriginal.Value.TextureNo;
 						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
-						DataOutput[IndexKeyBase].DataBody.TextureNo = TextureNo;
-						
-						DataOutput[IndexKeyBase].DataBody.Rectangle.x = DataOriginal.Value.Rectangle.x;
-						DataOutput[IndexKeyBase].DataBody.Rectangle.y = DataOriginal.Value.Rectangle.y;
-						DataOutput[IndexKeyBase].DataBody.Rectangle.width = DataOriginal.Value.Rectangle.width;
-						DataOutput[IndexKeyBase].DataBody.Rectangle.height = DataOriginal.Value.Rectangle.height;
-						DataOutput[IndexKeyBase].DataBody.Pivot = DataOriginal.Value.Pivot;
-						if(0 > TextureNo)
-						{	/* Error */
-							DataOutput[IndexKeyBase].DataBody.SizeOriginal = Vector2.zero;
-						}
-						else
-						{
-							int MaterialNo = TextureNo * ((int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1);
-							DataOutput[IndexKeyBase].DataBody.SizeOriginal.x = TableMaterial[MaterialNo].mainTexture.width;
-							DataOutput[IndexKeyBase].DataBody.SizeOriginal.y = TableMaterial[MaterialNo].mainTexture.height;
-						}
+						DataOutput[IndexKeyBase].DataBody = ArrayDataBody[i];
 					}
 
 					/* Solving All-KeyFrame */
@@ -3473,23 +3486,74 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 				return(DataOutput);
 			}
-#if false
-			private void AnimationDataCopyCell(Library_SpriteStudio.KeyFrame.ValueCell DataOutput, DataIntermediate.KeyFrame.ValueCell Data)
-			{
-				DataOutput.TextureNo = Data.TextureNo;
-				DataOutput.Rectangle = Data.Rectangle;
-
-				DataOutput.Pivot = Data.Pivot;
-				/* MEMO: Make lower 2-lines effective (and upper 1-line un-effective),if the pivot must be integer. */
-//				DataOutput.Pivot.x = (float)((int)Data.Pivot.x);
-//				DataOutput.Pivot.y = (float)((int)Data.Pivot.y);
-			}
-#endif
-			private Library_SpriteStudio.KeyFrame.ValueUser[] AnimationDataConvertRuntimeUserData(ArrayList DataOriginalArray)
+			private Library_SpriteStudio.KeyFrame.ValueUser[] AnimationDataConvertRuntimeUserData(	ref Library_SpriteStudio.KeyFrame.ValueUser.Data[] ArrayDataBody,
+																									ArrayList DataOriginalArray
+																								)
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
+					ArrayDataBody = null;
 					return(null);
+				}
+
+				/* Create Body-Data Array */
+				int Count = DataOriginalArray.Count;
+				ArrayDataBody = new Library_SpriteStudio.KeyFrame.ValueUser.Data[Count];
+
+				DataIntermediate.KeyFrame.DataUser DataOriginal;
+				for(int i=0; i<Count; i++)
+				{
+					DataOriginal = (DataIntermediate.KeyFrame.DataUser)DataOriginalArray[i];
+					ArrayDataBody[i] = new Library_SpriteStudio.KeyFrame.ValueUser.Data();
+
+					/* Copy Data-Body */ 
+					ArrayDataBody[i].Flag = Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR;
+					if(true == DataOriginal.Value.IsNumber)
+					{
+						ArrayDataBody[i].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.NUMBER;
+						ArrayDataBody[i].NumberInt = DataOriginal.Value.Number;
+					}
+					else
+					{
+						ArrayDataBody[i].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.NUMBER;
+						ArrayDataBody[i].NumberInt = 0;
+					}
+
+					if(true == DataOriginal.Value.IsRectangle)
+					{
+						ArrayDataBody[i].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.RECTANGLE;
+						ArrayDataBody[i].Rectangle = DataOriginal.Value.Rectangle;
+					}
+					else
+					{
+						ArrayDataBody[i].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.RECTANGLE;
+						ArrayDataBody[i].Rectangle.xMin = 0.0f;
+						ArrayDataBody[i].Rectangle.yMin = 0.0f;
+						ArrayDataBody[i].Rectangle.xMax = 0.0f;
+						ArrayDataBody[i].Rectangle.yMax = 0.0f;
+					}
+
+					if(true == DataOriginal.Value.IsCoordinate)
+					{
+						ArrayDataBody[i].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.COORDINATE;
+						ArrayDataBody[i].Coordinate = DataOriginal.Value.Coordinate.Point;
+					}
+					else
+					{
+						ArrayDataBody[i].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.COORDINATE;
+						ArrayDataBody[i].Coordinate = Vector2.zero;
+					}
+
+					if(true == DataOriginal.Value.IsText)
+					{
+						ArrayDataBody[i].Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.TEXT;
+						ArrayDataBody[i].Text = String.Copy(DataOriginal.Value.Text);
+					}
+					else
+					{
+						ArrayDataBody[i].Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.TEXT;
+						ArrayDataBody[i].Text = "";
+					}
 				}
 
 				/* Create & Initialize All Frames */
@@ -3497,80 +3561,58 @@ public static partial class LibraryEditor_SpriteStudio
 				for(int i=0; i<CountFrameFull; i++)
 				{
 					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueUser();
-					DataOutput[i].DataBody = new Library_SpriteStudio.KeyFrame.ValueUser.Data();	/* Provisional */
+					DataOutput[i].DataBody = Library_SpriteStudio.KeyFrame.DummyDataUser;
 				}
 
 				/* Set Frames */
-				DataIntermediate.KeyFrame.DataUser Data;
 				int IndexKeyFrame;
 				int CountKeyFrame;
-				
 				if(null != DataOriginalArray)
 				{
 					CountKeyFrame = DataOriginalArray.Count;
 					for(int i=0; i<CountKeyFrame; i++)
 					{
 						/* Copy Key-Frames */
-						Data = (DataIntermediate.KeyFrame.DataUser)DataOriginalArray[i];
-						IndexKeyFrame = Data.Time;
-						
-						DataOutput[IndexKeyFrame].DataBody.Flag = Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR;
-						if(true == Data.Value.IsNumber)
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.NUMBER;
-							DataOutput[IndexKeyFrame].DataBody.NumberInt = Data.Value.Number;
-						}
-						else
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.NUMBER;
-							DataOutput[IndexKeyFrame].DataBody.NumberInt = 0;
-						}
-
-						if(true == Data.Value.IsRectangle)
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.RECTANGLE;
-							DataOutput[IndexKeyFrame].DataBody.Rectangle = Data.Value.Rectangle;
-						}
-						else
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.RECTANGLE;
-							DataOutput[IndexKeyFrame].DataBody.Rectangle.xMin = 0.0f;
-							DataOutput[IndexKeyFrame].DataBody.Rectangle.yMin = 0.0f;
-							DataOutput[IndexKeyFrame].DataBody.Rectangle.xMax = 0.0f;
-							DataOutput[IndexKeyFrame].DataBody.Rectangle.yMax = 0.0f;
-						}
-
-						if(true == Data.Value.IsCoordinate)
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.COORDINATE;
-							DataOutput[IndexKeyFrame].DataBody.Coordinate = Data.Value.Coordinate.Point;
-						}
-						else
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.COORDINATE;
-							DataOutput[IndexKeyFrame].DataBody.Coordinate = Vector2.zero;
-						}
-
-						if(true == Data.Value.IsText)
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag |= Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.TEXT;
-							DataOutput[IndexKeyFrame].DataBody.Text = String.Copy(Data.Value.Text);
-						}
-						else
-						{
-							DataOutput[IndexKeyFrame].DataBody.Flag &= ~Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.TEXT;
-							DataOutput[IndexKeyFrame].DataBody.Text = "";
-						}
+						DataOriginal = (DataIntermediate.KeyFrame.DataUser)DataOriginalArray[i];
+						IndexKeyFrame = DataOriginal.Time;
+						DataOutput[IndexKeyFrame].DataBody = ArrayDataBody[i];
 					}
 				}
 
 				return(DataOutput);
 			}
-			private Library_SpriteStudio.KeyFrame.ValueInstance[] AnimationDataConvertRuntimeInstance(ArrayList DataOriginalArray)
+			private Library_SpriteStudio.KeyFrame.ValueInstance[] AnimationDataConvertRuntimeInstance(	ref Library_SpriteStudio.KeyFrame.ValueInstance.Data[] ArrayDataBody,
+																										ArrayList DataOriginalArray
+																									)
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
+					ArrayDataBody = null;
 					return(null);
+				}
+
+				/* Create Body-Data Array */
+				int Count = DataOriginalArray.Count;
+				ArrayDataBody = new Library_SpriteStudio.KeyFrame.ValueInstance.Data[Count];
+
+				DataIntermediate.KeyFrame.DataInstance DataOriginal;
+				for(int i=0; i<Count; i++)
+				{
+					DataOriginal = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
+					ArrayDataBody[i] = new Library_SpriteStudio.KeyFrame.ValueInstance.Data();
+
+					/* Copy Data-Body */ 
+					ArrayDataBody[i].Flag = Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.CLEAR;
+					ArrayDataBody[i].Flag |= (true == DataOriginal.Value.IsPingPong) ? Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.PINGPONG : 0;
+					ArrayDataBody[i].Flag |= (true == DataOriginal.Value.IsIndependent) ? Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT : 0;
+
+					ArrayDataBody[i].LabelStart = string.Copy(DataOriginal.Value.LabelStart);
+					ArrayDataBody[i].OffsetStart = DataOriginal.Value.OffsetStart;
+					ArrayDataBody[i].LabelEnd = string.Copy(DataOriginal.Value.LabelEnd);
+					ArrayDataBody[i].OffsetEnd = DataOriginal.Value.OffsetEnd;
+					ArrayDataBody[i].PlayCount = DataOriginal.Value.PlayCount;
+					ArrayDataBody[i].RateTime = DataOriginal.Value.RateTime;
+					ArrayDataBody[i].RateTime *= (true == DataOriginal.Value.IsReverse) ? -1.0f : 1.0f;
 				}
 
 				/* Create & Initialize All Frames */
@@ -3581,7 +3623,6 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Set Frames */
-				DataIntermediate.KeyFrame.DataInstance DataOriginal;
 				int CountKeyFrame;
 				int IndexKeyBase;
 				int IndexKeyNow;
@@ -3597,21 +3638,8 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Create Data-Body */
 						DataOriginal = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
 						IndexKeyBase = DataOriginal.Time;
-						DataOutput[IndexKeyBase].DataBody = new Library_SpriteStudio.KeyFrame.ValueInstance.Data();
-						
-						/* Copy Data-Body */ 
 						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
-						DataOutput[IndexKeyBase].DataBody.Flag = Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.CLEAR;
-						DataOutput[IndexKeyBase].DataBody.Flag |= (true == DataOriginal.Value.IsPingPong) ? Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.PINGPONG : 0;
-						DataOutput[IndexKeyBase].DataBody.Flag |= (true == DataOriginal.Value.IsIndependent) ? Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT : 0;
-
-						DataOutput[IndexKeyBase].DataBody.LabelStart = string.Copy(DataOriginal.Value.LabelStart);
-						DataOutput[IndexKeyBase].DataBody.OffsetStart = DataOriginal.Value.OffsetStart;
-						DataOutput[IndexKeyBase].DataBody.LabelEnd = string.Copy(DataOriginal.Value.LabelEnd);
-						DataOutput[IndexKeyBase].DataBody.OffsetEnd = DataOriginal.Value.OffsetEnd;
-						DataOutput[IndexKeyBase].DataBody.PlayCount = DataOriginal.Value.PlayCount;
-						DataOutput[IndexKeyBase].DataBody.RateTime = DataOriginal.Value.RateTime;
-						DataOutput[IndexKeyBase].DataBody.RateTime *= (true == DataOriginal.Value.IsReverse) ? -1.0f : 1.0f;
+						DataOutput[IndexKeyBase].DataBody = ArrayDataBody[i];
 					}
 
 					/* Solving All-KeyFrame */
