@@ -25,7 +25,7 @@ public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 
 		/* Set Matrix for Transform (to the GameObject) */
 		/* MEMO: Return-Value is ignored, 'cause NULL-Node has no Meshes. */
-		SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow);
+		SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, false);
 	}
 
 	void LateUpdate()

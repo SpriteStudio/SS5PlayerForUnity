@@ -42,7 +42,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		SpriteStudioData.UpdateMesh(dataMesh, ScriptRoot.FrameNoNow, ScriptRoot);
 
 		/* Set Matrix for Transform (to the GameObject) */
-		if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow)) && (false == FlagHideForce))
+		if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (false == FlagHideForce))
 		{	/* Show the Sprite */
 			DataMeshInformation.DataMesh = dataMesh;
 			DataMeshInformation.DataTransform = transform;

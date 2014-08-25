@@ -35,7 +35,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		public string PartsName = null;
 		public Library_SpriteStudio.AnimationData AnimationDataParts = null;
 		public int FrameNo = -1;
-		public Library_SpriteStudio.KeyFrame.ValueUser Data = null;
+		public Library_SpriteStudio.KeyFrame.ValueUser.Data Data = null;
 	}
 
 	/* Variables & Propaties */
@@ -550,7 +550,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					SpriteStudioData.UpdateUserData(frameNoNow, gameObject, this);
 
 					/* Update GameObject */
-					SpriteStudioData.UpdateGameObject(gameObject, frameNoNow);
+					SpriteStudioData.UpdateGameObject(gameObject, frameNoNow, false);
 				}
 			}
 		}
@@ -929,7 +929,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	Don't use this function. <br>
 	(This function is for the animation-parts' scripts.)
 	*/
-	internal void CallBackExecUserData(string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int FrameNoData, Library_SpriteStudio.KeyFrame.ValueUser Data)
+	internal void CallBackExecUserData(string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int FrameNoData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data)
 	{
 		if(null == ListCallBackUserData)
 		{

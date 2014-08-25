@@ -95,7 +95,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 			bool FlagValidInstanceData = SpriteStudioData.UpdateInstanceData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot, this);
 
 			/* Set Matrix for Transform (to the GameObject) */
-			if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
+			if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
 			{	/* Show Instance */
 				/* MEMO: "Instance"-Parts has no mesh */
 				DataMeshInformation.DataMesh = null;

@@ -10,7 +10,7 @@ using System.Collections;
 public static class Library_SpriteStudio
 {
 	public delegate bool FunctionCallBackPlayEnd(GameObject ObjectControl);
-	public delegate void FunctionCallBackUserData(GameObject ObjectControl, string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int AnimationNo, int FrameNoDecode, int FrameNoKeyData, Library_SpriteStudio.KeyFrame.ValueUser Data);
+	public delegate void FunctionCallBackUserData(GameObject ObjectControl, string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int AnimationNo, int FrameNoDecode, int FrameNoKeyData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data);
 	public delegate void FunctionCallBackOnTrigger(Collider Self, Collider Pair);
 	public delegate void FunctionCallBackOnCollision(Collider Self, Collision Contacts);
 
@@ -358,7 +358,7 @@ public static class Library_SpriteStudio
 		public class ValueCell
 		{
 			[System.Serializable]
-			public class  InformationCell
+			public class  Data
 			{
 				/* Renewal, as same as ValueInstance */
 				public int TextureNo;
@@ -366,7 +366,7 @@ public static class Library_SpriteStudio
 				public Vector2 Pivot;
 				public Vector2 SizeOriginal;
 
-				public InformationCell()
+				public Data()
 				{
 					TextureNo = -1;
 					Rectangle.x = 0.0f;
@@ -379,78 +379,89 @@ public static class Library_SpriteStudio
 			}
 
 			public int FrameNoBase;
-			public InformationCell Information;
+			public Data DataBody;
 			
 			public ValueCell()
 			{
 				FrameNoBase = -1;
-				Information = null;
+				DataBody = null;
 			}
 		}
 
 		[System.Serializable]
 		public class ValueUser
 		{
-			public enum FlagData
+			[System.Serializable]
+			public class Data
 			{
-				CLEAR = 0x00000000,
-				NUMBER = 0x00000001,
-				RECTANGLE = 0x00000002,
-				COORDINATE = 0x00000004,
-				TEXT = 0x00000008,
-			};
+				public enum FlagData
+				{
+					CLEAR = 0x00000000,
+					NUMBER = 0x00000001,
+					RECTANGLE = 0x00000002,
+					COORDINATE = 0x00000004,
+					TEXT = 0x00000008,
+				};
 
-			public FlagData Flag;
-			public bool IsNumber
-			{
-				get
+				public FlagData Flag;
+				public bool IsNumber
 				{
-					return(0 != (Flag & FlagData.NUMBER));
+					get
+					{
+						return(0 != (Flag & FlagData.NUMBER));
+					}
 				}
-			}
-			public bool IsRectangle
-			{
-				get
+				public bool IsRectangle
 				{
-					return(0 != (Flag & FlagData.RECTANGLE));
+					get
+					{
+						return(0 != (Flag & FlagData.RECTANGLE));
+					}
 				}
-			}
-			public bool IsCoordinate
-			{
-				get
+				public bool IsCoordinate
 				{
-					return(0 != (Flag & FlagData.COORDINATE));
+					get
+					{
+						return(0 != (Flag & FlagData.COORDINATE));
+					}
 				}
-			}
-			public bool IsText
-			{
-				get
+				public bool IsText
 				{
-					return(0 != (Flag & FlagData.TEXT));
+					get
+					{
+						return(0 != (Flag & FlagData.TEXT));
+					}
 				}
-			}
-			public int NumberInt;
-			public uint Number
-			{
-				get
+				public int NumberInt;
+				public uint Number
 				{
-					return((uint)NumberInt);
+					get
+					{
+						return((uint)NumberInt);
+					}
 				}
-			}
-			public Rect Rectangle;
-			public Vector2 Coordinate;
-			public string Text;
+				public Rect Rectangle;
+				public Vector2 Coordinate;
+				public string Text;
 
+				public Data()
+				{
+					Flag = FlagData.CLEAR;
+					NumberInt = 0;
+					Rectangle.xMin = 0.0f;
+					Rectangle.yMin = 0.0f;
+					Rectangle.xMax = 0.0f;
+					Rectangle.yMax = 0.0f;
+					Coordinate = Vector2.zero;
+					Text = "";
+				}
+			}
+
+			public Data DataBody;
+			
 			public ValueUser()
 			{
-				Flag = FlagData.CLEAR;
-				NumberInt = 0;
-				Rectangle.xMin = 0.0f;
-				Rectangle.yMin = 0.0f;
-				Rectangle.xMax = 0.0f;
-				Rectangle.yMax = 0.0f;
-				Coordinate = Vector2.zero;
-				Text = "";
+				DataBody = null;
 			}
 		}
 
@@ -515,7 +526,7 @@ public static class Library_SpriteStudio
 		public class ValueInstance
 		{
 			[System.Serializable]
-			public class  InformationPlay
+			public class  Data
 			{
 				public enum FlagData
 				{
@@ -533,7 +544,7 @@ public static class Library_SpriteStudio
 				public string LabelStart;
 				public string LabelEnd;
 
-				public InformationPlay()
+				public Data()
 				{
 					Flag = FlagData.CLEAR;
 					PlayCount = 1;
@@ -546,15 +557,19 @@ public static class Library_SpriteStudio
 			}
 
 			public int FrameNoBase;
-			public InformationPlay Information;
+			public Data DataBody;
 			
 			public ValueInstance()
 			{
 				FrameNoBase = -1;
-				Information = null;
+				DataBody = null;
 			}
 		}
-		public readonly static ValueInstance.InformationPlay DummyValueInstance = new ValueInstance.InformationPlay();
+
+		/* Dummy Datas */
+		public readonly static ValueCell.Data DummyDataCell = new ValueCell.Data();
+		public readonly static ValueUser.Data DummyDataUser = new ValueUser.Data();
+		public readonly static ValueInstance.Data DummyDataInstance = new ValueInstance.Data();
 	}
 
 	public class DrawManager
@@ -1117,6 +1132,10 @@ public static class Library_SpriteStudio
 		public KeyFrame.ValueUser[] AnimationDataUser;
 		public KeyFrame.ValueInstance[] AnimationDataInstance;
 
+		public KeyFrame.ValueCell.Data[] ArrayDataBodyCell;
+		public KeyFrame.ValueUser.Data[] ArrayDataBodyUser;
+		public KeyFrame.ValueInstance.Data[] ArrayDataBodyInstance;
+
 		/* Buffer for Runtime-Speed-Optimize */
 		private float ColliderRadiusPrevious = -1.0f;	/* for Radius-Collision */
 		private Vector2 ColliderRectSizePrevious = Vector2.zero;	/* for Rectangle-Collision */
@@ -1165,7 +1184,7 @@ public static class Library_SpriteStudio
 					if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.DECODE_USERDATA))
 					{
 						int FrameNoPrevious = (-1 == ScriptRoot.FrameNoPrevious) ? FrameNo : ScriptRoot.FrameNoPrevious;
-						KeyFrame.ValueUser UserData = null;
+						KeyFrame.ValueUser.Data UserData = null;
 
 						/* Decoding Skipped Frame */
 						if(0 == (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
@@ -1175,8 +1194,8 @@ public static class Library_SpriteStudio
 								/* Part-Head */
 								for(int i=(FrameNoPrevious - 1); i>=ScriptRoot.FrameNoStart; i--)
 								{
-									UserData = AnimationDataUser[i];
-									if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+									UserData = AnimationDataUser[i].DataBody;
+									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
 										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 									}
@@ -1187,8 +1206,8 @@ public static class Library_SpriteStudio
 								{
 									for(int i=ScriptRoot.FrameNoEnd; i>=ScriptRoot.FrameNoStart; i--)
 									{
-										UserData = AnimationDataUser[i];
-										if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+										UserData = AnimationDataUser[i].DataBody;
+										if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 										{
 											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 										}
@@ -1198,8 +1217,8 @@ public static class Library_SpriteStudio
 								/* Part-Tail */
 								for(int i=ScriptRoot.FrameNoEnd; i>FrameNo; i--)
 								{
-									UserData = AnimationDataUser[i];
-									if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+									UserData = AnimationDataUser[i].DataBody;
+									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
 										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 									}
@@ -1209,8 +1228,8 @@ public static class Library_SpriteStudio
 							{	/* Normal */
 								for(int i=(FrameNoPrevious - 1); i>FrameNo; i--)
 								{
-									UserData = AnimationDataUser[i];
-									if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+									UserData = AnimationDataUser[i].DataBody;
+									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
 										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 									}
@@ -1224,8 +1243,8 @@ public static class Library_SpriteStudio
 								/* Part-Head */
 								for(int i=(FrameNoPrevious + 1); i<=ScriptRoot.FrameNoEnd; i++)
 								{
-									UserData = AnimationDataUser[i];
-									if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+									UserData = AnimationDataUser[i].DataBody;
+									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
 										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 									}
@@ -1236,8 +1255,8 @@ public static class Library_SpriteStudio
 								{
 									for(int i=ScriptRoot.FrameNoStart; i<=ScriptRoot.FrameNoEnd; i++)
 									{
-										UserData = AnimationDataUser[i];
-										if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+										UserData = AnimationDataUser[i].DataBody;
+										if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 										{
 											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 										}
@@ -1247,8 +1266,8 @@ public static class Library_SpriteStudio
 								/* Part-Tail */
 								for(int i=ScriptRoot.FrameNoStart; i<FrameNo; i++)
 								{
-									UserData = AnimationDataUser[i];
-									if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+									UserData = AnimationDataUser[i].DataBody;
+									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
 										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 									}
@@ -1258,8 +1277,8 @@ public static class Library_SpriteStudio
 							{	/* Normal */
 								for(int i=(FrameNoPrevious + 1); i<FrameNo; i++)
 								{
-									UserData = AnimationDataUser[i];
-									if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+									UserData = AnimationDataUser[i].DataBody;
+									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
 										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
 									}
@@ -1268,8 +1287,8 @@ public static class Library_SpriteStudio
 						}
 
 						/* Decoding Just-Now Frame */
-						UserData = AnimationDataUser[FrameNo];
-						if(Library_SpriteStudio.KeyFrame.ValueUser.FlagData.CLEAR != UserData.Flag)
+						UserData = AnimationDataUser[FrameNo].DataBody;
+						if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 						{
 							ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, FrameNo, UserData);
 						}
@@ -1292,7 +1311,7 @@ public static class Library_SpriteStudio
 			
 			int FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
 			KeyFrame.ValueInstance DataBody = AnimationDataInstance[FrameNoInstanceBase];
-/*			int FramePreviousRoot = ScriptRoot.FrameNoPrevious;	*/
+//			int FramePreviousRoot = ScriptRoot.FrameNoPrevious;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(-1 == FramePreviousUpdateInstance)
 			{
@@ -1312,17 +1331,17 @@ public static class Library_SpriteStudio
 			
 		UpdateInstanceData_PlayCommand_Initial:;
 			{
-				float RateTime = DataBody.Information.RateTime;
+				float RateTime = DataBody.DataBody.RateTime;
 				RateTime *= (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f;
 				ScriptPartsRootSub.AnimationPlay(	-1,
-													DataBody.Information.PlayCount,
+													DataBody.DataBody.PlayCount,
 													0,
 													RateTime,
-													((0 != (DataBody.Information.Flag & KeyFrame.ValueInstance.InformationPlay.FlagData.PINGPONG)) ? true : false),
-													DataBody.Information.LabelStart,
-													DataBody.Information.OffsetStart,
-													DataBody.Information.LabelEnd,
-													DataBody.Information.OffsetEnd
+													((0 != (DataBody.DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? true : false),
+													DataBody.DataBody.LabelStart,
+													DataBody.DataBody.OffsetStart,
+													DataBody.DataBody.LabelEnd,
+													DataBody.DataBody.OffsetEnd
 												);
 				
 				int FrameCount = FrameNo - FrameNoInstanceBase;
@@ -1338,24 +1357,29 @@ public static class Library_SpriteStudio
 			return(true);
 		}
 
-		public bool UpdateGameObject(GameObject GameObjectNow, int FrameNo)
+		public bool UpdateGameObject(GameObject GameObjectNow, int FrameNo, bool FlagSprite)
 		{
+			bool FlagUpdateTransform = ((0 >= AnimationDataPosition.Length) && (0 >= AnimationDataRotation.Length) && (0 >= AnimationDataScaling.Length)) ? false : true;
 			/* MEMO: No Transform-Datas, Not Changing "GameObject" */
-			if((0 >= AnimationDataPosition.Length) && (0 >= AnimationDataRotation.Length) && (0 >= AnimationDataScaling.Length))
-			{
-				return(false);	/* Hide */
+			if(false == FlagUpdateTransform)
+			{	/* No-Update Transform */
+				if(false == FlagSprite)
+				{
+					return(false);	/* Hide */
+				}
 			}
-
-			/* Transform Update */
-			GameObjectNow.transform.localPosition = (0 < AnimationDataPosition.Length) ? AnimationDataPosition[FrameNo] : Vector3.zero;
-			GameObjectNow.transform.localEulerAngles = (0 < AnimationDataRotation.Length) ? AnimationDataRotation[FrameNo] : Vector3.zero;
-			Vector3 Scale = Vector3.one;
-			if(0 < AnimationDataScaling.Length)
-			{
-				Scale.x = AnimationDataScaling[FrameNo].x;
-				Scale.y = AnimationDataScaling[FrameNo].y;
+			else
+			{	/* Update Transform */
+				GameObjectNow.transform.localPosition = (0 < AnimationDataPosition.Length) ? AnimationDataPosition[FrameNo] : Vector3.zero;
+				GameObjectNow.transform.localEulerAngles = (0 < AnimationDataRotation.Length) ? AnimationDataRotation[FrameNo] : Vector3.zero;
+				Vector3 Scale = Vector3.one;
+				if(0 < AnimationDataScaling.Length)
+				{
+					Scale.x = AnimationDataScaling[FrameNo].x;
+					Scale.y = AnimationDataScaling[FrameNo].y;
+				}
+				GameObjectNow.transform.localScale = Scale;
 			}
-			GameObjectNow.transform.localScale = Scale;
 
 			/* Collider-Setting */
 			if(null != CollisionComponent)
@@ -1371,7 +1395,7 @@ public static class Library_SpriteStudio
 								Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
 								if(0 < AnimationDataCell.Length)
 								{
-									RectCell = AnimationDataCell[FrameNo].Information.Rectangle;
+									RectCell = AnimationDataCell[FrameNo].DataBody.Rectangle;
 								}
 
 								Vector2 RateScaleMesh = Vector2.one;
@@ -1474,7 +1498,7 @@ public static class Library_SpriteStudio
 			}
 #endif
 			/* Main-Texture Data Get */
-			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].Information.TextureNo, KindBlendTarget);
+			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].DataBody.TextureNo, KindBlendTarget);
 			if(null != MaterialNow)
 			{
 #if false
@@ -1482,18 +1506,18 @@ public static class Library_SpriteStudio
 				SizeTexture.x = (float)InstanceTexture.width;
 				SizeTexture.y = (float)InstanceTexture.height;
 #else
-				SizeTexture.x = AnimationDataCell[FrameNo].Information.SizeOriginal.x;
-				SizeTexture.y = AnimationDataCell[FrameNo].Information.SizeOriginal.y;
+				SizeTexture.x = AnimationDataCell[FrameNo].DataBody.SizeOriginal.x;
+				SizeTexture.y = AnimationDataCell[FrameNo].DataBody.SizeOriginal.y;
 #endif
 			}
 
 			/* Cell-Data Get */
 			if(0 < AnimationDataCell.Length)
 			{
-				RectCell = AnimationDataCell[FrameNo].Information.Rectangle;
+				RectCell = AnimationDataCell[FrameNo].DataBody.Rectangle;
 				PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
 
-				PivotMesh = AnimationDataCell[FrameNo].Information.Pivot;
+				PivotMesh = AnimationDataCell[FrameNo].DataBody.Pivot;
 			}
 
 			/* Disolve Flipping & Texture-Scaling */
@@ -1707,7 +1731,7 @@ public static class Library_SpriteStudio
 		public void DrawEntry(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 		{
 			float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
-			int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].Information.TextureNo : -1;
+			int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].DataBody.TextureNo : -1;
 
 			MeshDataInformation.Priority = PriorityGet(Priority, ID);
 			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
