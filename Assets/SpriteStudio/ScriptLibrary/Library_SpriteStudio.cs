@@ -1381,6 +1381,11 @@ public static class Library_SpriteStudio
 				GameObjectNow.transform.localScale = Scale;
 			}
 
+			if(0 >= AnimationDataFlags.Length)
+			{	/* No-Flags */
+				return(false);	/* Hide */
+			}
+
 			/* Collider-Setting */
 			if(null != CollisionComponent)
 			{
