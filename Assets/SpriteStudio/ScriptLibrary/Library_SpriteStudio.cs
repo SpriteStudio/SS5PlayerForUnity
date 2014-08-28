@@ -10,7 +10,7 @@ using System.Collections;
 public static class Library_SpriteStudio
 {
 	public delegate bool FunctionCallBackPlayEnd(GameObject ObjectControl);
-	public delegate void FunctionCallBackUserData(GameObject ObjectControl, string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int AnimationNo, int FrameNoDecode, int FrameNoKeyData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data);
+	public delegate void FunctionCallBackUserData(GameObject ObjectControl, string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int AnimationNo, int FrameNoDecode, int FrameNoKeyData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data, bool FlagWayBack);
 	public delegate void FunctionCallBackOnTrigger(Collider Self, Collider Pair);
 	public delegate void FunctionCallBackOnCollision(Collider Self, Collision Contacts);
 
@@ -1197,7 +1197,7 @@ public static class Library_SpriteStudio
 									UserData = AnimationDataUser[i].DataBody;
 									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 									}
 								}
 							
@@ -1209,7 +1209,7 @@ public static class Library_SpriteStudio
 										UserData = AnimationDataUser[i].DataBody;
 										if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 										{
-											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 										}
 									}
 								}
@@ -1220,7 +1220,7 @@ public static class Library_SpriteStudio
 									UserData = AnimationDataUser[i].DataBody;
 									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 									}
 								}
 							}
@@ -1231,7 +1231,7 @@ public static class Library_SpriteStudio
 									UserData = AnimationDataUser[i].DataBody;
 									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 									}
 								}
 							}
@@ -1246,7 +1246,7 @@ public static class Library_SpriteStudio
 									UserData = AnimationDataUser[i].DataBody;
 									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 									}
 								}
 
@@ -1258,7 +1258,7 @@ public static class Library_SpriteStudio
 										UserData = AnimationDataUser[i].DataBody;
 										if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 										{
-											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 										}
 									}
 								}
@@ -1269,7 +1269,7 @@ public static class Library_SpriteStudio
 									UserData = AnimationDataUser[i].DataBody;
 									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 									}
 								}
 							}
@@ -1280,7 +1280,7 @@ public static class Library_SpriteStudio
 									UserData = AnimationDataUser[i].DataBody;
 									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData);
+										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
 									}
 								}
 							}
@@ -1290,7 +1290,7 @@ public static class Library_SpriteStudio
 						UserData = AnimationDataUser[FrameNo].DataBody;
 						if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 						{
-							ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, FrameNo, UserData);
+							ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, FrameNo, UserData, false);
 						}
 					}
 				}

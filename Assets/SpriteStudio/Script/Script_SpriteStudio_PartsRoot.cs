@@ -36,6 +36,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		public Library_SpriteStudio.AnimationData AnimationDataParts = null;
 		public int FrameNo = -1;
 		public Library_SpriteStudio.KeyFrame.ValueUser.Data Data = null;
+		public bool FlagWayBack = false;
 	}
 
 	/* Variables & Propaties */
@@ -574,7 +575,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									AnimationNo,
 									frameNoNow,
 									Parameter.FrameNo,
-									Parameter.Data
+									Parameter.Data,
+									Parameter.FlagWayBack
 								);
 			}
 			ListCallBackUserData.Clear();
@@ -931,7 +933,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	Don't use this function. <br>
 	(This function is for the animation-parts' scripts.)
 	*/
-	internal void CallBackExecUserData(string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int FrameNoData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data)
+	internal void CallBackExecUserData(string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int FrameNoData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data, bool FlagWayBack)
 	{
 		if(null == ListCallBackUserData)
 		{
@@ -943,6 +945,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Parameter.PartsName = string.Copy(PartsName);
 		Parameter.AnimationDataParts = AnimationDataParts;
 		Parameter.FrameNo = FrameNoData;
+		Parameter.FlagWayBack = FlagWayBack;
 		Parameter.Data = Data;
 		ListCallBackUserData.Add(Parameter);
 	}
