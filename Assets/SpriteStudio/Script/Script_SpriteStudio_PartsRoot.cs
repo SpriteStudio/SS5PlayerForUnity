@@ -63,6 +63,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	protected float TimeAnimation;
 	protected float RateTimePlay;
 
+	public bool FlagHideForce;
+
 	/* CAUTION!: Don't set values from Code(Read-Only in principle). Use Function"AnimationPlay". */
 	/*           "AnimationNo","CountLoopRemain" and "FrameNoStartOffset" are defined public for Setting on Inspector. */
 	public int CountLoopRemain;

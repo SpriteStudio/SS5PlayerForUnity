@@ -13,6 +13,7 @@ public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 {
 	public Library_SpriteStudio.AnimationData SpriteStudioData;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
+	public bool FlagHideForce;
 
 	void Start()
 	{
