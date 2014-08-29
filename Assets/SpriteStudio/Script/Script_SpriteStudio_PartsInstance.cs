@@ -127,7 +127,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	
 	The state of "Force-Hide" is set, it is not concerned with the state of animation.
 	*/
-	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=true)
+	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=false)
 	{
 		Library_SpriteStudio.Utility.HideSetForce(gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
 	}

@@ -1179,12 +1179,11 @@ public static class Library_SpriteStudio
 		{
 			if(0 < AnimationDataUser.Length)
 			{
-				if(false == ScriptRoot.StatusStylePigpong)
-				{	/* Play One-Way */
-					if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.DECODE_USERDATA))
-					{
+				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.DECODE_USERDATA))
+				{
+					if(false == ScriptRoot.StatusStylePigpong)
+					{	/* Play One-Way */
 						int FrameNoPrevious = (-1 == ScriptRoot.FrameNoPrevious) ? FrameNo : ScriptRoot.FrameNoPrevious;
-						KeyFrame.ValueUser.Data UserData = null;
 
 						/* Decoding Skipped Frame */
 						if(0 == (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
@@ -1192,48 +1191,20 @@ public static class Library_SpriteStudio
 							if((FrameNo > FrameNoPrevious) || (0 < ScriptRoot.CountLoopThisTime))
 							{	/* Wrap-Around */
 								/* Part-Head */
-								for(int i=(FrameNoPrevious - 1); i>=ScriptRoot.FrameNoStart; i--)
-								{
-									UserData = AnimationDataUser[i].DataBody;
-									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-									}
-								}
+								UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, false);
 							
 								/* Part-Loop */
 								for(int j=0; j<(ScriptRoot.CountLoopThisTime - 1); j++)
 								{
-									for(int i=ScriptRoot.FrameNoEnd; i>=ScriptRoot.FrameNoStart; i--)
-									{
-										UserData = AnimationDataUser[i].DataBody;
-										if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-										{
-											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-										}
-									}
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, ScriptRoot.FrameNoStart, false);
 								}
 							
-								/* Part-Tail */
-								for(int i=ScriptRoot.FrameNoEnd; i>FrameNo; i--)
-								{
-									UserData = AnimationDataUser[i].DataBody;
-									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-									}
-								}
+								/* Part-Tail & Just-Now */
+								UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
 							}
 							else
 							{	/* Normal */
-								for(int i=(FrameNoPrevious - 1); i>FrameNo; i--)
-								{
-									UserData = AnimationDataUser[i].DataBody;
-									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-									}
-								}
+								UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), FrameNo, false);
 							}
 						}
 						else
@@ -1241,62 +1212,195 @@ public static class Library_SpriteStudio
 							if((FrameNo < FrameNoPrevious) || (0 < ScriptRoot.CountLoopThisTime))
 							{	/* Wrap-Around */
 								/* Part-Head */
-								for(int i=(FrameNoPrevious + 1); i<=ScriptRoot.FrameNoEnd; i++)
-								{
-									UserData = AnimationDataUser[i].DataBody;
-									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-									}
-								}
+								UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
 
 								/* Part-Loop */
 								for(int j=0; j<(ScriptRoot.CountLoopThisTime - 1); j++)
 								{
-									for(int i=ScriptRoot.FrameNoStart; i<=ScriptRoot.FrameNoEnd; i++)
-									{
-										UserData = AnimationDataUser[i].DataBody;
-										if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-										{
-											ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-										}
-									}
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, ScriptRoot.FrameNoEnd, false);
 								}
 
-								/* Part-Tail */
-								for(int i=ScriptRoot.FrameNoStart; i<FrameNo; i++)
-								{
-									UserData = AnimationDataUser[i].DataBody;
-									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
+								/* Part-Tail & Just-Now */
+								UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
+							}
+							else
+							{	/* Normal */
+								UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), FrameNo, false);
+							}
+						}
+					}
+					else
+					{	/* Play PingPong */
+						bool FlagStyleReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
+						bool FlagTurnBackPingPong = ScriptRoot.FlagTurnBackPingPong;
+						int FrameNoPrevious = (-1 == ScriptRoot.FrameNoPrevious) ? FrameNo : ScriptRoot.FrameNoPrevious;
+						int FrameNoStartEdge = ScriptRoot.FrameNoStart + 1;
+						int FrameNoEndEdge = ScriptRoot.FrameNoEnd - 1;
+
+						/* Decoding Skipped Frame */
+						if(0 == (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
+						{	/* backwards */
+							if(0 < ScriptRoot.CountLoopThisTime)
+							{	/* Wrap-Around */
+								if(true == FlagStyleReverse)
+								{	/* Style-Reverse */
+									/* Part-Head */
+									if(true == FlagTurnBackPingPong)
+									{	/* Turn-Back */
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, true);
 									}
+									else
+									{	/* One-Way */
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, true);
+									}
+
+									/* Part-Loop */
+									for(int j=0; j<(ScriptRoot.CountLoopThisTime - 1); j++)
+									{
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, true);
+									}
+
+									/* Part-Tail & Just-Now */
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, FrameNo, false);
+								}
+								else
+								{	/* Style-Normal */
+									/* Part-Head */
+									if(true == FlagTurnBackPingPong)
+									{	/* Turn-Back */
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, true);
+									}
+									else
+									{	/* One-Way */
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, true);
+									}
+
+									/* Part-Loop */
+									for(int j=0; j<(ScriptRoot.CountLoopThisTime - 1); j++)
+									{
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, true);
+									}
+
+									/* Part-Tail & Just-Now */
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, false);
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, FrameNo, true);
 								}
 							}
 							else
 							{	/* Normal */
-								for(int i=(FrameNoPrevious + 1); i<FrameNo; i++)
-								{
-									UserData = AnimationDataUser[i].DataBody;
-									if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-									{
-										ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, i, UserData, false);
-									}
+								if(true == FlagTurnBackPingPong)
+								{	/* Turn-Back */
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, FrameNo, true);
+								}
+								else
+								{	/* One-Way */
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), FrameNo, true);
 								}
 							}
 						}
+						else
+						{	/* foward */
+							if(0 < ScriptRoot.CountLoopThisTime)
+							{	/* Wrap-Around */
+								if(true == FlagStyleReverse)
+								{	/* Style-Reverse */
+									/* Part-Head */
+									if(true == FlagTurnBackPingPong)
+									{	/* Turn-Back */
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, true);
+									}
+									else
+									{	/* One-Way */
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, true);
+									}
 
-						/* Decoding Just-Now Frame */
-						UserData = AnimationDataUser[FrameNo].DataBody;
-						if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-						{
-							ScriptRoot.CallBackExecUserData(GameObjectNow.name, this, FrameNo, UserData, false);
+									/* Part-Loop */
+									for(int j=0; j<(ScriptRoot.CountLoopThisTime - 1); j++)
+									{
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, true);
+									}
+
+									/* Part-Tail & Just-Now */
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, false);
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, FrameNo, true);
+								}
+								else
+								{	/* Style-Normal */
+									if(true == FlagTurnBackPingPong)
+									{	/* Turn-Back */
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, true);
+									}
+									else
+									{	/* One-Way */
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, true);
+									}
+
+									/* Part-Loop */
+									for(int j=0; j<(ScriptRoot.CountLoopThisTime - 1); j++)
+									{
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEndEdge, ScriptRoot.FrameNoStart, true);
+									}
+
+									/* Part-Tail & Just-Now */
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, FrameNo, false);
+								}
+							}
+							else
+							{	/* Normal */
+								if(true == FlagTurnBackPingPong)
+								{	/* Turn-Back */
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, true);
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStartEdge, FrameNo, false);
+								}
+								else
+								{	/* One-Way */
+									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), FrameNo, false);
+								}
+							}
 						}
 					}
 				}
-				else
-				{	/* Play PingPong */
+			}
+		}
+		private void UpdateUserDataFoward(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
+		{
+			KeyFrame.ValueUser.Data UserData = null;
+			for(int i=FrameNoStart; i<=FrameNoEnd; i++)
+			{
+				UserData = ArrayData[i].DataBody;
+				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
+				{
+					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
 				}
+			}
+		}
+		private void UpdateUserDataReverse(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
+		{
+			KeyFrame.ValueUser.Data UserData = null;
+			for(int i=FrameNoStart; i>=FrameNoEnd; i--)
+			{
+				UserData = ArrayData[i].DataBody;
+				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
+				{
+					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
+				}
+			}
+		}
+		private void UpdateUserDataJustNow(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNo, bool FlagTurnBackPingPong)
+		{
+			KeyFrame.ValueUser.Data UserData = AnimationDataUser[FrameNo].DataBody;
+			if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
+			{
+				ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, FrameNo, UserData, FlagTurnBackPingPong);
 			}
 		}
 

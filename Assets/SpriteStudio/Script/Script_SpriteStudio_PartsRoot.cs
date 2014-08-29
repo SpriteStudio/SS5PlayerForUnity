@@ -179,12 +179,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return(countLoopThisTime);
 		}
 	}
-	private bool flagWrapAroundPingPong;
-	internal bool FlagWrapAroundPingPong
+	private bool flagTurnBackPingPong;
+	internal bool FlagTurnBackPingPong
 	{
 		get
 		{
-			return(flagWrapAroundPingPong);
+			return(flagTurnBackPingPong);
 		}
 	}
 
@@ -333,7 +333,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 					if(0 == (Status & BitStatus.STYLE_PINGPONG))
 					{	/* One-Way */
-						flagWrapAroundPingPong = false;	/* Not-PingPong, Always false */
+						flagTurnBackPingPong = false;	/* Not-PingPong, Always false */
 						if(0 == (Status & BitStatus.PLAYING_REVERSE))
 						{	/* Play normaly */
 							FlagLoop = true;
@@ -402,7 +402,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										TimeAnimation += TimeAnimationFull;
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 										FlagReLoop = (0.0f > TimeAnimation) ? true : false;
-										flagWrapAroundPingPong = true;
+										flagTurnBackPingPong = true;
 									}
 									else
 									{	/* End */
@@ -418,7 +418,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					else
 					{	/* Ping-Pong */
 						FlagReLoop = true;
-						flagWrapAroundPingPong = false;
+						flagTurnBackPingPong = false;
 						countLoopThisTime = 0;
 
 						while(true == FlagReLoop)
@@ -440,7 +440,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										TimeAnimation = TimeAnimationFull - TimeAnimation;
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 										FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
-										flagWrapAroundPingPong = true;
+										flagTurnBackPingPong = true;
 									}
 									else
 									{	/* Start-Reverse */
@@ -464,7 +464,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 											FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
-											flagWrapAroundPingPong = true;
+											flagTurnBackPingPong = true;
 										}
 										else
 										{	/* End */
@@ -507,7 +507,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 											FlagReLoop = (0.0f < TimeAnimation) ? true : false;
-											flagWrapAroundPingPong = true;
+											flagTurnBackPingPong = true;
 										}
 										else
 										{	/* End */
@@ -525,7 +525,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										TimeAnimation = TimeAnimationFull - TimeAnimation;
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 										FlagReLoop = (0.0f < TimeAnimation) ? true : false;
-										flagWrapAroundPingPong = true;
+										flagTurnBackPingPong = true;
 									}
 								}
 							}
@@ -535,7 +535,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					/* Member-Valiables Update */
 					if(0 != (Status & BitStatus.IGNORE_LOOP))
 					{
-						flagWrapAroundPingPong = false;
+						flagTurnBackPingPong = false;
 						countLoopThisTime = 0;
 					}
 					Status &= ~BitStatus.IGNORE_LOOP;
@@ -892,7 +892,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	
 	The state of "Force-Hide" is set, it is not concerned with the state of animation.
 	*/
-	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=true)
+	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=false)
 	{
 		Library_SpriteStudio.Utility.HideSetForce(gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
 	}
