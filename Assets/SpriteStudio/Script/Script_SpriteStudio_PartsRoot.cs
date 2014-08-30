@@ -300,7 +300,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		/* Entry Object to Draw */
 		if((null != InstanceDrawManagerView) && (null == partsRootOrigin))
 		{	/* Not "Instance"-Object */
-			InstanceDrawManagerView.DrawEntryObject(this);
+			if(false == FlagHideForce)
+			{
+				InstanceDrawManagerView.DrawEntryObject(this);
+			}
 		}
 
 		/* Animation Update */
@@ -892,7 +895,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	
 	The state of "Force-Hide" is set, it is not concerned with the state of animation.
 	*/
-	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=true, bool FlagSetInstance=false)
+	public void HideSetForce(bool FlagSwitch, bool FlagSetChild=false, bool FlagSetInstance=false)
 	{
 		Library_SpriteStudio.Utility.HideSetForce(gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
 	}
