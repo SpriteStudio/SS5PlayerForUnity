@@ -334,10 +334,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					}
 					FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 					countLoopThisTime = 0;
+					flagTurnBackPingPong = false;
 
 					if(0 == (Status & BitStatus.STYLE_PINGPONG))
 					{	/* One-Way */
-						flagTurnBackPingPong = false;	/* Not-PingPong, Always false */
 						if(0 == (Status & BitStatus.PLAYING_REVERSE))
 						{	/* Play normaly */
 							FlagLoop = true;
@@ -420,8 +420,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					else
 					{	/* Ping-Pong */
 						FlagReLoop = true;
-						flagTurnBackPingPong = false;
-
 						while(true == FlagReLoop)
 						{
 							FlagReLoop = false;
@@ -536,7 +534,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					/* Member-Valiables Update */
 					if(0 != (Status & BitStatus.IGNORE_LOOP))
 					{
-						flagTurnBackPingPong = false;
+//						flagTurnBackPingPong = false;
 						countLoopThisTime = 0;
 					}
 					Status &= ~BitStatus.IGNORE_LOOP;
