@@ -1186,7 +1186,7 @@ public static class Library_SpriteStudio
 						int FrameNoPrevious = (-1 == ScriptRoot.FrameNoPrevious) ? FrameNo : ScriptRoot.FrameNoPrevious;
 
 						/* Decoding Skipped Frame */
-						if(0 == (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
+						if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
 						{	/* backwards */
 							if((FrameNo > FrameNoPrevious) || (0 < ScriptRoot.CountLoopThisTime))
 							{	/* Wrap-Around */
@@ -1238,7 +1238,7 @@ public static class Library_SpriteStudio
 						int FrameNoEndEdge = ScriptRoot.FrameNoEnd - 1;
 
 						/* Decoding Skipped Frame */
-						if(0 == (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
+						if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
 						{	/* backwards */
 							if(0 < ScriptRoot.CountLoopThisTime)
 							{	/* Wrap-Around */
