@@ -1445,7 +1445,7 @@ public static class Library_SpriteStudio
 													DataBody.DataBody.PlayCount,
 													0,
 													RateTime,
-													((0 != (DataBody.DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? true : false),
+													((0 != (DataBody.DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? Script_SpriteStudio_PartsRoot.PlayStyle.PINGPONG : Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL),
 													DataBody.DataBody.LabelStart,
 													DataBody.DataBody.OffsetStart,
 													DataBody.DataBody.LabelEnd,
