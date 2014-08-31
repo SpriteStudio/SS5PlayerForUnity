@@ -322,13 +322,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					int FrameCountNow = 0;
 					int FrameCountEnd = frameNoEnd - frameNoStart;
 					int FrameCountFull = FrameCountEnd + 1;
+					int FrameCountLoop = 0;
 
 					float RateTimeProgress = (0 == (Status & BitStatus.PLAYING_REVERSE)) ? 1.0f : -1.0f;
 					float TimeAnimationFull = (float)FrameCountFull * TimeFramePerSecond;
 
 					bool FlagLoop = false;
 					bool FlagReLoop = true;
-					bool FlagIgnoreLoop = (0 != (Status & BitStatus.IGNORE_LOOP)) ? true : false;
+					bool FlagIgnoreLoop = false;
 
 					if(0 == (Status & BitStatus.PAUSING))
 					{
@@ -346,32 +347,28 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					if(0 == (Status & BitStatus.STYLE_PINGPONG))
 					{	/* One-Way */
 						if(0 == (Status & BitStatus.PLAYING_REVERSE))
-						{	/* Play normaly */
-							FlagLoop = true;
-
+						{	/* Play foward */
 							/* Get Frame Count */
 							if(FrameCountEnd < FrameCountNow)
 							{	/* Frame-Over */
+								FlagLoop = true;
 								FlagReLoop = true;
 								while(true == FlagReLoop)
 								{
+									FlagIgnoreLoop = (0 != (Status & BitStatus.IGNORE_LOOP)) ? true : false;
+									FrameCountLoop = (true == FlagIgnoreLoop) ? 0 : 1;
+
 									/* Loop-Count Check */
-									if((0 <= CountLoopRemain) && (false == FlagIgnoreLoop))
+									if(0 <= CountLoopRemain)
 									{	/* Limited-Count Loop */
-										CountLoopRemain--;
-										if(0 > CountLoopRemain)
-										{
-											FlagLoop = false;
-										}
+										CountLoopRemain -= FrameCountLoop;
+										FlagLoop = (0 > CountLoopRemain) ? false : FlagLoop;
 									}
 
 									/* ReCalculate Frame */
 									if(true == FlagLoop)
 									{	/* Loop */
-										if(false == FlagIgnoreLoop)
-										{
-											countLoopThisTime++;
-										}
+										countLoopThisTime += FrameCountLoop;
 
 										TimeAnimation -= TimeAnimationFull;
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
@@ -390,31 +387,27 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 						}
 						else
 						{	/* Play backwards */
-							FlagLoop = true;
-
 							/* Get Frame Count */
 							if(0 > FrameCountNow)
 							{	/* Frame-Over */
+								FlagLoop = true;
 								FlagReLoop = true;
 								while(true == FlagReLoop)
 								{
+									FlagIgnoreLoop = (0 != (Status & BitStatus.IGNORE_LOOP)) ? true : false;
+									FrameCountLoop = (true == FlagIgnoreLoop) ? 0 : 1;
+
 									/* Loop-Count Check */
-									if((0 <= CountLoopRemain) && (false == FlagIgnoreLoop))
+									if(0 <= CountLoopRemain)
 									{	/* Limited-Count Loop */
-										CountLoopRemain--;
-										if(0 > CountLoopRemain)
-										{
-											FlagLoop = false;
-										}
+										CountLoopRemain -= FrameCountLoop;
+										FlagLoop = (0 > CountLoopRemain) ? false : FlagLoop;
 									}
 
 									/* ReCalculate Frame */
 									if(true == FlagLoop)
 									{	/* Loop */
-										if(false == FlagIgnoreLoop)
-										{
-											countLoopThisTime++;
-										}
+										countLoopThisTime += FrameCountLoop;
 
 										TimeAnimation += TimeAnimationFull;
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
@@ -435,49 +428,24 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					}
 					else
 					{	/* Ping-Pong */
-						FlagReLoop = true;
-						while(true == FlagReLoop)
-						{
-							FlagReLoop = false;
+						if(0 == (Status & BitStatus.STYLE_REVERSE))
+						{	/* Style-Normaly */
+							FlagReLoop = true;
+							while(true == FlagReLoop)
+							{
+								FlagReLoop = false;
+								FlagIgnoreLoop = (0 != (Status & BitStatus.IGNORE_LOOP)) ? true : false;
 
-							if(0 == (Status & BitStatus.PLAYING_REVERSE))
-							{	/* Play normaly */
-								if(FrameCountEnd < FrameCountNow)
-								{	/* Frame-Over */
-									FlagLoop = true;
-
-									/* ReCalculate Frame */
-									if(0 == (Status & BitStatus.STYLE_REVERSE))
-									{	/* Start-Normaly */
-										/* Wrap-Around */
-										Status |= BitStatus.PLAYING_REVERSE;
-										TimeAnimation -= TimeAnimationFull;
-										TimeAnimation = TimeAnimationFull - TimeAnimation;
-										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-										FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
-										flagTurnBackPingPong = true;
-									}
-									else
-									{	/* Start-Reverse */
-										/* Loop-Count Check */
-										if((0 <= CountLoopRemain) && (false == FlagIgnoreLoop))
-										{	/* Limited-Count Loop */
-											CountLoopRemain--;
-											if(0 > CountLoopRemain)
-											{
-												FlagLoop = false;
-											}
-										}
-
-										/* ReCalculate Frame */
-										if(true == FlagLoop)
-										{	/* Loop */
-											if(false == FlagIgnoreLoop)
-											{
-												countLoopThisTime++;
-											}
-
+								if(0 == (Status & BitStatus.PLAYING_REVERSE))
+								{	/* Play foward */
+									if(FrameCountEnd < FrameCountNow)
+									{	/* Frame-Over */
+										if(false == FlagIgnoreLoop)
+										{
+											/* Set Turn-Back */
 											Status |= BitStatus.PLAYING_REVERSE;
+
+											/* ReCalculate Frame */
 											TimeAnimation -= TimeAnimationFull;
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
@@ -485,46 +453,39 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											flagTurnBackPingPong = true;
 										}
 										else
-										{	/* End */
-											TimeAnimation = ((float)FrameCountEnd) * TimeFramePerSecond;
-											FrameCountNow = FrameCountEnd;
-											Status |= BitStatus.REQUEST_PLAYEND;
-											FlagReLoop = false;
+										{
+											/* ReCalculate Frame */
+											TimeAnimation -= TimeAnimationFull;
+											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+											FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
+											flagTurnBackPingPong = false;
+
+											Status &= ~BitStatus.IGNORE_LOOP;
 										}
 									}
-									Status &= ~BitStatus.IGNORE_LOOP;
 								}
-							}
-							else
-							{	/* Play backwards */
-								/* Get Frame Count */
-								if(0 > FrameCountNow)
-								{	/* Frame-Over */
-									FlagLoop = true;
+								else
+								{	/* Play backwards */
+									/* Loop-Count Check */
+									if(0 > FrameCountNow)
+									{	/* Frame-Over */
+										FlagLoop = true;
+										FrameCountLoop = (true == FlagIgnoreLoop) ? 0 : 1;
 
-									/* ReCalculate Frame */
-									if(0 != (Status & BitStatus.STYLE_REVERSE))
-									{	/* Start-Normaly */
-										/* Loop-Count Check */
-										if((0 <= CountLoopRemain) && (false == FlagIgnoreLoop))
+										if(0 <= CountLoopRemain)
 										{	/* Limited-Count Loop */
-											CountLoopRemain--;
-											if(0 > CountLoopRemain)
-											{
-												FlagLoop = false;
-											}
+											CountLoopRemain -= FrameCountLoop;
+											FlagLoop = (0 > CountLoopRemain) ? false : FlagLoop;
 										}
 
-										/* ReCalculate Frame */
 										if(true == FlagLoop)
 										{	/* Loop */
-											/* Wrap-Around */
-											if(false == FlagIgnoreLoop)
-											{
-												countLoopThisTime++;
-											}
+											countLoopThisTime += FrameCountLoop;
 
+											/* Set Turn-Back */
 											Status &= ~BitStatus.PLAYING_REVERSE;
+
+											/* ReCalculate Frame */
 											TimeAnimation += TimeAnimationFull;
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
@@ -539,15 +500,81 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											FlagReLoop = false;
 										}
 									}
-									else
-									{	/* Start-Reverse */
-										/* Wrap-Around */
-										Status &= ~BitStatus.PLAYING_REVERSE;
-										TimeAnimation += TimeAnimationFull;
-										TimeAnimation = TimeAnimationFull - TimeAnimation;
-										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-										FlagReLoop = (0.0f < TimeAnimation) ? true : false;
-										flagTurnBackPingPong = true;
+									Status &= ~BitStatus.IGNORE_LOOP;
+								}
+							}
+						}
+						else
+						{	/* Style-Reverse */
+							FlagReLoop = true;
+							while(true == FlagReLoop)
+							{
+								FlagReLoop = false;
+								FlagIgnoreLoop = (0 != (Status & BitStatus.IGNORE_LOOP)) ? true : false;
+
+								if(0 != (Status & BitStatus.PLAYING_REVERSE))
+								{	/* Play backwards */
+									if(0 > FrameCountNow)
+									{	/* Frame-Over */
+										if(false == FlagIgnoreLoop)
+										{
+											/* Set Turn-Back */
+											Status &= ~BitStatus.PLAYING_REVERSE;
+
+											/* ReCalculate Frame */
+											TimeAnimation += TimeAnimationFull;
+											TimeAnimation = TimeAnimationFull - TimeAnimation;
+											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+											FlagReLoop = (0.0f < TimeAnimation) ? true : false;
+											flagTurnBackPingPong = true;
+										}
+										else
+										{
+											/* ReCalculate Frame */
+											TimeAnimation += TimeAnimationFull;
+											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+											FlagReLoop = (0.0f > TimeAnimation) ? true : false;
+											flagTurnBackPingPong = false;
+
+											Status &= ~BitStatus.IGNORE_LOOP;
+										}
+									}
+								}
+								else
+								{	/* Play foward */
+									if(FrameCountEnd < FrameCountNow)
+									{	/* Frame-Over */
+										FlagLoop = true;
+										FrameCountLoop = (true == FlagIgnoreLoop) ? 0 : 1;
+
+										/* Loop-Count Check */
+										if(0 <= CountLoopRemain)
+										{	/* Limited-Count Loop */
+											CountLoopRemain -= FrameCountLoop;
+											FlagLoop = (0 > CountLoopRemain) ? false : FlagLoop;
+										}
+
+										if(true == FlagLoop)
+										{	/* Loop */
+											countLoopThisTime += FrameCountLoop;
+
+											/* Set Turn-Back */
+											Status |= BitStatus.PLAYING_REVERSE;
+
+											/* ReCalculate Frame */
+											TimeAnimation -= TimeAnimationFull;
+											TimeAnimation = TimeAnimationFull - TimeAnimation;
+											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
+											FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
+											flagTurnBackPingPong = true;
+										}
+										else
+										{	/* End */
+											TimeAnimation = ((float)FrameCountEnd) * TimeFramePerSecond;
+											FrameCountNow = FrameCountEnd;
+											Status |= BitStatus.REQUEST_PLAYEND;
+											FlagReLoop = false;
+										}
 									}
 									Status &= ~BitStatus.IGNORE_LOOP;
 								}
@@ -812,7 +839,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		RateTimePlay = RateTime;
 
 		Status |= (0 != (Status & BitStatus.STYLE_REVERSE)) ? BitStatus.PLAYING_REVERSE : 0;
-		Status |= ((frameNoNow <= frameNoStart) && (0 != (Status & BitStatus.PLAYING_REVERSE))) ? BitStatus.IGNORE_LOOP : 0;
+		if(0 != (Status & BitStatus.PLAYING_REVERSE))
+		{	/* Play-Reverse & Start Top-Frame */
+			Status |= (frameNoNow <= frameNoStart) ? BitStatus.IGNORE_LOOP : 0;
+		}
+		else
+		{	/* Play-Normal & Start End-Frame */
+			Status |= (frameNoNow >= frameNoEnd) ? BitStatus.IGNORE_LOOP : 0;
+		}
 		TimeAnimation = FrameInitial * TimeFramePerSecond;
 
 		if(-1 != TimesPlay)
@@ -970,6 +1004,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Parameter.FlagWayBack = FlagWayBack;
 		Parameter.Data = Data;
 		ListCallBackUserData.Add(Parameter);
+
+		Debug.Log("SS5PU CallBack: FrameNo[" + frameNoNow + "] : " + Data.Text + " ["+ FlagWayBack.ToString() + "]");
 	}
 
 	/* ******************************************************** */
