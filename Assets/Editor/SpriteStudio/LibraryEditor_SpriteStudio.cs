@@ -1928,7 +1928,11 @@ public static partial class LibraryEditor_SpriteStudio
 		/* Switch GameObject's Active-Status */
 		internal static void GameObjectSetActive(GameObject InstanceGameObject, bool FlagSwitch)
 		{
+#if UNITY_3_5
 			InstanceGameObject.active = FlagSwitch;
+#else
+			InstanceGameObject.SetActive(FlagSwitch);
+#endif
 		}
 
 		/* Creating Assets */
@@ -2062,7 +2066,7 @@ public static partial class LibraryEditor_SpriteStudio
 			internal static GameObject GameObject(string Name, GameObject GameObjectParent)
 			{
 				GameObject GameObjectNow = new GameObject(Name);
-				GameObjectNow.active = false;
+				AssetUtility.GameObjectSetActive(GameObjectNow, false);
 				if(null != GameObjectNow)
 				{
 					if(null == GameObjectParent)
