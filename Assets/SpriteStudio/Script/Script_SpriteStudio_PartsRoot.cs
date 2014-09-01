@@ -441,7 +441,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									if(FrameCountEnd < FrameCountNow)
 									{	/* Frame-Over */
 										if(false == FlagIgnoreLoop)
-										{
+										{	/* Turn-Back */
 											/* Set Turn-Back */
 											Status |= BitStatus.PLAYING_REVERSE;
 
@@ -453,7 +453,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											flagTurnBackPingPong = true;
 										}
 										else
-										{
+										{	/* Wrap-Around */
 											/* ReCalculate Frame */
 											TimeAnimation -= TimeAnimationFull;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
@@ -480,7 +480,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 										if(true == FlagLoop)
 										{	/* Loop */
-											countLoopThisTime += FrameCountLoop;
+											countLoopThisTime += FrameCountLoop;	//
 
 											/* Set Turn-Back */
 											Status &= ~BitStatus.PLAYING_REVERSE;
@@ -517,7 +517,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									if(0 > FrameCountNow)
 									{	/* Frame-Over */
 										if(false == FlagIgnoreLoop)
-										{
+										{	/* Turn-Back */
 											/* Set Turn-Back */
 											Status &= ~BitStatus.PLAYING_REVERSE;
 
@@ -529,7 +529,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											flagTurnBackPingPong = true;
 										}
 										else
-										{
+										{	/* Wrap-Around */
 											/* ReCalculate Frame */
 											TimeAnimation += TimeAnimationFull;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
@@ -556,7 +556,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 										if(true == FlagLoop)
 										{	/* Loop */
-											countLoopThisTime += FrameCountLoop;
+											countLoopThisTime += FrameCountLoop;	//
 
 											/* Set Turn-Back */
 											Status |= BitStatus.PLAYING_REVERSE;
