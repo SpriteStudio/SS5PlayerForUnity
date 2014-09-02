@@ -1552,7 +1552,8 @@ public static class Library_SpriteStudio
 
 		internal static uint PriorityGet(float Priority, int ID)
 		{
-			return(((((uint)Priority + 0x4000) << 17) & 0xfffe0000) | (((uint)ID << 7) & 0x0001ff80));
+			return((((uint)(((int)Priority + 0x4000) << 17) & 0xfffe0000)) | (((uint)ID << 7) & 0x0001ff80));
+//			return(((((uint)Priority + 0x4000) << 17) & 0xfffe0000) | (((uint)ID << 7) & 0x0001ff80));
 		}
 
 		public void DrawEntryInstance(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
