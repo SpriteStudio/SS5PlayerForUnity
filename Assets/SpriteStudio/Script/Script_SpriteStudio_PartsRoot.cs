@@ -185,6 +185,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return(countLoopThisTime);
 		}
 	}
+	private bool flagReversePrevious;
+	internal bool FlagReversePrevious
+	{
+		get
+		{
+			return(flagReversePrevious);
+		}
+	}
 	private bool flagTurnBackPingPong;
 	internal bool FlagTurnBackPingPong
 	{
@@ -343,6 +351,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 					countLoopThisTime = 0;
 					flagTurnBackPingPong = false;
+					flagReversePrevious = (0 != (Status & BitStatus.PLAYING_REVERSE)) ? true : false;
 
 					if(0 == (Status & BitStatus.STYLE_PINGPONG))
 					{	/* One-Way */
@@ -449,7 +458,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation -= TimeAnimationFull;
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-											FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
 											flagTurnBackPingPong = true;
 										}
 										else
@@ -462,6 +470,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 											Status &= ~BitStatus.IGNORE_LOOP;
 										}
+										FlagReLoop = ((TimeAnimationFull <= TimeAnimation) || (0.0f > TimeAnimation)) ? true : false;
 									}
 								}
 								else
@@ -480,7 +489,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 										if(true == FlagLoop)
 										{	/* Loop */
-											countLoopThisTime += FrameCountLoop;	//
+											countLoopThisTime += FrameCountLoop;
 
 											/* Set Turn-Back */
 											Status &= ~BitStatus.PLAYING_REVERSE;
@@ -499,8 +508,9 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											Status |= BitStatus.REQUEST_PLAYEND;
 											FlagReLoop = false;
 										}
+										FlagReLoop = ((TimeAnimationFull <= TimeAnimation) || (0.0f > TimeAnimation)) ? true : false;
+										Status &= ~BitStatus.IGNORE_LOOP;
 									}
-									Status &= ~BitStatus.IGNORE_LOOP;
 								}
 							}
 						}
@@ -556,7 +566,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 										if(true == FlagLoop)
 										{	/* Loop */
-											countLoopThisTime += FrameCountLoop;	//
+											countLoopThisTime += FrameCountLoop;
 
 											/* Set Turn-Back */
 											Status |= BitStatus.PLAYING_REVERSE;
