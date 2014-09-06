@@ -972,11 +972,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Color-Blend Operation for the target
 	@retval	Return-Value
 		(None)
-
-	Don't use this function. <br>
-	(This function is for the animation-parts' & Draw-Manager's scripts.)
 	*/
-	internal Material MaterialGet(int TextureNo, Library_SpriteStudio.KindColorOperation Operation)
+	public Material MaterialGet(int TextureNo, Library_SpriteStudio.KindColorOperation Operation)
 	{
 		int MaterialNo = TextureNo * ((int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1);
 		return(((null != TableMaterial) && (0 <= TextureNo)) ? TableMaterial[MaterialNo] : null);
@@ -1014,6 +1011,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Parameter.FlagWayBack = FlagWayBack;
 		Parameter.Data = Data;
 		ListCallBackUserData.Add(Parameter);
+
+		Debug.Log("SS5PU CallBack: FrameNo[" + frameNoPrevious + "-" + frameNoNow + "] (" + CountLoopThisTime + ") : " + Data.Text + " ["+ FlagWayBack.ToString() + "]");
 	}
 
 	/* ******************************************************** */
