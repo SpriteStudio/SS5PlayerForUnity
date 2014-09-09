@@ -1480,9 +1480,10 @@ public static class Library_SpriteStudio
 
 			if(0 >= AnimationDataInstance.Length)
 			{	/* Error */
-				return(false);
+//				return(false);
+				goto UpdateInstanceData_PlayCommand_Force;
 			}
-			
+
 			int FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
 			KeyFrame.ValueInstance DataBody = AnimationDataInstance[FrameNoInstanceBase];
 //			int FramePreviousRoot = ScriptRoot.FrameNoPrevious;
@@ -1526,6 +1527,23 @@ public static class Library_SpriteStudio
 					ScriptPartsRootSub.AnimationPause(true);
 				}
 				PartsInstance.FrameNoPreviousUpdate = FrameNoInstanceBase;
+			}
+
+			return(true);
+
+		UpdateInstanceData_PlayCommand_Force:
+			if(false == ScriptPartsRootSub.AnimationCheckPlay())
+			{
+				ScriptPartsRootSub.AnimationPlay(	0,
+													0,
+													0,
+													1.0f,
+													Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL,
+													"_start",
+													0,
+													"_end",
+													0
+												);
 			}
 
 			return(true);

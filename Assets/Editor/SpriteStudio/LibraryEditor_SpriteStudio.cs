@@ -2568,7 +2568,8 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 				}
 
-				if(false == AnimationDataConvertRuntime(DataSpriteStudio, DataParts.DataAnimation, MaskKeyAttribute, FlagRoot, TableMaterial))
+				bool FlagInstanceParts = (Library_SpriteStudio.KindParts.INSTANCE == DataParts.PartsKind) ? true : false;
+				if(false == AnimationDataConvertRuntime(DataSpriteStudio, DataParts.DataAnimation, MaskKeyAttribute, FlagRoot, TableMaterial, FlagInstanceParts))
 				{	/* No-Data */
 					GameObjectParts.transform.localPosition = Vector3.zero;
 					GameObjectParts.transform.localEulerAngles = Vector3.zero;
@@ -2581,7 +2582,8 @@ public static partial class LibraryEditor_SpriteStudio
 														DataIntermediate.AnimationDataEditor DataEditor,
 														DataIntermediate.KindAttributeKey[] ListMaskAttribute,
 														bool FlagRoot,
-														Material[] TableMaterial
+														Material[] TableMaterial,
+														bool FlagInstanceParts
 													)
 			{
 				if(null == DataEditor.DataKeyFrame)
@@ -2673,7 +2675,14 @@ public static partial class LibraryEditor_SpriteStudio
 																							);
 				DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeCell(ref DataRuntime.ArrayDataBodyCell, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL], TableMaterial);
 				DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeUserData(ref DataRuntime.ArrayDataBodyUser, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
-				DataRuntime.AnimationDataInstance = AnimationDataConvertRuntimeInstance(ref DataRuntime.ArrayDataBodyInstance, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
+				if(true == FlagInstanceParts)
+				{
+					DataRuntime.AnimationDataInstance = AnimationDataConvertRuntimeInstance(ref DataRuntime.ArrayDataBodyInstance, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
+				}
+				else
+				{
+					DataRuntime.AnimationDataInstance = null;
+				}
 
 				return(true);
 			}
@@ -3591,8 +3600,103 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
-					ArrayDataBody = null;
-					return(null);
+					/* Create Default KeyFrame Datas */
+					DataOriginalArray = new ArrayList();
+					DataIntermediate.KeyFrame.DataInstance DataDummy = null;
+
+					bool FlagFirstFrame = true;
+					for(int i=0; i<CountFrameFull; i++)
+					{
+						if(-1 == IndexAnimationGetFrameNo(i))
+						{
+							FlagFirstFrame = true;
+						}
+						else
+						{
+							if(true == FlagFirstFrame)
+							{
+								DataIntermediate.KeyFrame.ValueInstance Value = new DataIntermediate.KeyFrame.ValueInstance();
+								Value.Flag = LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.CLEAR;
+								Value.LabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
+								Value.OffsetStart = 0;
+								Value.LabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
+								Value.OffsetEnd = 0;
+								Value.PlayCount = 0;
+								Value.RateTime = 1.0f;
+
+								DataDummy = new DataIntermediate.KeyFrame.DataInstance();
+								DataDummy.Time = i;
+								DataDummy.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.INSTANCE;
+								DataDummy.Curve = null;
+								DataDummy.ObjectValue = Value;
+
+								DataOriginalArray.Add(DataDummy);
+
+								FlagFirstFrame = false;
+							}
+						}
+					}
+				}
+				else
+				{	/* Make up a Shortfall */
+					DataIntermediate.KeyFrame.DataInstance DataDummy = null;
+
+					int IndexAnimationMax = 0;
+					int IndexAnimationTemp = 0;
+					for(int i=0; i<CountFrameFull; i++)
+					{
+						IndexAnimationTemp = IndexAnimationGetFrameNo(i);
+						if(-1 != IndexAnimationTemp)
+						{
+							IndexAnimationMax = IndexAnimationTemp;
+						}
+					}
+
+					int[] ArrayNo = new int[IndexAnimationMax+1];
+					for(int i=0; i<IndexAnimationMax; i++)
+					{
+						ArrayNo[i] = -1;
+					}
+					for(int i=0; i<DataOriginalArray.Count; i++)
+					{
+						DataDummy = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
+						IndexAnimationTemp = IndexAnimationGetFrameNo(DataDummy.Time);
+						if(-1 != IndexAnimationTemp)
+						{
+							ArrayNo[IndexAnimationTemp] = i;
+						}
+					}
+					for(int i=0; i<IndexAnimationMax; i++)
+					{
+						if(-1 == ArrayNo[i])
+						{
+							for(int j=0; j<CountFrameFull; j++)
+							{
+								IndexAnimationTemp = IndexAnimationGetFrameNo(i);
+								if(i == IndexAnimationTemp)
+								{
+									break;
+								}
+							}
+
+							DataIntermediate.KeyFrame.ValueInstance Value = new DataIntermediate.KeyFrame.ValueInstance();
+							Value.Flag = LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.CLEAR;
+							Value.LabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
+							Value.OffsetStart = 0;
+							Value.LabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
+							Value.OffsetEnd = 0;
+							Value.PlayCount = 0;
+							Value.RateTime = 1.0f;
+
+							DataDummy = new DataIntermediate.KeyFrame.DataInstance();
+							DataDummy.Time = IndexAnimationTemp;
+							DataDummy.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.INSTANCE;
+							DataDummy.Curve = null;
+							DataDummy.ObjectValue = Value;
+
+							DataOriginalArray.Add(DataDummy);
+						}
+					}
 				}
 
 				/* Create Body-Data Array */

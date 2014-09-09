@@ -104,6 +104,11 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		for(int i=0; i<arrayListMeshDraw.TableListMesh.Count; )
 		{
 			ListMeshDraw = arrayListMeshDraw.TableListMesh[i] as Library_SpriteStudio.DrawManager.ListMeshDraw;
+			if(null == ListMeshDraw)
+			{
+				arrayListMeshDraw.TableListMesh.RemoveAt(i);
+				break;
+			}
 			InformationMeshData = ListMeshDraw.MeshDataTop;
 			if(null != InformationMeshData.PartsInstance)
 			{
