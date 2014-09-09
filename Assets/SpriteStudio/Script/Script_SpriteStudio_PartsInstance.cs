@@ -166,7 +166,11 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	{
 		if(null != scriptPartsRootSub)
 		{
-			scriptPartsRootSub.ArrayListMeshDraw.Clear();
+			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMesh = scriptPartsRootSub.ArrayListMeshDraw;
+			if(null != ArrayListMesh)
+			{
+				scriptPartsRootSub.ArrayListMeshDraw.Clear();
+			}
 		}
 	}
 

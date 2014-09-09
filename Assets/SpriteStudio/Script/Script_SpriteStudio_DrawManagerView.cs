@@ -107,7 +107,7 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 			if(null == ListMeshDraw)
 			{
 				arrayListMeshDraw.TableListMesh.RemoveAt(i);
-				break;
+				continue;
 			}
 			InformationMeshData = ListMeshDraw.MeshDataTop;
 			if(null != InformationMeshData.PartsInstance)
