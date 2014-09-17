@@ -68,7 +68,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public int OffsetFrameEnd;
 
 	protected float TimeAnimation;
-	protected float RateTimePlay;
+	protected float rateTimePlay;
+	public float RateTimePlay
+	{
+		get
+		{
+			return(rateTimePlay);
+		}
+	}
 
 	public bool FlagHideForce;
 
@@ -344,7 +351,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 						/* FrameNo Update */
 						if(-1 != frameNoPrevious)
 						{	/* Not Update, Just Starting */
-							TimeAnimation += (Time.deltaTime * RateTimePlay) * RateTimeProgress;
+							TimeAnimation += (Time.deltaTime * rateTimePlay) * RateTimeProgress;
 							Status &= ~BitStatus.DECODE_USERDATA;
 						}
 					}
@@ -779,7 +786,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 				Status &= ~BitStatus.STYLE_PINGPONG;
 				break;
 			case PlayStyle.PINGPONG:
-				Status |= ~BitStatus.STYLE_PINGPONG;
+				Status |= BitStatus.STYLE_PINGPONG;
 				break;
 			default:
 				goto case PlayStyle.NO_CHANGE;
@@ -840,13 +847,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		frameNoPrevious = -1;
 
 		RateTime = (0.0f == RateTime) ? RateTimeAnimation : RateTime;
-		RateTime *= (null != partsRootOrigin) ? partsRootOrigin.RateTimePlay : 1.0f;
 		if(0.0f > RateTime)
 		{
 			Status = (0 == (Status & BitStatus.STYLE_REVERSE)) ? (Status | BitStatus.STYLE_REVERSE) : (Status & ~BitStatus.STYLE_REVERSE);
 			RateTime *= -1.0f;
 		}
-		RateTimePlay = RateTime;
+		rateTimePlay = RateTime;
 
 		Status |= (0 != (Status & BitStatus.STYLE_REVERSE)) ? BitStatus.PLAYING_REVERSE : 0;
 		if(0 != (Status & BitStatus.PLAYING_REVERSE))
@@ -1011,6 +1017,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Parameter.FlagWayBack = FlagWayBack;
 		Parameter.Data = Data;
 		ListCallBackUserData.Add(Parameter);
+
+//		Debug.Log("SS5PU CallBack: FrameNo[" + frameNoPrevious + "-" + frameNoNow + "] (" + CountLoopThisTime + ") : " + Data.Text + " ["+ FlagWayBack.ToString() + "]");
 	}
 
 	/* ******************************************************** */
@@ -1040,11 +1048,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	Don't use this function. <br>
 	(This function is for the Instance-Parts' scripts.)
 	*/
-	internal void TimeElapsedSetForce(float TimeElapsed)
+	internal void TimeElapsedSetForce(float TimeElapsed, bool FlagIndependent)
 	{
 		int FrameCount = (frameNoEnd - frameNoStart) + 1;
+		float TimeRate = (true == FlagIndependent) ? rateTimePlay : 1.0f;
 		float TimeRange = (float)FrameCount * TimeFramePerSecond;
-		TimeAnimation = (TimeElapsed * RateTimePlay) % TimeRange;
+		TimeAnimation = (TimeElapsed * TimeRate) % TimeRange;
 		Status |= BitStatus.IGNORE_LOOP;
 	}
 

@@ -1479,14 +1479,13 @@ public static class Library_SpriteStudio
 			Script_SpriteStudio_PartsRoot ScriptPartsRootSub = PartsInstance.ScriptPartsRootSub;
 
 			if(0 >= AnimationDataInstance.Length)
-			{	/* Error */
-//				return(false);
+			{	/* Error ... Force Play */
 				goto UpdateInstanceData_PlayCommand_Force;
 			}
 
 			int FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
 			KeyFrame.ValueInstance DataBody = AnimationDataInstance[FrameNoInstanceBase];
-//			int FramePreviousRoot = ScriptRoot.FrameNoPrevious;
+			bool FlagIndipendent = (0 != (DataBody.DataBody.Flag & Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(-1 == FramePreviousUpdateInstance)
 			{
@@ -1497,11 +1496,6 @@ public static class Library_SpriteStudio
 				goto UpdateInstanceData_PlayCommand_Initial;
 			}
 
-			if(FrameNo >= FrameNoInstanceBase)
-			{
-				ScriptPartsRootSub.AnimationPause(false);
-			}
-
 			return(true);
 			
 		UpdateInstanceData_PlayCommand_Initial:;
@@ -1509,9 +1503,9 @@ public static class Library_SpriteStudio
 				float RateTime = DataBody.DataBody.RateTime;
 				RateTime *= (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f;
 				ScriptPartsRootSub.AnimationPlay(	-1,
-													DataBody.DataBody.PlayCount,
+													0,	// DataBody.DataBody.PlayCount,
 													0,
-													RateTime,
+													((true == FlagIndipendent) ? RateTime : RateTime * ScriptRoot.RateTimePlay),
 													((0 != (DataBody.DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? Script_SpriteStudio_PartsRoot.PlayStyle.PINGPONG : Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL),
 													DataBody.DataBody.LabelStart,
 													DataBody.DataBody.OffsetStart,
@@ -1521,12 +1515,9 @@ public static class Library_SpriteStudio
 				
 				int FrameCount = FrameNo - FrameNoInstanceBase;
 				FrameCount = (0 > FrameCount) ? 0 : FrameCount;
-				ScriptPartsRootSub.TimeElapsedSetForce(FrameCount * ScriptRoot.TimeFramePerSecond);
-				if(FrameNoInstanceBase > FrameNo)
-				{
-					ScriptPartsRootSub.AnimationPause(true);
-				}
+				ScriptPartsRootSub.TimeElapsedSetForce(FrameCount * ScriptRoot.TimeFramePerSecond, FlagIndipendent);
 				PartsInstance.FrameNoPreviousUpdate = FrameNoInstanceBase;
+				ScriptPartsRootSub.AnimationPause(false);
 			}
 
 			return(true);
@@ -1544,6 +1535,7 @@ public static class Library_SpriteStudio
 													"_end",
 													0
 												);
+				ScriptPartsRootSub.AnimationPause(false);
 			}
 
 			return(true);

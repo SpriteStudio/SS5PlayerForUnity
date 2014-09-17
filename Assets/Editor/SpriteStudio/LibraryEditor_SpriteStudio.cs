@@ -3600,6 +3600,7 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
+#if false
 					/* Create Default KeyFrame Datas */
 					DataOriginalArray = new ArrayList();
 					DataIntermediate.KeyFrame.DataInstance DataDummy = null;
@@ -3617,6 +3618,7 @@ public static partial class LibraryEditor_SpriteStudio
 							{
 								DataIntermediate.KeyFrame.ValueInstance Value = new DataIntermediate.KeyFrame.ValueInstance();
 								Value.Flag = LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.CLEAR;
+								Value.Flag |= LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.INDEPENDENT;
 								Value.LabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
 								Value.OffsetStart = 0;
 								Value.LabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
@@ -3636,6 +3638,9 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 						}
 					}
+#else
+					return(null);
+#endif
 				}
 				else
 				{	/* Make up a Shortfall */
