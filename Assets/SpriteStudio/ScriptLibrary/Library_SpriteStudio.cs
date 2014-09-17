@@ -1495,6 +1495,13 @@ public static class Library_SpriteStudio
 			{
 				goto UpdateInstanceData_PlayCommand_Initial;
 			}
+			else
+			{
+				if(false == FlagIndipendent)
+				{
+					goto UpdateInstanceData_PlayCommand_Initial;
+				}
+			}
 
 			return(true);
 			
@@ -1503,7 +1510,7 @@ public static class Library_SpriteStudio
 				float RateTime = DataBody.DataBody.RateTime;
 				RateTime *= (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f;
 				ScriptPartsRootSub.AnimationPlay(	-1,
-													0,	// DataBody.DataBody.PlayCount,
+													DataBody.DataBody.PlayCount,
 													0,
 													((true == FlagIndipendent) ? RateTime : RateTime * ScriptRoot.RateTimePlay),
 													((0 != (DataBody.DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? Script_SpriteStudio_PartsRoot.PlayStyle.PINGPONG : Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL),
