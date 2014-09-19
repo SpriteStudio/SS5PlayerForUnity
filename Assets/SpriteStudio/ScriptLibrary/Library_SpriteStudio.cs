@@ -1515,7 +1515,7 @@ public static class Library_SpriteStudio
 			{
 				float RateTime = DataBody.DataBody.RateTime;
 				RateTime *= (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f;
-				ScriptPartsRootSub.AnimationPlay(	-1,
+				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
 													DataBody.DataBody.PlayCount,
 													0,
 													((true == FlagIndipendent) ? RateTime : RateTime * ScriptRoot.RateTimePlay),
@@ -1536,9 +1536,10 @@ public static class Library_SpriteStudio
 			return(true);
 
 		UpdateInstanceData_PlayCommand_Force:
-			if(false == ScriptPartsRootSub.AnimationCheckPlay())
+//			if(false == ScriptPartsRootSub.AnimationCheckPlay())
+			if(-1 == PartsInstance.FrameNoPreviousUpdate)
 			{
-				ScriptPartsRootSub.AnimationPlay(	0,
+				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
 													0,
 													0,
 													1.0f,
@@ -1549,6 +1550,7 @@ public static class Library_SpriteStudio
 													0
 												);
 				ScriptPartsRootSub.AnimationPause(false);
+				PartsInstance.FrameNoPreviousUpdate = 0;
 			}
 
 			return(true);

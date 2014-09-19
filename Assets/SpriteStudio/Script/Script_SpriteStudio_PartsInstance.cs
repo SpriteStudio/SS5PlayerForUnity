@@ -16,7 +16,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 	public bool FlagHideForce;
 
-	int AnimationNo;
+	public int AnimationNo;
 
 	private GameObject InstanceGameObjectPartsRootSub;
 	private Script_SpriteStudio_PartsRoot scriptPartsRootSub;

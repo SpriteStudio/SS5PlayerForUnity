@@ -2390,6 +2390,14 @@ public static partial class LibraryEditor_SpriteStudio
 								ScriptLinkPrefab.FlagDeleteScript = false;
 								ScriptLinkPrefab.FlagAutoDevelop = false;
 							}
+
+							/* Get "Instance"-Object's Animation Index */
+							Script_SpriteStudio_PartsInstance ScriptInstance = GameObjectPartsInstance.GetComponent<Script_SpriteStudio_PartsInstance>();
+							GameObject GameObjectInstanceObject = (GameObject)PrefabUtility.InstantiatePrefab(ArrayTrankParts[IndexPrefab].PrefabData);
+							Script_SpriteStudio_PartsRoot ScriptRootInstanceObject = GameObjectInstanceObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+							ScriptInstance.AnimationNo = ScriptRootInstanceObject.AnimationGetIndexNo(InformationInstance.NameInstanceAnimation);
+							ScriptInstance.AnimationNo = (-1 == ScriptInstance.AnimationNo) ? 0 : ScriptInstance.AnimationNo;	/* Error */
+							UnityEngine.Object.DestroyImmediate(GameObjectInstanceObject);
 						}
 					}
 				}
