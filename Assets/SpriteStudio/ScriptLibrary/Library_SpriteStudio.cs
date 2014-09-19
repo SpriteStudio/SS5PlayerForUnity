@@ -748,6 +748,12 @@ public static class Library_SpriteStudio
 				OffsetDrawQueue = 0;
 			}
 
+			public void RenderQueueSet(Library_SpriteStudio.DrawManager.KindDrawQueue RenderQueueBase, int DrawQueue)
+			{
+				KindRenderQueueBase = RenderQueueBase;
+				OffsetDrawQueue = DrawQueue;
+			}
+
 			public void BootCheck()
 			{
 				if(null == tableListMesh)

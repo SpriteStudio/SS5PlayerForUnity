@@ -19,6 +19,11 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 	}
 
 	/* Valiable & Propaties */
+	/* MEMO: Don't set/get "KindRenderQueueBase" and "OffsetDrawQueue". */
+	/*       "KindRenderQueueBase" and "OffsetDrawQueue" are defined public for Setting on Inspector. */
+	public Library_SpriteStudio.DrawManager.KindDrawQueue KindRenderQueueBase;
+	public int OffsetDrawQueue;
+
 	private Camera InstanceCameraDraw;
 	private ArrayList DrawEntryPartsRoot;
 	private Library_SpriteStudio.DrawManager.ArrayListMeshDraw arrayListMeshDraw;
@@ -51,6 +56,7 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 
 		arrayListMeshDraw = new Library_SpriteStudio.DrawManager.ArrayListMeshDraw();
 		arrayListMeshDraw.BootUp();
+		arrayListMeshDraw.RenderQueueSet(KindRenderQueueBase, OffsetDrawQueue);
 	}
 	
 	void Update()
@@ -73,6 +79,7 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		{
 			arrayListMeshDraw = new Library_SpriteStudio.DrawManager.ArrayListMeshDraw();
 			arrayListMeshDraw.BootUp();
+			arrayListMeshDraw.RenderQueueSet(KindRenderQueueBase, OffsetDrawQueue);
 		}
 		arrayListMeshDraw.Clear();
 

@@ -38,16 +38,15 @@ public class Inspector_SpriteStudio_DrawManagerView : Editor
 		{
 			EditorGUI.indentLevel = LevelIndent + 1;
 
-			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = Data.ArrayListMeshDraw;
 			int CountKindQueue = (int)Library_SpriteStudio.DrawManager.KindDrawQueue.OVERLAY + 1;
 			int[] IndexDrawKind = new int[CountKindQueue];
 			for(int i=0; i<CountKindQueue; i++)
 			{
 				IndexDrawKind[i] = i;
 			}
-			int KindRenderQueueBaseNo = (int)ArrayListMeshDraw.KindRenderQueueBase;
+			int KindRenderQueueBaseNo = (int)Data.KindRenderQueueBase;
 			KindRenderQueueBaseNo = EditorGUILayout.IntPopup("Render-Queue Base", KindRenderQueueBaseNo, NameDrawKind, IndexDrawKind);
-			ArrayListMeshDraw.KindRenderQueueBase = (Library_SpriteStudio.DrawManager.KindDrawQueue)KindRenderQueueBaseNo;
+			Data.KindRenderQueueBase = (Library_SpriteStudio.DrawManager.KindDrawQueue)KindRenderQueueBaseNo;
 			EditorGUI.indentLevel = LevelIndent + 2;
 			EditorGUILayout.LabelField("Details [" + NameDrawKind[KindRenderQueueBaseNo] + "]");
 			switch((Library_SpriteStudio.DrawManager.KindDrawQueue)KindRenderQueueBaseNo)
@@ -70,11 +69,7 @@ public class Inspector_SpriteStudio_DrawManagerView : Editor
 			EditorGUI.indentLevel = LevelIndent + 1;
 
 			EditorGUILayout.Space();
-			ArrayListMeshDraw.OffsetDrawQueue = EditorGUILayout.IntField("Render-Queue Offset", ArrayListMeshDraw.OffsetDrawQueue);
-
-//			EditorGUILayout.Space();
-//			ArrayListMeshDraw.RateDrawQueueEffectZ = EditorGUILayout.FloatField("Rate Z Effect", ArrayListMeshDraw.RateDrawQueueEffectZ);
-//			EditorGUILayout.LabelField("(\"This-Value x ViewPort-Z\" Added to Offset)");
+			Data.OffsetDrawQueue = EditorGUILayout.IntField("Render-Queue Offset", Data.OffsetDrawQueue);
 
 			EditorGUI.indentLevel = LevelIndent;
 		}
@@ -82,6 +77,8 @@ public class Inspector_SpriteStudio_DrawManagerView : Editor
 
 		if(true == GUI.changed)
 		{
+			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = Data.ArrayListMeshDraw;
+			ArrayListMeshDraw.RenderQueueSet(Data.KindRenderQueueBase, Data.OffsetDrawQueue);
 			EditorUtility.SetDirty(target);
 		}
 	}
