@@ -80,7 +80,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public bool FlagHideForce;
 
 	/* CAUTION!: Don't set values from Code(Read-Only in principle). Use Function"AnimationPlay". */
-	/*           "AnimationNo","CountLoopRemain" and "FrameNoStartOffset" are defined public for Setting on Inspector. */
+	/*           "AnimationNo","CountLoopRemain" and "FrameNoInitial" are defined public for Setting on Inspector. */
 	public int CountLoopRemain;
 	public int PlayTimes
 	{
@@ -472,7 +472,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											/* ReCalculate Frame */
 											TimeAnimation -= TimeAnimationFull;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-											FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
 											flagTurnBackPingPong = false;
 
 											Status &= ~BitStatus.IGNORE_LOOP;
@@ -505,7 +504,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation += TimeAnimationFull;
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-											FlagReLoop = (0.0f < TimeAnimation) ? true : false;
 											flagTurnBackPingPong = true;
 										}
 										else
@@ -542,7 +540,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation += TimeAnimationFull;
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-											FlagReLoop = (0.0f < TimeAnimation) ? true : false;
 											flagTurnBackPingPong = true;
 										}
 										else
@@ -550,11 +547,11 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											/* ReCalculate Frame */
 											TimeAnimation += TimeAnimationFull;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-											FlagReLoop = (0.0f > TimeAnimation) ? true : false;
 											flagTurnBackPingPong = false;
 
 											Status &= ~BitStatus.IGNORE_LOOP;
 										}
+										FlagReLoop = ((TimeAnimationFull <= TimeAnimation) || (0.0f > TimeAnimation)) ? true : false;
 									}
 								}
 								else
@@ -582,7 +579,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation -= TimeAnimationFull;
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
-											FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
 											flagTurnBackPingPong = true;
 										}
 										else
@@ -592,6 +588,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											Status |= BitStatus.REQUEST_PLAYEND;
 											FlagReLoop = false;
 										}
+										FlagReLoop = ((TimeAnimationFull <= TimeAnimation) || (0.0f > TimeAnimation)) ? true : false;
 									}
 									Status &= ~BitStatus.IGNORE_LOOP;
 								}

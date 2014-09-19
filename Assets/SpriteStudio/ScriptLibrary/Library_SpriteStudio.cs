@@ -1253,23 +1253,23 @@ public static class Library_SpriteStudio
 									if(true == ScriptRoot.FlagReversePrevious)
 									{	/* Reverse */
 										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
 									}
 									else
 									{	/* Normal */
 										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
 									}
 
 									/* Part-Loop */
+									LoopCount--;
 									for(int i=1; i<LoopCount; i++)
 									{
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
 										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
 									}
 
 									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
-									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
+									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
 								}
 								else
 								{	/* Normal */
@@ -1687,13 +1687,6 @@ public static class Library_SpriteStudio
 			Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
 			int	VertexCollectionIndexTableNo = 0;
 
-#if false
-			/* Error-Check */
-			if((AnimationDataCell.Length <= FrameNo) || (0 > FrameNo))
-			{
-				FrameNo = FrameNo;
-			}
-#endif
 			/* Main-Texture Data Get */
 			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].DataBody.TextureNo, KindBlendTarget);
 			if(null != MaterialNow)
