@@ -104,6 +104,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			{
 				AnimationStop();
 				FrameNoInitial = 0;
+				animationNo = value;
 			}
 		}
 		get
