@@ -1145,6 +1145,7 @@ public static class Library_SpriteStudio
 		/* Buffer for Runtime-Speed-Optimize */
 		private float ColliderRadiusPrevious = -1.0f;	/* for Radius-Collision */
 		private Vector2 ColliderRectSizePrevious = Vector2.zero;	/* for Rectangle-Collision */
+
 		private Vector2 ColliderRectPivotPrevious = Vector2.zero;	/* for Rectangle-Collision */
 
 		public AnimationData()
@@ -1597,9 +1598,14 @@ public static class Library_SpriteStudio
 							Vector2 PivotNew = Vector2.zero;
 							{
 								Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
+								Vector2 PivotCollide = Vector2.zero;
+								Vector2 PivotCell = Vector2.zero;
 								if(0 < AnimationDataCell.Length)
 								{
 									RectCell = AnimationDataCell[FrameNo].DataBody.Rectangle;
+									PivotCell = AnimationDataCell[FrameNo].DataBody.Pivot;
+									PivotCell.x -= (RectCell.width * 0.5f);
+									PivotCell.y -= (RectCell.height * 0.5f);
 								}
 
 								Vector2 RateScaleMesh = Vector2.one;
@@ -1610,9 +1616,9 @@ public static class Library_SpriteStudio
 								}
 
 								/* Accommodate Pivot's-Offset */
-								Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
-								PivotNew.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
-								PivotNew.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
+								SpriteRecalcSizeAndPivot(ref PivotCollide, ref RectCell, ref RateScaleMesh, FrameNo);
+								PivotNew.x = -(PivotCollide.x + PivotCell.x) * RateScaleMesh.x;
+								PivotNew.y = (PivotCollide.y + PivotCell.y) * RateScaleMesh.y;
 
 								/* Get Collision-Size */
 								SizeNew.x = RectCell.width;
@@ -1660,10 +1666,37 @@ public static class Library_SpriteStudio
 			return(!AnimationDataFlags[FrameNo].IsHide);
 		}
 
+		protected void SpriteRecalcSizeAndPivot(ref Vector2 PivotMesh, ref Rect RectCell, ref Vector2 RateScaleMesh, int FrameNo)
+		{
+			Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
+			PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
+			PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
+
+			/* Arbitrate Anchor-Size */
+			if(0 < AnimationDataAnchorSize.Length)
+			{
+				float RatePivot;
+				Vector2 AnchorSize = AnimationDataAnchorSize[FrameNo];
+				if(0.0f <= AnchorSize.x)
+				{
+					RatePivot = PivotMesh.x / RectCell.width;
+					RectCell.x = 0.0f;
+					RectCell.width = AnchorSize.x;
+					PivotMesh.x = AnchorSize.x * RatePivot;
+				}
+				if(0.0f <= AnchorSize.y)
+				{
+					RatePivot = PivotMesh.y / RectCell.height;
+					RectCell.y = 0.0f;
+					RectCell.height = AnchorSize.y;
+					PivotMesh.y = AnchorSize.y * RatePivot;
+				}
+			}
+		}
+
 		internal static uint PriorityGet(float Priority, int ID)
 		{
 			return((((uint)(((int)Priority + 0x4000) << 17) & 0xfffe0000)) | (((uint)ID << 7) & 0x0001ff80));
-//			return(((((uint)Priority + 0x4000) << 17) & 0xfffe0000) | (((uint)ID << 7) & 0x0001ff80));
 		}
 
 		public void DrawEntryInstance(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
@@ -1699,14 +1732,8 @@ public static class Library_SpriteStudio
 			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].DataBody.TextureNo, KindBlendTarget);
 			if(null != MaterialNow)
 			{
-#if false
-				Texture InstanceTexture = MaterialNow.mainTexture;
-				SizeTexture.x = (float)InstanceTexture.width;
-				SizeTexture.y = (float)InstanceTexture.height;
-#else
 				SizeTexture.x = AnimationDataCell[FrameNo].DataBody.SizeOriginal.x;
 				SizeTexture.y = AnimationDataCell[FrameNo].DataBody.SizeOriginal.y;
-#endif
 			}
 
 			/* Cell-Data Get */
@@ -1779,15 +1806,6 @@ public static class Library_SpriteStudio
 			Color32[] DataColor32 = new Color32[CountVertexData];
 			if(0 < AnimationDataColorBlend.Length)	/* Blending-Color & Opacity*/
 			{	/* Animation-Data */
-#if false
-				for(int i=0; i<CountVertexData; i++)
-				{
-					DataUV2[i] = new Vector2(	AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
-												(float)AnimationDataColorBlend[FrameNo].Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
-											);
-					DataColor32[i] = AnimationDataColorBlend[FrameNo].VertexColor[i];
-				}
-#else
 				if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlend[FrameNo].Bound)
 				{
 					for(int i=0; i<CountVertexData; i++)
@@ -1808,7 +1826,6 @@ public static class Library_SpriteStudio
 						DataColor32[i] = ColorDefault;
 					}
 				}
-#endif
 			}
 			else
 			{	/* Default (No Datas) */
@@ -1880,33 +1897,6 @@ public static class Library_SpriteStudio
 				DataCoordinate[(int)VertexNo.LD] = new Vector3(Left, -Bottom, 0.0f);
 			}
 			MeshNow.vertices = DataCoordinate;
-		}
-		private void SpriteRecalcSizeAndPivot(ref Vector2 PivotMesh, ref Rect RectCell, ref Vector2 RateScaleMesh, int FrameNo)
-		{
-			Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
-			PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
-			PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
-
-			/* Arbitrate Anchor-Size */
-			if(0 < AnimationDataAnchorSize.Length)
-			{
-				float RatePivot;
-				Vector2 AnchorSize = AnimationDataAnchorSize[FrameNo];
-				if(0.0f <= AnchorSize.x)
-				{
-					RatePivot = PivotMesh.x / RectCell.width;
-					RectCell.x = 0.0f;
-					RectCell.width = AnchorSize.x;
-					PivotMesh.x = AnchorSize.x * RatePivot;
-				}
-				if(0.0f <= AnchorSize.y)
-				{
-					RatePivot = PivotMesh.y / RectCell.height;
-					RectCell.y = 0.0f;
-					RectCell.height = AnchorSize.y;
-					PivotMesh.y = AnchorSize.y * RatePivot;
-				}
-			}
 		}
 		private static void CoordinateGetDiagonalIntersection(out Vector3 Output, ref Vector3 LU, ref Vector3 RU, ref Vector3 LD, ref Vector3 RD)
 		{
