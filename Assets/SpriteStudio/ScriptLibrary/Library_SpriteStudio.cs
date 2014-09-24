@@ -1918,23 +1918,26 @@ public static class Library_SpriteStudio
 
 		public void DrawEntry(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 		{
-			float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
-			int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].DataBody.TextureNo : -1;
-
-			MeshDataInformation.Priority = PriorityGet(Priority, ID);
-			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
-			if(null != ArrayListMeshDraw)
+			if(false == ScriptRoot.FlagHideForce)
 			{
+				float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
+				int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].DataBody.TextureNo : -1;
+
+				MeshDataInformation.Priority = PriorityGet(Priority, ID);
+				Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
+				if(null != ArrayListMeshDraw)
+				{
 #if false
-				ArrayListMeshDraw.MeshAdd(ScriptRoot.MaterialGet(TextureNo, KindBlendTarget), MeshDataInformation);
+					ArrayListMeshDraw.MeshAdd(ScriptRoot.MaterialGet(TextureNo, KindBlendTarget), MeshDataInformation);
 #else
-				Material MaterialNow = ScriptRoot.MaterialGet(TextureNo, KindBlendTarget);
-				if(null == MaterialNow)
-				{	/* has Illegal-Material */
-					return;
-				}
-				ArrayListMeshDraw.MeshAdd(MaterialNow, MeshDataInformation);
+					Material MaterialNow = ScriptRoot.MaterialGet(TextureNo, KindBlendTarget);
+					if(null == MaterialNow)
+					{	/* has Illegal-Material */
+						return;
+					}
+					ArrayListMeshDraw.MeshAdd(MaterialNow, MeshDataInformation);
 #endif
+				}
 			}
 		}
 	}
