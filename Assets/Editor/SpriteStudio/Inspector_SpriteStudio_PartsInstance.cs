@@ -25,6 +25,26 @@ public class Inspector_SpriteStudio_PartsInstance : Editor
 		}
 		EditorGUILayout.Space();
 
+#if false
+		/* MEMO: Experimentally & Sample */
+		int	AnimationNoOld = Data.AnimationNo;
+		Data.AnimationNo = EditorGUILayout.IntField("Animation No", Data.AnimationNo);
+		if(AnimationNoOld != Data.AnimationNo)
+		{
+			Data.AnimationChangeInstance(Data.AnimationNo);
+		}
+#endif
+
+#if false
+		/* MEMO: Experimentally & Sample */
+		GameObject PrefabNew = null;
+		PrefabNew = (GameObject)(EditorGUILayout.ObjectField("Prefab ", PrefabNew, typeof(GameObject), false));
+		if(null != PrefabNew)
+		{
+			Data.PrefabChangeInstance(PrefabNew);
+		}
+#endif
+
 		if(true == GUI.changed)
 		{
 			EditorUtility.SetDirty(target);

@@ -6,6 +6,9 @@
 */
 using UnityEngine;
 using System.Collections;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [ExecuteInEditMode]
 [System.Serializable]
@@ -108,6 +111,57 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 
 	void LateUpdate()
 	{
+	}
+
+	/* ******************************************************** */
+	//! Change playing the Instance-Object's animation
+	/*!
+	@param	No
+		Animation's Index<br>
+	@retval	Return-Value
+		true == Success <br>
+		false == Failure (Error)
+
+	The playing of Instance-Object's animation changes. <br>
+	It is necessary for the New Animation to have the Animation which is already set and compatibility of a data structure.<br>
+	<br>
+	Caution!: This Function is in experimentally inplement.
+	*/
+	public bool AnimationChangeInstance(int No)
+	{
+		AnimationNo = No;
+		frameNoPreviousUpdate = -1;
+		return(true);
+	}
+
+	/* ******************************************************** */
+	//! Change playing the Instance-Object's animation
+	/*!
+	@param	InstancePrefab
+		New Prefab<br>
+	@retval	Return-Value
+		true == Success <br>
+		false == Failure (Error)
+
+	The playing of Instance-Object's Prefab changes. <br>
+	It is necessary for the New Prefab to have the Prefab which is already set and compatibility of a data structure.<br>
+	<br>
+	Caution!: This Function is in experimentally inplement.
+	*/
+	public bool PrefabChangeInstance(GameObject PrefabNew)
+	{
+		GameObject Instance = null;
+#if UNITY_EDITOR
+		DestroyImmediate(InstanceGameObjectPartsRootSub);
+		Instance = (GameObject)PrefabUtility.InstantiatePrefab(PrefabNew);
+#else
+		Destroy(InstanceGameObjectPartsRootSub);
+		Instance = (GameObject)Instantiate(PrefabNew);
+#endif
+		InstanceGameObjectPartsRootSub = null;
+		scriptPartsRootSub = null;
+		LinkSetPartsInstance(Instance);
+		return(true);
 	}
 
 	/* ******************************************************** */
