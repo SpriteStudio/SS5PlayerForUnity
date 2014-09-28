@@ -975,7 +975,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	@param	Operation
 		Color-Blend Operation for the target
 	@retval	Return-Value
-		(None)
+		Material
 	*/
 	public Material MaterialGet(int TextureNo, Library_SpriteStudio.KindColorOperation Operation)
 	{

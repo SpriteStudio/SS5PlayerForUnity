@@ -1491,6 +1491,10 @@ public static class Library_SpriteStudio
 			}
 
 			int FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
+			if(-1 == FrameNoInstanceBase)
+			{
+				return(false);
+			}
 			KeyFrame.ValueInstance DataBody = AnimationDataInstance[FrameNoInstanceBase];
 			bool FlagIndipendent = (0 != (DataBody.DataBody.Flag & Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
