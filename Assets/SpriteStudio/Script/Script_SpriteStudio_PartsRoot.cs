@@ -980,6 +980,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public Material MaterialGet(int TextureNo, Library_SpriteStudio.KindColorOperation Operation)
 	{
 		int MaterialNo = TextureNo * ((int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1);
+		MaterialNo += (int)Operation - 1;
 		return(((null != TableMaterial) && (0 <= TextureNo)) ? TableMaterial[MaterialNo] : null);
 	}
 
