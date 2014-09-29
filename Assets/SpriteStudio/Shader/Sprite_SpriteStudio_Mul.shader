@@ -29,7 +29,8 @@ Shader "Custom/SpriteStudio5/Mul" {
 			ZTest LEqual
 			ZWRITE Off
 
-			Blend DstColor Zero
+//			Blend DstColor Zero,OneMinusSrcAlpha One
+			Blend DstColor OneMinusSrcAlpha
 
 			CGPROGRAM
 			#pragma vertex VS_main
