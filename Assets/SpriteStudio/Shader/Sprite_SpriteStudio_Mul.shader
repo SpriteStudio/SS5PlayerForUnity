@@ -29,8 +29,7 @@ Shader "Custom/SpriteStudio5/Mul" {
 			ZTest LEqual
 			ZWRITE Off
 
-//			Blend DstColor Zero,OneMinusSrcAlpha One
-			Blend DstColor OneMinusSrcAlpha
+			Blend DstColor Zero
 
 			CGPROGRAM
 			#pragma vertex VS_main
@@ -40,8 +39,34 @@ Shader "Custom/SpriteStudio5/Mul" {
 
 			#include "Base/ShaderVertex_SpriteStudio.cginc"
 
-			#include "Base/ShaderPixel_Sprite_SpriteStudio.cginc"
+//			#include "Base/ShaderPixel_Sprite_SpriteStudio.cginc"
+			#define	LIMIT_ALPHA	0.0038
 
+			sampler2D	_MainTex;
+
+			fixed4	PS_main(InputPS Input) : COLOR0
+			{
+				fixed4	Output;
+
+				fixed4	Pixel = tex2D(_MainTex, Input.Texture00UV.xy);
+				Pixel *= Input.ColorMain;
+
+				fixed4	OverlayParameter = Input.ParameterOverlay;
+				fixed4	ColorOverlay = Input.ColorOverlay;
+				fixed	ColorAlpha = ColorOverlay.a;
+				fixed	PixelAlpha = 1.0f;			// Pixel.a;				// Mul Only.
+				Pixel += fixed4(1.0f, 1.0f, 1.0f, 1.0f) * (1.0 - Pixel.a);	// Mul Only.
+				Pixel.w = 1.0;												// Mul Only.
+
+				fixed4	PixelCoefficientColorOvelay = ((0.0f > OverlayParameter.z) ? fixed4(1.0f, 1.0f, 1.0f, 1.0f) : (Pixel * OverlayParameter.z));
+				ColorOverlay *= ColorAlpha;
+
+				Pixel = ((Pixel * (1.0f - (ColorAlpha * OverlayParameter.y))) * OverlayParameter.x) + (PixelCoefficientColorOvelay * ColorOverlay * OverlayParameter.w);
+				Pixel.a = PixelAlpha;
+				Output = Pixel;
+
+				return(Output);
+			}
 			ENDCG
 
 			SetTexture [_MainTex]	{
