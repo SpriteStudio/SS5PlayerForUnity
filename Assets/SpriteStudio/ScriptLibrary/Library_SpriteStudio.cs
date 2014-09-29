@@ -1498,20 +1498,20 @@ public static class Library_SpriteStudio
 			KeyFrame.ValueInstance DataBody = AnimationDataInstance[FrameNoInstanceBase];
 			bool FlagIndipendent = (0 != (DataBody.DataBody.Flag & Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
+			if(false == FlagIndipendent)
+			{	/* Non-Indipendent */
+				if(0 < ScriptRoot.CountLoopThisTime)
+				{
+					FramePreviousUpdateInstance = -1;
+				}
+			}
 			if(-1 == FramePreviousUpdateInstance)
 			{
 				goto UpdateInstanceData_PlayCommand_Initial;
 			}
 			if(FrameNoInstanceBase != FramePreviousUpdateInstance)
-			{
+			{	/* New Attribute */
 				goto UpdateInstanceData_PlayCommand_Initial;
-			}
-			else
-			{
-				if(false == FlagIndipendent)
-				{
-					goto UpdateInstanceData_PlayCommand_Initial;
-				}
 			}
 
 			return(true);
@@ -1541,7 +1541,6 @@ public static class Library_SpriteStudio
 			return(true);
 
 		UpdateInstanceData_PlayCommand_Force:
-//			if(false == ScriptPartsRootSub.AnimationCheckPlay())
 			if(-1 == PartsInstance.FrameNoPreviousUpdate)
 			{
 				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,

@@ -60,7 +60,7 @@ Shader "Custom/SpriteStudio5/Mul" {
 				ColorOverlay *= ColorAlpha;
 
 				Pixel = ((Pixel * (1.0f - (ColorAlpha * OverlayParameter.y))) * OverlayParameter.x) + (PixelCoefficientColorOvelay * ColorOverlay * OverlayParameter.w);
-				Pixel *= PixelAlpha;
+				Pixel *= PixelAlpha;											// Mul Only.
 				Pixel += fixed4(1.0f, 1.0f, 1.0f, 1.0f) * (1.0 - PixelAlpha);	// Mul Only.
 				Pixel.w = 1.0f;													// Mul Only.
 				Output = Pixel;
