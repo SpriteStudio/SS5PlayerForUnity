@@ -29,7 +29,7 @@ Shader "Custom/SpriteStudio5/Mul" {
 			ZTest LEqual
 			ZWRITE Off
 
-			Blend DstColor Zero
+			Blend Zero SrcColor
 
 			CGPROGRAM
 			#pragma vertex VS_main
@@ -54,15 +54,15 @@ Shader "Custom/SpriteStudio5/Mul" {
 				fixed4	OverlayParameter = Input.ParameterOverlay;
 				fixed4	ColorOverlay = Input.ColorOverlay;
 				fixed	ColorAlpha = ColorOverlay.a;
-				fixed	PixelAlpha = 1.0f;			// Pixel.a;				// Mul Only.
-				Pixel += fixed4(1.0f, 1.0f, 1.0f, 1.0f) * (1.0 - Pixel.a);	// Mul Only.
-				Pixel.w = 1.0;												// Mul Only.
+				fixed	PixelAlpha = Pixel.a;
 
 				fixed4	PixelCoefficientColorOvelay = ((0.0f > OverlayParameter.z) ? fixed4(1.0f, 1.0f, 1.0f, 1.0f) : (Pixel * OverlayParameter.z));
 				ColorOverlay *= ColorAlpha;
 
 				Pixel = ((Pixel * (1.0f - (ColorAlpha * OverlayParameter.y))) * OverlayParameter.x) + (PixelCoefficientColorOvelay * ColorOverlay * OverlayParameter.w);
-				Pixel.a = PixelAlpha;
+				Pixel *= PixelAlpha;
+				Pixel += fixed4(1.0f, 1.0f, 1.0f, 1.0f) * (1.0 - PixelAlpha);	// Mul Only.
+				Pixel.w = 1.0f;													// Mul Only.
 				Output = Pixel;
 
 				return(Output);
