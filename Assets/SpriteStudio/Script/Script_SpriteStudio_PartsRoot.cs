@@ -395,6 +395,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									{	/* End */
 										TimeAnimation = ((float)FrameCountEnd) * TimeFramePerSecond;
 										FrameCountNow = FrameCountEnd;
+										Status &= ~BitStatus.PLAYING;
 										Status |= BitStatus.REQUEST_PLAYEND;
 										FlagReLoop = false;
 									}
@@ -435,6 +436,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									{	/* End */
 										TimeAnimation = 0.0f;
 										FrameCountNow = 0;
+										Status &= ~BitStatus.PLAYING;
 										Status |= BitStatus.REQUEST_PLAYEND;
 										FlagReLoop = false;
 									}
@@ -511,6 +513,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										{	/* End */
 											TimeAnimation = 0.0f;
 											FrameCountNow = 0;
+											Status &= ~BitStatus.PLAYING;
 											Status |= BitStatus.REQUEST_PLAYEND;
 											FlagReLoop = false;
 										}
@@ -586,6 +589,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										{	/* End */
 											TimeAnimation = ((float)FrameCountEnd) * TimeFramePerSecond;
 											FrameCountNow = FrameCountEnd;
+											Status &= ~BitStatus.PLAYING;
 											Status |= BitStatus.REQUEST_PLAYEND;
 											FlagReLoop = false;
 										}
@@ -1053,7 +1057,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		float TimeRate = (true == FlagIndependent) ? rateTimePlay : 1.0f;
 		float TimeRange = (float)FrameCount * TimeFramePerSecond;
 		TimeAnimation = (TimeElapsed * TimeRate) % TimeRange;
-		Status |= BitStatus.IGNORE_LOOP;
+//		Status |= BitStatus.IGNORE_LOOP;
 	}
 
 	/* ******************************************************** */

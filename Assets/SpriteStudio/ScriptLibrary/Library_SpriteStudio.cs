@@ -1490,12 +1490,6 @@ public static class Library_SpriteStudio
 				goto UpdateInstanceData_PlayCommand_Force;
 			}
 
-			if(false == ScriptRoot.AnimationCheckPlay())
-			{	/* Parent is stopped */
-				ScriptPartsRootSub.AnimationStop();
-				return(true);
-			}
-
 			int FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
 			if(-1 == FrameNoInstanceBase)
 			{

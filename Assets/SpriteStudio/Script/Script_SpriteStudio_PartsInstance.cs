@@ -107,6 +107,14 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 				SpriteStudioData.DrawEntryInstance(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
 			}
 		}
+
+		if(false == ScriptRoot.AnimationCheckPlay())
+		{	/* Parent is stopped */
+			if(null != scriptPartsRootSub)
+			{
+				scriptPartsRootSub.AnimationStop();
+			}
+		}
 	}
 
 	void LateUpdate()
