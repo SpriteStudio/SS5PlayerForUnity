@@ -1086,12 +1086,12 @@ public static partial class LibraryEditor_SpriteStudio
 									bool ValueBool = false;
 									DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
 									DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET;
-//									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
-//									if(null != ValueTextBool)
-//									{
-//										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-//										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE : 0;
-//									}
+									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
+									if(null != ValueTextBool)
+									{
+										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
+										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE : 0;
+									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
 									if(null != ValueTextBool)
