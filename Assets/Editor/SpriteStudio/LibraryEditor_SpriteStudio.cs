@@ -144,7 +144,13 @@ public static partial class LibraryEditor_SpriteStudio
 
 				DataListImage[i] = new DataIntermediate.PartsImage();
 				DataListImage[i].CleanUp();
-				if(false == ParseOPSS.ImportSSCE(ref DataListImage[i], InformationSSPJ.NameDirectorySSCE, InformationSSPJ.NameDirectoryImage, (string)InformationSSPJ.ListSSCE[i]))
+				if(false == ParseOPSS.ImportSSCE(	ref DataListImage[i],
+													ref InformationSSPJ,
+													InformationSSPJ.NameDirectorySSCE,
+													InformationSSPJ.NameDirectoryImage,
+													(string)InformationSSPJ.ListSSCE[i]
+												)
+					)
 				{
 					goto Menu_ImportSSPJ_ErrorEnd;
 				}
@@ -392,7 +398,7 @@ public static partial class LibraryEditor_SpriteStudio
 			InformationSSPJ InformationProject = null;
 			XmlNode NodeRoot = DataXML.FirstChild;
 			NodeRoot = NodeRoot.NextSibling;
-			KindVersionSSPJ VersionCode = (KindVersionSSPJ)(VersionCodeGet(NodeRoot, "SpriteStudioProject", (int)KindVersionSSPJ.ERROR));
+			KindVersionSSPJ VersionCode = (KindVersionSSPJ)(VersionCodeGet(NodeRoot, "SpriteStudioProject", (int)KindVersionSSPJ.ERROR, true));
 			switch(VersionCode)
 			{
 				case KindVersionSSPJ.VERSION_000100:
@@ -562,7 +568,8 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 
 		/* for Parsing ".ssce" */
-		internal static bool ImportSSCE(	ref DataIntermediate.PartsImage InformationCellMap,
+		internal static bool ImportSSCE(ref DataIntermediate.PartsImage InformationCellMap,
+										ref InformationSSPJ InformationProject,
 										string NameDirectoryCellMap,
 										string NameDirectoryImage,
 										string FileName
@@ -575,7 +582,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 			XmlNode NodeRoot = DataXML.FirstChild;
 			NodeRoot = NodeRoot.NextSibling;
-			KindVersionSSCE VersionCode = (KindVersionSSCE)(VersionCodeGet(NodeRoot, "SpriteStudioCellMap", (int)KindVersionSSCE.ERROR));
+			KindVersionSSCE VersionCode = (KindVersionSSCE)(VersionCodeGet(NodeRoot, "SpriteStudioCellMap", (int)KindVersionSSCE.ERROR, true));
 			switch(VersionCode)
 			{
 				case KindVersionSSCE.VERSION_000100:
@@ -685,11 +692,13 @@ public static partial class LibraryEditor_SpriteStudio
 
 			XmlNode NodeRoot = DataXML.FirstChild;
 			NodeRoot = NodeRoot.NextSibling;
-			KindVersionSSAE VersionCode = (KindVersionSSAE)(VersionCodeGet(NodeRoot, "SpriteStudioAnimePack", (int)KindVersionSSAE.ERROR));
+			KindVersionSSAE VersionCode = (KindVersionSSAE)(VersionCodeGet(NodeRoot, "SpriteStudioAnimePack", (int)KindVersionSSAE.ERROR, false));
 			switch(VersionCode)
 			{
 				case KindVersionSSAE.VERSION_000100:
 				case KindVersionSSAE.VERSION_010000:
+				case KindVersionSSAE.VERSION_010001:
+				case KindVersionSSAE.VERSION_010002:
 					break;
 
 				case KindVersionSSAE.ERROR:
@@ -697,6 +706,7 @@ public static partial class LibraryEditor_SpriteStudio
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSAE_ErrorEnd;
 			}
+			DataTrunk.VersionCodeSSAE = VersionCode;
 
 			NameTable NodeNameSpace = new NameTable();
 			XmlNamespaceManager ManagerNameSpace = new XmlNamespaceManager(NodeNameSpace);
@@ -759,13 +769,13 @@ public static partial class LibraryEditor_SpriteStudio
 					DataTrunk.ListParts[i].DataAnimation.DataKeyFrame[j] = null;
 				}
 
-				DataTrunk.ListParts[i].DataAnimation.RateInheritance = new float[(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT];
+				DataTrunk.ListParts[i].DataAnimation.RateInheritance = new float[(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHERIT];
 				if(null == DataTrunk.ListParts[i].DataAnimation.RateInheritance)
 				{
 					MessageError = "Not Enough Memory.";
 					goto ParseOPSS_ImportSSAE_ErrorEnd;
 				}
-				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT; j++)
+				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHERIT; j++)
 				{
 					DataTrunk.ListParts[i].DataAnimation.RateInheritance[j] = 0.0f;
 				}
@@ -777,7 +787,7 @@ public static partial class LibraryEditor_SpriteStudio
 				PartsNo = XMLUtility.ValueGetInt(XMLUtility.TextGetSelectSingleNode(NodeParts, "arrayIndex", ManagerNameSpace));
 				DataTrunk.ListParts[PartsNo].ID = PartsNo;
 
-				if(false == ImportSSAESetParts(ref DataTrunk.ListParts[PartsNo], NodeParts, ManagerNameSpace))
+				if(false == ImportSSAESetParts(ref DataTrunk.ListParts[PartsNo], NodeParts, ManagerNameSpace, VersionCode))
 				{
 					goto ParseOPSS_ImportSSAE_ErrorEnd_NoMessage;
 				}
@@ -795,7 +805,7 @@ public static partial class LibraryEditor_SpriteStudio
 					DataTrunk.ListParts[i].DataAnimation.FlagInheritance = DataTrunk.ListParts[PartsNo].DataAnimation.FlagInheritance;
 				}
 
-				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT; j++)
+				for(int j=(int)DataIntermediate.KindAttributeKey.POSITION_X; j<(int)DataIntermediate.KindAttributeKey.TERMINATOR_INHERIT; j++)
 				{
 					DataTrunk.ListParts[i].DataAnimation.RateInheritance[j] = (0 != (DataTrunk.ListParts[i].DataAnimation.FlagInheritance & DataIntermediate.FlagParameterKeyFrameInherit[j])) ? 1.0f : 0.0f;
 				}
@@ -886,13 +896,15 @@ public static partial class LibraryEditor_SpriteStudio
 			ERROR = 0x00000000,
 			VERSION_000100  = 0x00000100,
 			VERSION_010000  = 0x00010000,
+			VERSION_010001  = 0x00010001,
+			VERSION_010002  = 0x00010002,	/* ssae ver.5.3.5 */
 
 			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,
+			VERSION_CURRENT = VERSION_010000,	/* VERSION_010002 */
 		};
 
 		/* Version-Code Shaping */
-		private static int VersionCodeGet(XmlNode NodeRoot, string NameTag, int ErrorCode)
+		private static int VersionCodeGet(XmlNode NodeRoot, string NameTag, int ErrorCode, bool FlagMaskRevision)
 		{
 			XmlAttributeCollection AttributeNodeRoot = NodeRoot.Attributes;
 			if(NameTag != NodeRoot.Name)
@@ -912,14 +924,18 @@ public static partial class LibraryEditor_SpriteStudio
 				return(ErrorCode);
 			}
 
-			Version &= ~0x000000ff;
+			if(true == FlagMaskRevision)
+			{
+				Version &= ~0x000000ff;
+			}
 			return(Version);
 		}
 
 		/* SSAE-Parts Data Decoding */
 		private static bool ImportSSAESetParts(	ref DataIntermediate.PartsSprite DataParts,
 												XmlNode NodeParts,
-												XmlNamespaceManager ManagerNameSpace
+												XmlNamespaceManager ManagerNameSpace,
+												KindVersionSSAE VersionCode
 											)
 		{
 			string ValueText = "";
@@ -1001,46 +1017,118 @@ public static partial class LibraryEditor_SpriteStudio
 			switch(ValueText)
 			{
 				case "parent":
-					if(0 == DataParts.ID)
 					{
-						DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
-						DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET;
-					}
-					else
-					{
-						DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.PARENT;
-						DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
+						switch(VersionCode)
+						{
+							case KindVersionSSAE.VERSION_010000:
+							case KindVersionSSAE.VERSION_010001:
+								{
+									if(0 == DataParts.ID)
+									{
+										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
+										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET_010000;
+									}
+									else
+									{
+										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.PARENT;
+										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
+									}
+								}
+								break;
+
+							case KindVersionSSAE.VERSION_010002:
+								{
+									if(0 == DataParts.ID)
+									{
+										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
+										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET_010002;
+									}
+									else
+									{
+										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.PARENT;
+										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
+									}
+								}
+								break;
+						}
 					}
 					break;
 
 				case "self":
 					{
-						DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
-						DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
-
-						XmlNode NodeAttribute = null;
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
-						if(null == NodeAttribute)
+						switch(VersionCode)
 						{
-							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE;
-						}
+							case KindVersionSSAE.VERSION_010000:
+							case KindVersionSSAE.VERSION_010001:
+								{
+									/* MEMO: Default-Value: 0(true) */
+									/*       Attributes'-Tag exists when Value is 0(false). */
+									DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
+									DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
 
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
-						if(null == NodeAttribute)
-						{
-							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_X;
-						}
+									XmlNode NodeAttribute = null;
+									NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
+									if(null == NodeAttribute)
+									{
+										DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE;
+									}
 
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
-						if(null == NodeAttribute)
-						{
-							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_Y;
-						}
+									NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
+									if(null == NodeAttribute)
+									{
+										DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_X;
+									}
 
-						NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
-						if(null == NodeAttribute)
-						{
-							DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE;
+									NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
+									if(null == NodeAttribute)
+									{
+										DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_Y;
+									}
+
+									NodeAttribute = XMLUtility.XML_SelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
+									if(null == NodeAttribute)
+									{
+										DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE;
+									}
+								}
+								break;
+
+							case KindVersionSSAE.VERSION_010002:
+								{
+									/* MEMO: Attributes'-Tag always exists.() */
+									string ValueTextBool = "";
+									bool ValueBool = false;
+									DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
+									DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET_010000;
+//									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
+//									if(null != ValueTextBool)
+//									{
+//										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
+//										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE : 0;
+//									}
+
+									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
+									if(null != ValueTextBool)
+									{
+										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
+										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.FLIP_X : 0;
+									}
+
+									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
+									if(null != ValueTextBool)
+									{
+										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
+										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.FLIP_Y : 0;
+									}
+
+									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
+									if(null != ValueTextBool)
+									{
+										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
+										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE : 0;
+									}
+								}
+								break;
 						}
 					}
 					break;
@@ -1184,7 +1272,7 @@ public static partial class LibraryEditor_SpriteStudio
 					continue;
 				}
 				AttributeNo = (int)Description.Attribute;
-				if((int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT > AttributeNo)
+				if((int)DataIntermediate.KindAttributeKey.TERMINATOR_INHERIT > AttributeNo)
 				{
 					DataParts.DataAnimation.FlagKeyParameter |= DataIntermediate.FlagParameterKeyFrameInherit[AttributeNo];
 				}
@@ -2101,6 +2189,8 @@ public static partial class LibraryEditor_SpriteStudio
 			internal Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay = null;
 			internal ArrayList ListPartsInstance = null;
 
+			internal ParseOPSS.KindVersionSSAE VersionCodeSSAE;
+
 			internal int CountNode = -1;
 			internal int CountFrameFull = -1;
 			internal bool FlameFlipForImageOnly = false;
@@ -2614,7 +2704,7 @@ public static partial class LibraryEditor_SpriteStudio
 						DataEditor.DataKeyFrame[AttributeNo].Clear();
 						DataEditor.DataKeyFrame[AttributeNo] = null;
 					}
-					if((int)DataIntermediate.KindAttributeKey.TERMINATOR_INHELIT > AttributeNo)
+					if((int)DataIntermediate.KindAttributeKey.TERMINATOR_INHERIT > AttributeNo)
 					{
 						DataEditor.FlagKeyParameter = DataEditor.FlagKeyParameter & ~DataIntermediate.FlagParameterKeyFrameInherit[AttributeNo];
 					}
@@ -4245,21 +4335,45 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Solving Hide */
-				if(0 != (FlagInherit & FlagAttributeKeyInherit.SHOW_HIDE) && (null != DataFlagsParentHide) && (null != this.ListParts[NodeNo].DataAnimation.DataKeyFrame[(int)KindAttributeKey.SHOW_HIDE]))
+				switch(VersionCodeSSAE)
 				{
-					Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
-					Library_SpriteStudio.KeyFrame.ValueBools.FlagData DataParent;
-					for(int i=0; i<Count; i++)
-					{
-						if(true == ValidityCheckFrameNoBool(NodeNo, i, LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.SHOW_HIDE))
+					case ParseOPSS.KindVersionSSAE.VERSION_010000:
+					case ParseOPSS.KindVersionSSAE.VERSION_010001:
+						if(0 != (FlagInherit & FlagAttributeKeyInherit.SHOW_HIDE) && (null != DataFlagsParentHide) && (null != ListParts[NodeNo].DataAnimation.DataKeyFrame[(int)KindAttributeKey.SHOW_HIDE]))
 						{
-							DataParent = DataFlagsParentHide[i].Flag & MaskFlag;
+							Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
+							Library_SpriteStudio.KeyFrame.ValueBools.FlagData DataParent;
+							for(int i=0; i<Count; i++)
+							{
+								if(true == ValidityCheckFrameNoBool(NodeNo, i, LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.SHOW_HIDE))
+								{
+									DataParent = DataFlagsParentHide[i].Flag & MaskFlag;
 
-							/* Copy Parent's Data */
-							DataFlags[i].Flag &= ~MaskFlag;
-							DataFlags[i].Flag |= DataParent;
+									/* Copy Parent's Data */
+									DataFlags[i].Flag &= ~MaskFlag;
+									DataFlags[i].Flag |= DataParent;
+								}
+							}
 						}
-					}
+						break;
+					case ParseOPSS.KindVersionSSAE.VERSION_010002:
+						if(0 != (FlagInherit & FlagAttributeKeyInherit.SHOW_HIDE) && (null != DataFlagsParentHide))
+						{
+							Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
+							Library_SpriteStudio.KeyFrame.ValueBools.FlagData DataParent;
+							for(int i=0; i<Count; i++)
+							{
+								if(true == ValidityCheckFrameNoBool(NodeNo, i, LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.SHOW_HIDE))
+								{
+									DataParent = DataFlagsParentHide[i].Flag & MaskFlag;
+
+									/* Copy Parent's Data */
+									DataFlags[i].Flag &= ~MaskFlag;
+									DataFlags[i].Flag |= DataParent;
+								}
+							}
+						}
+						break;
 				}
 
 				/* Solving Opacity-Rate */
@@ -4499,7 +4613,7 @@ public static partial class LibraryEditor_SpriteStudio
 			SOUND,
 
 			TERMINATOR,
-			TERMINATOR_INHELIT = (SHOW_HIDE + 1),
+			TERMINATOR_INHERIT = (SHOW_HIDE + 1),
 		};
 		internal enum FlagAttributeKeyInherit
 		{
@@ -4518,21 +4632,30 @@ public static partial class LibraryEditor_SpriteStudio
 			SHOW_HIDE = (1 << KindAttributeKey.SHOW_HIDE),
 
 			CLEAR = 0,
-			ALL = ((1 << KindAttributeKey.TERMINATOR_INHELIT) - 1),
-			PRESET = POSITION_X
-					| POSITION_Y
-					| POSITION_Z
-					| ROTATE_X
-					| ROTATE_Y
-					| ROTATE_Z
-					| SCALE_X
-					| SCALE_Y
-					| OPACITY_RATE
-//					| FLIP_X
-//					| FLIP_Y
-//					| SHOW_HIDE
+			ALL = ((1 << KindAttributeKey.TERMINATOR_INHERIT) - 1),
+			PRESET_010000 = POSITION_X
+							| POSITION_Y
+							| POSITION_Z
+							| ROTATE_X
+							| ROTATE_Y
+							| ROTATE_Z
+							| SCALE_X
+							| SCALE_Y
+							| OPACITY_RATE,
+			PRESET_010002 = POSITION_X
+							| POSITION_Y
+							| POSITION_Z
+							| ROTATE_X
+							| ROTATE_Y
+							| ROTATE_Z
+							| SCALE_X
+							| SCALE_Y
+							| OPACITY_RATE
+							| FLIP_X
+							| FLIP_Y
+							| SHOW_HIDE
 		};
-		internal readonly static FlagAttributeKeyInherit[] FlagParameterKeyFrameInherit = new FlagAttributeKeyInherit[(int)KindAttributeKey.TERMINATOR_INHELIT]
+		internal readonly static FlagAttributeKeyInherit[] FlagParameterKeyFrameInherit = new FlagAttributeKeyInherit[(int)KindAttributeKey.TERMINATOR_INHERIT]
 		{
 			FlagAttributeKeyInherit.POSITION_X,
 			FlagAttributeKeyInherit.POSITION_Y,
