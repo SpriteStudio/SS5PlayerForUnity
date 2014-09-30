@@ -1022,26 +1022,12 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							case KindVersionSSAE.VERSION_010000:
 							case KindVersionSSAE.VERSION_010001:
-								{
-									if(0 == DataParts.ID)
-									{
-										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
-										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET_010000;
-									}
-									else
-									{
-										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.PARENT;
-										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.CLEAR;
-									}
-								}
-								break;
-
 							case KindVersionSSAE.VERSION_010002:
 								{
 									if(0 == DataParts.ID)
 									{
 										DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
-										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET_010002;
+										DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET;
 									}
 									else
 									{
@@ -1099,7 +1085,7 @@ public static partial class LibraryEditor_SpriteStudio
 									string ValueTextBool = "";
 									bool ValueBool = false;
 									DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
-									DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET_010000;
+									DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET;
 //									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
 //									if(null != ValueTextBool)
 //									{
@@ -4633,27 +4619,18 @@ public static partial class LibraryEditor_SpriteStudio
 
 			CLEAR = 0,
 			ALL = ((1 << KindAttributeKey.TERMINATOR_INHERIT) - 1),
-			PRESET_010000 = POSITION_X
-							| POSITION_Y
-							| POSITION_Z
-							| ROTATE_X
-							| ROTATE_Y
-							| ROTATE_Z
-							| SCALE_X
-							| SCALE_Y
-							| OPACITY_RATE,
-			PRESET_010002 = POSITION_X
-							| POSITION_Y
-							| POSITION_Z
-							| ROTATE_X
-							| ROTATE_Y
-							| ROTATE_Z
-							| SCALE_X
-							| SCALE_Y
-							| OPACITY_RATE
-							| FLIP_X
-							| FLIP_Y
-							| SHOW_HIDE
+			PRESET = POSITION_X
+					| POSITION_Y
+					| POSITION_Z
+					| ROTATE_X
+					| ROTATE_Y
+					| ROTATE_Z
+					| SCALE_X
+					| SCALE_Y
+					| OPACITY_RATE
+//					| FLIP_X
+//					| FLIP_Y
+//					| SHOW_HIDE
 		};
 		internal readonly static FlagAttributeKeyInherit[] FlagParameterKeyFrameInherit = new FlagAttributeKeyInherit[(int)KindAttributeKey.TERMINATOR_INHERIT]
 		{
