@@ -3774,7 +3774,7 @@ public static partial class LibraryEditor_SpriteStudio
 							Value.OffsetStart = 0;
 							Value.LabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
 							Value.OffsetEnd = 0;
-							Value.PlayCount = 0;
+							Value.PlayCount = 1;
 							Value.RateTime = 1.0f;
 
 							DataDummy = new DataIntermediate.KeyFrame.DataInstance();

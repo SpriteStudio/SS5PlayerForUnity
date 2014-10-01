@@ -108,11 +108,15 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 			}
 		}
 
-		if(false == ScriptRoot.AnimationCheckPlay())
-		{	/* Parent is stopped */
-			if(null != scriptPartsRootSub)
+		if(null != scriptPartsRootSub)
+		{
+			Script_SpriteStudio_PartsRoot PartsOrigin = scriptPartsRootSub.PartsRootOrigin;
+			if(null != PartsOrigin)
 			{
-				scriptPartsRootSub.AnimationStop();
+				if(false == PartsOrigin.AnimationCheckPlay())
+				{	/* Parent is stopped */
+					scriptPartsRootSub.AnimationStop();
+				}
 			}
 		}
 	}

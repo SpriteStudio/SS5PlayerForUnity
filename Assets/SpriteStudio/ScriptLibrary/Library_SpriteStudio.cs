@@ -1544,7 +1544,7 @@ public static class Library_SpriteStudio
 			if(-1 == PartsInstance.FrameNoPreviousUpdate)
 			{
 				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
-													0,
+													1,
 													0,
 													1.0f,
 													Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL,
