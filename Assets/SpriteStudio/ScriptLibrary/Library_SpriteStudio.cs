@@ -1504,16 +1504,20 @@ public static class Library_SpriteStudio
 //				{
 //					FramePreviousUpdateInstance = -1;
 //				}
-				if(null != ScriptPartsRootSub)
+//				if(null != ScriptPartsRootSub)
+//				{
+//					Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
+//					if(null != PartsOrigin)
+//					{
+//						if(0 < PartsOrigin.CountLoopThisTime)
+//						{
+//							PartsInstance.FrameNoPreviousUpdate = FramePreviousUpdateInstance = -1;
+//						}
+//					}
+//				}
+				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
 				{
-					Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
-					if(null != PartsOrigin)
-					{
-						if(0 < PartsOrigin.CountLoopThisTime)
-						{
-							FramePreviousUpdateInstance = -1;
-						}
-					}
+					PartsInstance.FrameNoPreviousUpdate = FramePreviousUpdateInstance = -1;
 				}
 			}
 			if(-1 == FramePreviousUpdateInstance)
@@ -1522,12 +1526,32 @@ public static class Library_SpriteStudio
 			}
 			if(FrameNoInstanceBase != FramePreviousUpdateInstance)
 			{	/* New Attribute */
-				goto UpdateInstanceData_PlayCommand_Initial;
+				goto UpdateInstanceData_PlayCommand_Update;
 			}
 
 			return(true);
 			
 		UpdateInstanceData_PlayCommand_Initial:;
+			{
+				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
+				{	/* Reverse */
+					if(FrameNo <= FrameNoInstanceBase)
+					{
+						goto UpdateInstanceData_PlayCommand_Update;
+					}
+				}
+				else
+				{	/* Normal */
+					if(FrameNo >= FrameNoInstanceBase)
+					{
+						goto UpdateInstanceData_PlayCommand_Update;
+					}
+				}
+			}
+
+			return(true);
+
+		UpdateInstanceData_PlayCommand_Update:;
 			{
 				float RateTime = DataBody.DataBody.RateTime;
 				RateTime *= (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f;
@@ -1541,14 +1565,13 @@ public static class Library_SpriteStudio
 													DataBody.DataBody.LabelEnd,
 													DataBody.DataBody.OffsetEnd
 												);
-				
+
 				int FrameCount = FrameNo - FrameNoInstanceBase;
 				FrameCount = (0 > FrameCount) ? 0 : FrameCount;
 				ScriptPartsRootSub.TimeElapsedSetForce(FrameCount * ScriptRoot.TimeFramePerSecond, FlagIndipendent);
 				PartsInstance.FrameNoPreviousUpdate = FrameNoInstanceBase;
 				ScriptPartsRootSub.AnimationPause(false);
 			}
-
 			return(true);
 
 		UpdateInstanceData_PlayCommand_Force:
@@ -1556,23 +1579,27 @@ public static class Library_SpriteStudio
 //			{
 //				FramePreviousUpdateInstance = -1;
 //			}
-			if(null != ScriptPartsRootSub)
+//			if(null != ScriptPartsRootSub)
+//			{
+//				Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
+//				if(null != PartsOrigin)
+//				{
+//					if(0 < PartsOrigin.CountLoopThisTime)
+//					{
+//						PartsInstance.FrameNoPreviousUpdate = -1;
+//					}
+//				}
+//			}
+			if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
 			{
-				Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
-				if(null != PartsOrigin)
-				{
-					if(0 < PartsOrigin.CountLoopThisTime)
-					{
-						PartsInstance.FrameNoPreviousUpdate = -1;
-					}
-				}
+				PartsInstance.FrameNoPreviousUpdate = -1;
 			}
 			if(-1 == PartsInstance.FrameNoPreviousUpdate)
 			{
 				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
 													1,
 													0,
-													1.0f,
+													(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f,
 													Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL,
 													"_start",
 													0,

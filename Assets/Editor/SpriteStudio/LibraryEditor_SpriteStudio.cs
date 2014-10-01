@@ -3880,7 +3880,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 								IndexAnimationNow = IndexAnimationGetFrameNo(IndexKeyNow);
 								if((-1 == IndexAnimationNow) || (IndexAnimation != IndexAnimationNow))
-								{	/**/
+								{
 									break;
 								}
 								DataOutput[IndexKeyNow].FrameNoBase = IndexKeyBase;

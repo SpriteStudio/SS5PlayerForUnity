@@ -24,6 +24,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 		REQUEST_PLAYEND = 0x008000,
 		DECODE_USERDATA = 0x004000,
+		REDECODE_INSTANCE = 0x002000,
 
 		CLEAR = 0x000000,
 		MASKINITIAL = (PLAYING | PAUSING | STYLE_REVERSE | PLAYING_REVERSE | IGNORE_LOOP | REQUEST_PLAYEND | DECODE_USERDATA),
@@ -360,6 +361,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 					countLoopThisTime = 0;
 					flagTurnBackPingPong = false;
 					flagReversePrevious = (0 != (Status & BitStatus.PLAYING_REVERSE)) ? true : false;
+					Status &= ~BitStatus.REDECODE_INSTANCE;
 
 					if(0 == (Status & BitStatus.STYLE_PINGPONG))
 					{	/* One-Way */
@@ -390,6 +392,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										TimeAnimation -= TimeAnimationFull;
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 										FlagReLoop = (TimeAnimationFull <= TimeAnimation) ? true : false;
+
+										Status |= BitStatus.REDECODE_INSTANCE;
 									}
 									else
 									{	/* End */
@@ -431,6 +435,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 										FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 										FlagReLoop = (0.0f > TimeAnimation) ? true : false;
 										flagTurnBackPingPong = true;
+
+										Status |= BitStatus.REDECODE_INSTANCE;
 									}
 									else
 									{	/* End */
@@ -508,6 +514,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 											flagTurnBackPingPong = true;
+
+											Status |= BitStatus.REDECODE_INSTANCE;
 										}
 										else
 										{	/* End */
@@ -584,6 +592,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 											TimeAnimation = TimeAnimationFull - TimeAnimation;
 											FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 											flagTurnBackPingPong = true;
+
+											Status |= BitStatus.REDECODE_INSTANCE;
 										}
 										else
 										{	/* End */
