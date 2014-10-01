@@ -59,7 +59,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Custom/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.1RC1";
+		string VersionText = "1.1RC1a";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
