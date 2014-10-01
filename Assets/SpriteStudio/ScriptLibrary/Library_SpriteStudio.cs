@@ -1500,9 +1500,20 @@ public static class Library_SpriteStudio
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(false == FlagIndipendent)
 			{	/* Non-Indipendent */
-				if(0 < ScriptRoot.CountLoopThisTime)
+//				if(0 < ScriptRoot.CountLoopThisTime)
+//				{
+//					FramePreviousUpdateInstance = -1;
+//				}
+				if(null != ScriptPartsRootSub)
 				{
-					FramePreviousUpdateInstance = -1;
+					Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
+					if(null != PartsOrigin)
+					{
+						if(0 < PartsOrigin.CountLoopThisTime)
+						{
+							FramePreviousUpdateInstance = -1;
+						}
+					}
 				}
 			}
 			if(-1 == FramePreviousUpdateInstance)
@@ -1541,6 +1552,21 @@ public static class Library_SpriteStudio
 			return(true);
 
 		UpdateInstanceData_PlayCommand_Force:
+//			if(0 < ScriptRoot.CountLoopThisTime)
+//			{
+//				FramePreviousUpdateInstance = -1;
+//			}
+			if(null != ScriptPartsRootSub)
+			{
+				Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
+				if(null != PartsOrigin)
+				{
+					if(0 < PartsOrigin.CountLoopThisTime)
+					{
+						PartsInstance.FrameNoPreviousUpdate = -1;
+					}
+				}
+			}
 			if(-1 == PartsInstance.FrameNoPreviousUpdate)
 			{
 				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
