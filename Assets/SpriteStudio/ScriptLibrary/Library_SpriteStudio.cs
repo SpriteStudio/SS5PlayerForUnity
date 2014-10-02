@@ -1102,6 +1102,52 @@ public static class Library_SpriteStudio
 			}
 			return(-1);
 		}
+
+		internal bool RangeGet(	ref int FrameCount,
+								ref int FrameNoStart,
+								ref int FrameNoEnd,
+								string LabelStart,
+								int OffsetStart,
+								string LabelEnd,
+								int OffsetEnd
+							)
+		{
+			int	FrameNo = 0;
+
+			if(true == string.IsNullOrEmpty(LabelStart))
+			{
+				LabelStart = LabelDefaultStart;
+			}
+			FrameNo = FrameNoGetLabel(LabelStart);
+			if(-1 == FrameNo)
+			{	/* Label Not Found */
+				FrameNo = FrameStart;
+			}
+			FrameNo += OffsetStart;
+			if((FrameStart > FrameNo) || (FrameEnd < FrameNo))
+			{
+				FrameNo = FrameStart;
+			}
+			FrameNoStart = FrameNo;
+
+			if(true == string.IsNullOrEmpty(LabelEnd))
+			{
+				LabelEnd = LabelDefaultEnd;
+			}
+			FrameNo = FrameNoGetLabel(LabelEnd);
+			if(-1 == FrameNo)
+			{	/* Label Not Found */
+				FrameNo = FrameEnd;
+			}
+			FrameNo += OffsetEnd;
+			if((FrameStart > FrameNo) || (FrameEnd < FrameNo))
+			{
+				FrameNo = FrameEnd;
+			}
+			FrameNoEnd = FrameNo;
+			FrameCount = (FrameEnd - FrameStart) + 1;
+			return(true);
+		}
 	}
 
 	[System.Serializable]
@@ -1483,38 +1529,27 @@ public static class Library_SpriteStudio
 
 		public bool UpdateInstanceData(int FrameNo, GameObject GameObjectNow, Script_SpriteStudio_PartsRoot ScriptRoot, Script_SpriteStudio_PartsInstance PartsInstance)
 		{
+			KeyFrame.ValueInstance.Data DataBody = null;
+			bool FlagIndipendent = false;
+			int FrameNoInstanceBase = 0;
 			Script_SpriteStudio_PartsRoot ScriptPartsRootSub = PartsInstance.ScriptPartsRootSub;
+			bool FlagPlayReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
 
 			if(0 >= AnimationDataInstance.Length)
 			{	/* Error ... Force Play */
 				goto UpdateInstanceData_PlayCommand_Force;
 			}
 
-			int FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
+			FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
 			if(-1 == FrameNoInstanceBase)
 			{
 				return(false);
 			}
-			KeyFrame.ValueInstance DataBody = AnimationDataInstance[FrameNoInstanceBase];
-			bool FlagIndipendent = (0 != (DataBody.DataBody.Flag & Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
+			DataBody = AnimationDataInstance[FrameNoInstanceBase].DataBody;
+			FlagIndipendent = (0 != (DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(false == FlagIndipendent)
 			{	/* Non-Indipendent */
-//				if(0 < ScriptRoot.CountLoopThisTime)
-//				{
-//					FramePreviousUpdateInstance = -1;
-//				}
-//				if(null != ScriptPartsRootSub)
-//				{
-//					Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
-//					if(null != PartsOrigin)
-//					{
-//						if(0 < PartsOrigin.CountLoopThisTime)
-//						{
-//							PartsInstance.FrameNoPreviousUpdate = FramePreviousUpdateInstance = -1;
-//						}
-//					}
-//				}
 				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
 				{
 					PartsInstance.FrameNoPreviousUpdate = FramePreviousUpdateInstance = -1;
@@ -1530,40 +1565,42 @@ public static class Library_SpriteStudio
 			}
 
 			return(true);
-			
-		UpdateInstanceData_PlayCommand_Initial:;
+
+		UpdateInstanceData_PlayCommand_Force:;
 			{
-				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
-				{	/* Reverse */
-					if(FrameNo <= FrameNoInstanceBase)
-					{
-						goto UpdateInstanceData_PlayCommand_Update;
-					}
+				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
+				{
+					PartsInstance.FrameNoPreviousUpdate = -1;
 				}
-				else
-				{	/* Normal */
-					if(FrameNo >= FrameNoInstanceBase)
+				if(-1 == PartsInstance.FrameNoPreviousUpdate)
+				{
+					DataBody = new KeyFrame.ValueInstance.Data();
+					if(true == UpdateInstanceCheckRange(ScriptPartsRootSub, FrameNo - FrameNoInstanceBase, PartsInstance.AnimationNo, DataBody))
 					{
 						goto UpdateInstanceData_PlayCommand_Update;
 					}
 				}
 			}
-
 			return(true);
 
+		UpdateInstanceData_PlayCommand_Initial:;
+			if(false == UpdateInstanceCheckRange(ScriptPartsRootSub, FrameNo - FrameNoInstanceBase, PartsInstance.AnimationNo, DataBody))
+			{
+				return((-1 == FramePreviousUpdateInstance) ? false : true);
+			}
 		UpdateInstanceData_PlayCommand_Update:;
 			{
-				float RateTime = DataBody.DataBody.RateTime;
-				RateTime *= (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f;
+				float RateTime = DataBody.RateTime;
+				RateTime *= (true == FlagPlayReverse) ? -1.0f : 1.0f;
 				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
-													DataBody.DataBody.PlayCount,
+													DataBody.PlayCount,
 													0,
-													((true == FlagIndipendent) ? RateTime : RateTime * ScriptRoot.RateTimePlay),
-													((0 != (DataBody.DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? Script_SpriteStudio_PartsRoot.PlayStyle.PINGPONG : Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL),
-													DataBody.DataBody.LabelStart,
-													DataBody.DataBody.OffsetStart,
-													DataBody.DataBody.LabelEnd,
-													DataBody.DataBody.OffsetEnd
+													((0 != (DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? RateTime : RateTime * ScriptRoot.RateTimePlay),
+													((0 != (DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.PINGPONG)) ? Script_SpriteStudio_PartsRoot.PlayStyle.PINGPONG : Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL),
+													DataBody.LabelStart,
+													DataBody.OffsetStart,
+													DataBody.LabelEnd,
+													DataBody.OffsetEnd
 												);
 
 				int FrameCount = FrameNo - FrameNoInstanceBase;
@@ -1574,32 +1611,18 @@ public static class Library_SpriteStudio
 			}
 			return(true);
 
-		UpdateInstanceData_PlayCommand_Force:
-//			if(0 < ScriptRoot.CountLoopThisTime)
-//			{
-//				FramePreviousUpdateInstance = -1;
-//			}
-//			if(null != ScriptPartsRootSub)
-//			{
-//				Script_SpriteStudio_PartsRoot PartsOrigin = ScriptPartsRootSub.PartsRootOrigin;
-//				if(null != PartsOrigin)
-//				{
-//					if(0 < PartsOrigin.CountLoopThisTime)
-//					{
-//						PartsInstance.FrameNoPreviousUpdate = -1;
-//					}
-//				}
-//			}
+#if false
 			if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
 			{
 				PartsInstance.FrameNoPreviousUpdate = -1;
 			}
 			if(-1 == PartsInstance.FrameNoPreviousUpdate)
 			{
+				KeyFrame.ValueInstance.Data DataBody
 				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
 													1,
 													0,
-													(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? -1.0f : 1.0f,
+													(true == FlagPlayReverse) ? -1.0f : 1.0f,
 													Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL,
 													"_start",
 													0,
@@ -1611,8 +1634,29 @@ public static class Library_SpriteStudio
 			}
 
 			return(true);
+#endif
 		}
-
+		private bool UpdateInstanceCheckRange(Script_SpriteStudio_PartsRoot PartsRoot, int FrameCountNow, int AnimationNo, KeyFrame.ValueInstance.Data DataBody)
+		{
+			if(0 == DataBody.PlayCount)
+			{
+				return(true);
+			}
+			AnimationInformationPlay Information = PartsRoot.ListInformationPlay[AnimationNo];
+			int FrameCount = -1;
+			int FrameNoStart = -1;
+			int FrameNoEnd = -1;
+			Information.RangeGet(	ref FrameCount,
+									ref FrameNoStart,
+									ref FrameNoEnd,
+									DataBody.LabelStart,
+									DataBody.OffsetStart,
+									DataBody.LabelEnd,
+									DataBody.OffsetEnd
+								);
+			int FrameCountRate = (int)(((float)FrameCount * (float)(Mathf.Abs(DataBody.PlayCount))) / Mathf.Abs(DataBody.RateTime));
+			return((((FrameCountNow - FrameNoStart) >= FrameCountRate) || (0 > FrameCountNow)) ? false : true);
+		}
 		public bool UpdateGameObject(GameObject GameObjectNow, int FrameNo, bool FlagSprite)
 		{
 			bool FlagUpdateTransform = ((0 >= AnimationDataPosition.Length) && (0 >= AnimationDataRotation.Length) && (0 >= AnimationDataScaling.Length)) ? false : true;

@@ -867,6 +867,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		rateTimePlay = RateTime;
 
 		Status |= (0 != (Status & BitStatus.STYLE_REVERSE)) ? BitStatus.PLAYING_REVERSE : 0;
+#if false
 		if(0 != (Status & BitStatus.PLAYING_REVERSE))
 		{	/* Play-Reverse & Start Top-Frame */
 			Status |= (frameNoNow <= frameNoStart) ? BitStatus.IGNORE_LOOP : 0;
@@ -876,6 +877,17 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			Status |= (frameNoNow >= frameNoEnd) ? BitStatus.IGNORE_LOOP : 0;
 		}
 		TimeAnimation = FrameInitial * TimeFramePerSecond;
+#else
+		if(0 != (Status & BitStatus.PLAYING_REVERSE))
+		{	/* Play-Reverse & Start Top-Frame */
+			frameNoNow = (frameNoNow <= frameNoStart) ? frameNoEnd : frameNoNow;
+		}
+		else
+		{	/* Play-Normal & Start End-Frame */
+			frameNoNow = (frameNoNow >= frameNoEnd) ? frameNoStart : frameNoNow;
+		}
+		TimeAnimation = frameNoNow * TimeFramePerSecond;
+#endif
 
 		if(-1 != TimesPlay)
 		{
