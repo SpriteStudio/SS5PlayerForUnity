@@ -601,7 +601,7 @@ public static class Library_SpriteStudio
 		public class InformationMeshData
 		{
 			public InformationMeshData ChainNext = null;
-			public uint Priority = 0;
+			public float Priority = 0.0f;
 			public Mesh DataMesh = null;	/* null == Instance Node */
 			public Script_SpriteStudio_PartsInstance PartsInstance = null;
 			public Transform DataTransform = null;
@@ -614,8 +614,8 @@ public static class Library_SpriteStudio
 			public InformationMeshData MeshDataTop;
 
 			public int Count = 0;
-			public uint PriorityMinimum = 0;
-			public uint PriorityMaximum = 0;
+			public float PriorityMinimum = float.MaxValue;
+			public float PriorityMaximum = float.MinValue;
 
 			public void MeshAdd(InformationMeshData DataNew)
 			{
@@ -977,6 +977,7 @@ public static class Library_SpriteStudio
 					CombineInstance[] CombineMesh = new CombineInstance[CountMesh];
 					InformationMeshData DataMeshInformation = null;
 
+					Matrix4x4 MatrixCorrect = InstanceTransform.localToWorldMatrix.inverse;
 					int IndexMesh = 0;
 					for(int i=0; i<Count; i++)
 					{
@@ -984,7 +985,6 @@ public static class Library_SpriteStudio
 						IndexVertex[i] = IndexVertexNow;
 						IndexTriangle[i] = IndexTriangleNow;
 						DataMeshInformation = ListMesh.MeshDataTop;
-						Matrix4x4 MatrixCorrect = InstanceTransform.localToWorldMatrix.inverse;
 						while(null != DataMeshInformation)
 						{
 							CombineMesh[IndexMesh].mesh = DataMeshInformation.DataMesh;
@@ -1794,9 +1794,9 @@ public static class Library_SpriteStudio
 			}
 		}
 
-		internal static uint PriorityGet(float Priority, int ID)
+		internal static float PriorityGet(float Priority, int ID)
 		{
-			return((((uint)(((int)Priority + 0x4000) << 17) & 0xfffe0000)) | (((uint)ID << 7) & 0x0001ff80));
+			return(Mathf.Floor(Priority) + ((float)ID * 0.001f));
 		}
 
 		public void DrawEntryInstance(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
