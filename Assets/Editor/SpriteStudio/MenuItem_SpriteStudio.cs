@@ -9,16 +9,24 @@ using UnityEditor;
 
 public sealed class MenuItem_SpriteStudio : EditorWindow
 {
-	static public float CollisionThicknessZ = 1.0f;
-	static public bool FlagAttachRigidBody = true;
-	static public bool FlagAttachControlGameObject = true;
-	static public bool FlagConfirmOverWrite = true;
-	static public bool FlagCreateProjectFolder = true;
+	static public float CollisionThicknessZ = 0.0f;
+	static public bool FlagAttachRigidBody = false;
+	static public bool FlagAttachControlGameObject = false;
+	static public bool FlagConfirmOverWrite = false;
+	static public bool FlagCreateProjectFolder = false;
 
 	[MenuItem("Custom/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
 	{
 		EditorWindow.GetWindow<MenuItem_SpriteStudio>(true, "OPTPiX SpriteStudio Import-Settings");
+
+		LibraryEditor_SpriteStudio.SettingImport SettingImport;
+		LibraryEditor_SpriteStudio.Menu.SettingGetImport(out SettingImport);
+		CollisionThicknessZ = SettingImport.CollisionThicknessZ;
+		FlagAttachRigidBody = SettingImport.FlagAttachRigidBody;
+		FlagAttachControlGameObject = SettingImport.FlagAttachControlGameObject;
+		FlagConfirmOverWrite = SettingImport.FlagConfirmOverWrite;
+		FlagCreateProjectFolder = SettingImport.FlagCreateProjectFolder;
 	}
     void OnGUI()
 	{

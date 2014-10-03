@@ -84,6 +84,14 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagConfirmOverWrite;
 		public bool FlagCreateProjectFolder;
 	}
+	internal readonly static string PrefsKeyTextureSizePixelMaximum = "SS5PU_Importer_TextureSizePixelMaximum";
+	internal readonly static string PrefsKeyCollisionThicknessZ = "SS5PU_Importer_CollisionThicknessZ";
+	internal readonly static string PrefsKeyFlagAttachRigidBody = "SS5PU_Importer_FlagAttachRigidBody";
+	internal readonly static string PrefsKeyFlagAttachControlGameObject = "SS5PU_Importer_FlagAttachControlGameObject";
+	internal readonly static string PrefsKeyFlagConfirmOverWrite = "SS5PU_Importer_FlagConfirmOverWrite";
+	internal readonly static string PrefsKeyFlagCreateProjectFolder = "SS5PU_Importer_FlagCreateProjectFolder";
+	internal readonly static string PrefsKeyFolderNameImpoertLast = "SS5PU_Importer_FolderNameImpoertLast";
+
 	public static partial class Menu
 	{
 		/* Information for Containing "Instance"-Parts */
@@ -101,8 +109,41 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 		}
 
+		internal static void SettingGetImport(out SettingImport DataSettingImport)
+		{
+			DataSettingImport.TextureSizePixelMaximum = EditorPrefs.GetInt(PrefsKeyTextureSizePixelMaximum, 4096);
+			DataSettingImport.CollisionThicknessZ = EditorPrefs.GetFloat(PrefsKeyCollisionThicknessZ, 1.0f);
+			DataSettingImport.FlagAttachRigidBody = EditorPrefs.GetBool(PrefsKeyFlagAttachRigidBody, true);
+			DataSettingImport.FlagAttachControlGameObject = EditorPrefs.GetBool(PrefsKeyFlagAttachControlGameObject, true);
+			DataSettingImport.FlagConfirmOverWrite = EditorPrefs.GetBool(PrefsKeyFlagConfirmOverWrite, true);
+			DataSettingImport.FlagCreateProjectFolder = EditorPrefs.GetBool(PrefsKeyFlagCreateProjectFolder, true);
+		}
+		internal static void SettingSetImport(ref SettingImport DataSettingImport)
+		{
+			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, DataSettingImport.TextureSizePixelMaximum);
+			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, DataSettingImport.CollisionThicknessZ);
+			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, DataSettingImport.FlagAttachRigidBody);
+			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, DataSettingImport.FlagAttachControlGameObject);
+			EditorPrefs.SetBool(PrefsKeyFlagConfirmOverWrite, DataSettingImport.FlagConfirmOverWrite);
+			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, DataSettingImport.FlagCreateProjectFolder);
+		}
+		internal static void SettingGetFolderImport(out string NameFolder)
+		{
+			string Name64 = "";
+			Name64 = EditorPrefs.GetString(PrefsKeyFolderNameImpoertLast, "");
+			NameFolder = String.Copy(UTF8Encoding.UTF8.GetString(System.Convert.FromBase64String(Name64)));
+		}
+		internal static void SettingSetFolderImport(ref string NameFolder)
+		{
+			string Name64 = System.Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(NameFolder));
+			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, Name64);
+		}
+
 		public static void ImportSSPJ(SettingImport DataSettingImport)
 		{
+			/* Prefs Save */
+			SettingSetImport(ref DataSettingImport);
+
 			/* Select Project,Imported(.sspj) */
 			string NameDirectory = "";
 			string NameFileBody = "";
@@ -1894,12 +1935,15 @@ public static partial class LibraryEditor_SpriteStudio
 	/* File Utilities (for Native File-System) */
 	internal static class File
 	{
-		private static string DirectoryPrevious = "";
 		private readonly static string NamePathRootFile = Application.dataPath;
 
 		/* Choose File on File-Dialogue */
 		internal static bool FileNameGetFileDialog(out string NameDirectory, out string NameFileBody, out string NameFileExtension, string TitleDialog, string FilterExtension)
 		{
+			/* Get Previous Folder-Name */
+			string DirectoryPrevious = "";
+			Menu.SettingGetFolderImport(out DirectoryPrevious);
+
 			/* Choose Import-File */
 			string FileNameFullPath = EditorUtility.OpenFilePanel(TitleDialog, DirectoryPrevious, FilterExtension);
 			if(0 == FileNameFullPath.Length)
@@ -1914,7 +1958,8 @@ public static partial class LibraryEditor_SpriteStudio
 			NameFileBody = Path.GetFileNameWithoutExtension(FileNameFullPath);
 			NameFileExtension = Path.GetExtension(FileNameFullPath);
 
-			DirectoryPrevious = NameDirectory;
+			/* Save Folder-Name */
+			Menu.SettingSetFolderImport(ref NameDirectory);
 
 			return(true);
 		}
