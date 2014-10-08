@@ -276,40 +276,47 @@ public static class Library_SpriteStudio
 		{
 			GameObject InstanceGameObjectNow = InstanceGameObject;
 			Transform InstanceTransform = InstanceGameObjectNow.transform;
-			Script_SpriteStudio_Triangle2 ScriptTriangle2 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle2>();
-			if(null != ScriptTriangle2)
+			Script_SpriteStudio_PartsRoot ScriptRoot = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsRoot>();
+			if(null != ScriptRoot)
 			{
-				ScriptTriangle2.FlagHideForce = FlagSwitch;
-			}
-			else
-			{
-				Script_SpriteStudio_Triangle4 ScriptTriangle4 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle4>();
-				if(null != ScriptTriangle4)
-				{
-					ScriptTriangle4.FlagHideForce = FlagSwitch;
+				if((false == FlagSetInstance) && (null != ScriptRoot.PartsRootOrigin))
+				{	/* "Instance"-Object */
+					return;
 				}
 				else
 				{
-					Script_SpriteStudio_PartsInstance ScriptInstasnce = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsInstance>();
-					if(null != ScriptInstasnce)
+					ScriptRoot.FlagHideForce = FlagSwitch;
+				}
+			}
+			else
+			{
+				Script_SpriteStudio_Triangle2 ScriptTriangle2 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle2>();
+				if(null != ScriptTriangle2)
+				{
+					ScriptTriangle2.FlagHideForce = FlagSwitch;
+				}
+				else
+				{
+					Script_SpriteStudio_Triangle4 ScriptTriangle4 = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_Triangle4>();
+					if(null != ScriptTriangle4)
 					{
-						ScriptInstasnce.FlagHideForce = FlagSwitch;
+						ScriptTriangle4.FlagHideForce = FlagSwitch;
 					}
 					else
 					{
-						Script_SpriteStudio_PartsRoot ScriptRoot = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsRoot>();
-						if((false == FlagSetInstance) && (null != ScriptRoot.PartsRootOrigin))
-						{	/* "Instance"-Object */
-							return;
+						Script_SpriteStudio_PartsInstance ScriptInstasnce = InstanceGameObjectNow.GetComponent<Script_SpriteStudio_PartsInstance>();
+						if(null != ScriptInstasnce)
+						{
+							ScriptInstasnce.FlagHideForce = FlagSwitch;
 						}
 					}
 				}
-			}
-			if(true == FlagSetChild)
-			{
-				for(int i=0; i<InstanceTransform.childCount; i++)
+				if(true == FlagSetChild)
 				{
-					HideSetForce(InstanceTransform.GetChild(i).gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
+					for(int i=0; i<InstanceTransform.childCount; i++)
+					{
+						HideSetForce(InstanceTransform.GetChild(i).gameObject, FlagSwitch, FlagSetChild, FlagSetInstance);
+					}
 				}
 			}
 		}
