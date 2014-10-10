@@ -9,15 +9,24 @@ using UnityEditor;
 
 public sealed class MenuItem_SpriteStudio : EditorWindow
 {
-	static public float CollisionThicknessZ = 1.0f;
-	static public bool FlagAttachRigidBody = true;
-	static public bool FlagAttachControlGameObject = true;
-	static public bool FlagConfirmOverWrite = true;
+	static public float CollisionThicknessZ = 0.0f;
+	static public bool FlagAttachRigidBody = false;
+	static public bool FlagAttachControlGameObject = false;
+	static public bool FlagConfirmOverWrite = false;
+	static public bool FlagCreateProjectFolder = false;
 
 	[MenuItem("Custom/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
 	{
 		EditorWindow.GetWindow<MenuItem_SpriteStudio>(true, "OPTPiX SpriteStudio Import-Settings");
+
+		LibraryEditor_SpriteStudio.SettingImport SettingImport;
+		LibraryEditor_SpriteStudio.Menu.SettingGetImport(out SettingImport);
+		CollisionThicknessZ = SettingImport.CollisionThicknessZ;
+		FlagAttachRigidBody = SettingImport.FlagAttachRigidBody;
+		FlagAttachControlGameObject = SettingImport.FlagAttachControlGameObject;
+		FlagConfirmOverWrite = SettingImport.FlagConfirmOverWrite;
+		FlagCreateProjectFolder = SettingImport.FlagCreateProjectFolder;
 	}
     void OnGUI()
 	{
@@ -37,6 +46,9 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		FlagConfirmOverWrite = EditorGUILayout.Toggle("Confirm Overwrite-Prefab", FlagConfirmOverWrite);
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
+		FlagCreateProjectFolder = EditorGUILayout.Toggle("Create Project Folder", FlagCreateProjectFolder);
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
 		if(true == GUILayout.Button("Import"))
 		{
 			LibraryEditor_SpriteStudio.SettingImport SettingImport;
@@ -45,6 +57,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			SettingImport.FlagAttachRigidBody = FlagAttachRigidBody;
 			SettingImport.FlagAttachControlGameObject = FlagAttachControlGameObject;
 			SettingImport.FlagConfirmOverWrite = FlagConfirmOverWrite;
+			SettingImport.FlagCreateProjectFolder = FlagCreateProjectFolder;
 			LibraryEditor_SpriteStudio.Menu.ImportSSPJ(SettingImport);
 
 			Close();
@@ -54,7 +67,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Custom/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.00";
+		string VersionText = "1.1";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
