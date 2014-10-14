@@ -6,6 +6,8 @@ public class gamemain : MonoBehaviour {
 	public static int gametime;		//ゲーム時間
 	public static int scene;		//シーン
 
+	private camera2d Camera2DControl;
+
 	public enum COLTYPE{
 		EN_COLTYPE_NONE = 0,
 		EN_COLTYPE_PLAYER,
@@ -17,7 +19,7 @@ public class gamemain : MonoBehaviour {
 
 	public struct COLLISION {
 		public int life;		//存在の有無
-		public COLTYPE coltype;		//コリジョンタイプ
+		public COLTYPE coltype;	//コリジョンタイプ
 		public GameObject obj;	//関連してるキャラクター
 		public float x;			//位置   キャラクターの中央からのオフセット
 		public float y;			//位置   キャラクターの中央からのオフセット
@@ -42,13 +44,24 @@ public class gamemain : MonoBehaviour {
 
 	const int COLLISION_MAX = 10;
 	COLLISION[] collision = new COLLISION[10];
+	GameObject[] coldisp = new GameObject[10];
 
 	// Use this for initialization
 	void Start () {
+
+		//ゲームコントロールスクリプトの取得
+		var go = GameObject.Find("GameControl");
+		Camera2DControl = go.GetComponent<camera2d>();
+
 		KeyInit( );	//キー入力初期化
 
-//		var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-//		cube.transform.position = Vector3 (0, 0, 0);
+		int i;
+		for ( i = 0; i < COLLISION_MAX; i++ )
+		{
+			coldisp[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			coldisp[i].transform.position = new Vector3(-2000.0f, -2000.0f, 0.0f);
+			coldisp[i].transform.localScale = new Vector3(0.0f, 0.0f, 1.0f);
+		}
 	}
 	
 	// Update is called once per frame
@@ -90,8 +103,31 @@ public class gamemain : MonoBehaviour {
 		
 		for ( i = 0; i < COLLISION_MAX; i++ )
 		{
+			coldisp[i].transform.localScale = new Vector3(0.0f, 0.0f, 0.0f);	//とりあえず表示を画面外に行う
+
 			if ( collision[i].life > 0 )
 			{
+				Vector2 camerapos = Camera2DControl.GetCamera( );
+				//範囲表示用プリミティブを作成
+				switch( collision[i].coltype )
+				{
+				case COLTYPE.EN_COLTYPE_PLAYER:
+					coldisp[i].renderer.material.color = Color.blue;
+					break;
+				case COLTYPE.EN_COLTYPE_PLAYER_SHOT:
+					coldisp[i].renderer.material.color = Color.yellow;
+					break;
+				case COLTYPE.EN_COLTYPE_ENEMY:
+					coldisp[i].renderer.material.color = Color.red;
+					break;
+				case COLTYPE.EN_COLTYPE_ENEMY_SHOT:
+					coldisp[i].renderer.material.color = Color.green;
+					break;
+				}
+				coldisp[i].transform.position = new Vector3(collision[i].x - camerapos.x, collision[i].y - camerapos.y, 0.0f);
+				coldisp[i].transform.localScale = new Vector3(collision[i].w, collision[i].h, 1.0f);	//コリジョンを表示しない場合はこの行をコメントにする
+
+
 				float ch1_x1 = 0;
 				float ch1_x2 = 0;
 				float ch1_y1 = 0;

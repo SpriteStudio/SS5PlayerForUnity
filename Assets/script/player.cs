@@ -63,19 +63,9 @@ public class player : MonoBehaviour {
 	private int dash_command_time = 25;		//コマンド成立時間
 	private int dash_oldinput_key = 0;		//前回入力されたキー
 
-	//camera
-	private Vector2 gamecamera = new Vector2(0.0f, 0.0f);		//ゲーム内カメラの位置
-
-	//bg制御
-	private GameObject background_front;						//BG
-	private GameObject background_center;						//BG
-	private GameObject background_back;							//BG
-	private Vector3 background_front_initpos = new Vector3(0.0f, 0.0f, 0.0f);	//BG初期位置
-	private Vector3 background_center_initpos = new Vector3(0.0f, 0.0f, 0.0f);	//BG初期位置
-	private Vector3 background_back_initpos = new Vector3(0.0f, 0.0f, 0.0f);	//BG初期位置
-
 	//ゲームコントロール
 	private gamemain GameControl;
+	private camera2d Camera2DControl;
 
 	// Use this for initialization
 	void Start () 
@@ -83,21 +73,7 @@ public class player : MonoBehaviour {
 		//ゲームコントロールスクリプトの取得
 		var go = GameObject.Find("GameControl");
 		GameControl = go.GetComponent<gamemain>();
-
-
-		//BG初期化
-		//名前からGameObjectを取得
-		background_front = GameObject.Find("backgrounds_front");
-		background_center = GameObject.Find("background_center");
-		background_back = GameObject.Find("backgroung_back");
-		//初期位置を設定
-		background_front.transform.position = new Vector3(-81.08362f, 52.46774f, 169.4585f);
-		background_center.transform.position = new Vector3(-48.76801f, 359.1096f, 119.4256f);
-		background_back.transform.position = new Vector3(-81.75049f, 237.6096f, 405.6156f);
-		//初期値を保存
-		background_front_initpos = background_front.transform.position;
-		background_center_initpos = background_center.transform.position;
-		background_back_initpos = background_back.transform.position;
+		Camera2DControl = go.GetComponent<camera2d>();
 
 
 		//アニメーションの終了割り込みを設定
@@ -323,18 +299,48 @@ public class player : MonoBehaviour {
 		// 現在の位置を設定
 		player_pos = Position;
 		//コリジョンの設定
-		GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_PLAYER, transform.gameObject, player_pos.x, player_pos.y, 100.0f, 100.0f, 0, 0 );
+		{
+			//体
+			float h = 200.0f;
+			float w = 400.0f;
+			float xofs = 0.0f;
+			float yofs = 250.0f;
+			GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_PLAYER, transform.gameObject, player_pos.x + xofs, player_pos.y + yofs, h, w, 0, 0 );
 
+			//攻撃
+			xofs = -300.0f;
+			if ( direction == 1 )
+			{
+				xofs = 300.0f;
+			}
+			switch (motion) {
+			case AnimationType.ATTACK1:
+			case AnimationType.ATTACK2:
+			case AnimationType.ATTACK3:
+			case AnimationType.KICK1:
+			case AnimationType.KICK2:
+			case AnimationType.JUMP_ATTACK1:
+			case AnimationType.JUMP_ATTACK2:
+				h = 300.0f;
+				w = 300.0f;
+				yofs = 250.0f;
+				GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_PLAYER_SHOT, transform.gameObject, player_pos.x + xofs, player_pos.y + yofs, h, w, 0, 0 );
+				break;
+			default:
+				break;
+			}
+
+		}
 		//カメラの位置を設定
-		gamecamera.x = Position.x;
-		float scale = 0.5f;
-		gamecamera.y = ( Position.y * scale ) + ( -ground_y * scale );
-
-		Position.x = 0;
-		transform.position = Position;
-
-
-		move_bg( );
+		{
+			Vector2 camerapos = new Vector2( Position.x, Position.y );
+			Camera2DControl.SetCamera( camerapos );
+		}
+		//カメラの位置から表示位置を設定
+		{
+			Vector2 camerapos = Camera2DControl.GetCamera( );
+			transform.position = Position - camerapos;
+		}
 
 	}
 
@@ -481,26 +487,5 @@ public class player : MonoBehaviour {
 		}
 		return true;
 	}
-
-	//BG制御
-	void move_bg( )
-	{
-		float scale_x = 1.0f;
-		float scale_y = 1.0f;
-		Vector3 pos_fornt = new Vector3(background_front_initpos.x - ( gamecamera.x * scale_x ), background_front_initpos.y - ( gamecamera.y * scale_y ), background_front_initpos.z);
-		background_front.transform.position = pos_fornt;
-
-		scale_x = 0.3f;
-		scale_y = 1.0f;
-		Vector3 pos_center = new Vector3(background_center_initpos.x - ( gamecamera.x * scale_x ), background_center_initpos.y - ( gamecamera.y * scale_y ), background_center_initpos.z);
-		background_center.transform.position = pos_center;
-	
-		scale_x = 0.2f;
-		scale_y = 0.2f;
-		Vector3 pos_back = new Vector3(background_back_initpos.x - ( gamecamera.x * scale_x ), background_back_initpos.y - ( gamecamera.y * scale_y ), background_back_initpos.z);
-		background_back.transform.position = pos_back;
-	}
-
-
 
 }
