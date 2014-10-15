@@ -9,7 +9,7 @@ public class sseffect : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-/*
+
 		//ルートパーツの取得
 		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
 
@@ -17,7 +17,7 @@ public class sseffect : MonoBehaviour {
 		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
 		//アニメーションの再生
 		spriteStudioRoot.AnimationPlay(0, 1, 0, 1.0f);	
-*/
+
 	}
 	
 	// Update is called once per frame

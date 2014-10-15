@@ -25,6 +25,8 @@ public class player : MonoBehaviour {
 		JUMP_ATTACK1,
 		JUMP_ATTACK2,
 		JUMP_END,
+		JUMP_KICK,
+		JUMP_PUNCH,
 		JUMP_START,
 		KICK1,
 		KICK2,
@@ -35,7 +37,14 @@ public class player : MonoBehaviour {
 		POSE1,
 		POSE2,
 		RUN,
+		SIT,
+		SIT_ATTACK1,
+		SIT_ATTACK2,
+		SIT_KICK,
+		SIT_PANCH,
+		SITDOWN,
 		STANCE,
+		STANDUP,
 		WAIT,
 		WALK
 	}
@@ -49,7 +58,7 @@ public class player : MonoBehaviour {
 	private float gravitiy = 98.0f;								//重力加速度
 	private float jump_force = 0;								//ジャンプ力
 	private float jump_speed = 0;								//ジャンプ中の移動速度
-	private Vector2 player_pos = new Vector2(0.0f, -500.0f);	//プレイヤーの位置（表示位置とは別）
+	public Vector2 player_pos = new Vector2(0.0f, -500.0f);	//プレイヤーの位置（表示位置とは別）
 	private float init_scale = 0.7f;							//プレイヤーの初期スケール
 	private int direction = 0;									//向き 0:左　1:右
 	private bool anime_end = false;								//アニメーションの終了フラグ
@@ -75,7 +84,6 @@ public class player : MonoBehaviour {
 		GameControl = go.GetComponent<gamemain>();
 		Camera2DControl = go.GetComponent<camera2d>();
 
-
 		//アニメーションの終了割り込みを設定
 		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
 		//初期アニメーションを設定
@@ -86,36 +94,26 @@ public class player : MonoBehaviour {
 
 	}
 
-	//アニメーションの終了コールバック
-	public bool EffectAnimEnd(GameObject ObjectControl)
-	{
-		return false;
-	}
-
 	// Update is called once per frame
 	void Update () 
 	{
 		// for test code 
 		//ボタンを押したら攻撃
 		if (GameControl.IsPushKey((int)gamemain.INPUTBUTTON.BUTTON_1)) {
+//			set_motion(AnimationType.JUMP_END);
+
 //			set_motion(AnimationType.JUMP_AIR, true);
 			//エフェクトの生成（パーティクルシステム）
 //			GameObject hit = Object.Instantiate(hit_effect) as GameObject;
 //			hit.transform.position = new Vector3(0.0f, 0.0f, -30.0f);
-/*
+
 			//エフェクトの生成
 //			Instantiate(Resources.Load("Prefabs/effect2/effect001_Control"),this.transform.position + new Vector3(0,2,0),Quaternion.identity);
 			var go = Instantiate(Resources.Load("Prefabs/effect2/effect001_Control"),new Vector3(0,0,0),Quaternion.identity) as GameObject;
 			//生成したアニメデータは Camera2D Pixel (1080p) の　View　の下に配置しないと表示できない。
 			//このアニメの親（View）を親に設定する必要がある
 			go.transform.parent = transform.parent;
-			//アニメを制御するルートパーツの取得
-			var rootPart = go.GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
-			//アニメーションの終了割り込みを設定
-			rootPart.FunctionPlayEnd = EffectAnimEnd;
-			//アニメーションの再生
-			rootPart.AnimationPlay(0, 1, 0, 1.0f);	
-*/
+
 		}
 
 
@@ -358,28 +356,8 @@ public class player : MonoBehaviour {
 	//硬直があるかを取得
 	bool is_wait( )
 	{
-		bool rc = false;
+		bool rc = true;
 		switch (motion) {
-		case AnimationType.ATTACK1:
-		case AnimationType.ATTACK2:
-		case AnimationType.ATTACK3:
-		case AnimationType.CHARGE:
-		case AnimationType.DAMEGE:
-		case AnimationType.DEAD1:
-		case AnimationType.DEAD2:
-		case AnimationType.DEFENSE:
-		case AnimationType.KICK1:
-		case AnimationType.KICK2:
-		case AnimationType.NO_ANIME:
-		case AnimationType.PANCH1:
-		case AnimationType.PANCH2:
-		case AnimationType.PIYO:
-		case AnimationType.POSE1:
-		case AnimationType.POSE2:
-		case AnimationType.JUMP_ATTACK1:
-		case AnimationType.JUMP_ATTACK2:
-			rc = true;
-			break;
 		case AnimationType.JUMP_AIR:
 		case AnimationType.JUMP_ALL:
 		case AnimationType.JUMP_END:
@@ -388,7 +366,10 @@ public class player : MonoBehaviour {
 		case AnimationType.STANCE:
 		case AnimationType.WAIT:
 		case AnimationType.WALK:
+		case AnimationType.SIT:
 			rc = false;
+			break;
+		default:
 			break;
 		}
 		return rc;
@@ -445,11 +426,15 @@ public class player : MonoBehaviour {
 			break;
 		case AnimationType.JUMP_END:
 			set_motion( AnimationType.STANCE, true);
-			//			set_motion( AnimationType.JUMP_END, true);
+			break;
+		case AnimationType.JUMP_KICK:
+			set_motion( AnimationType.JUMP_AIR, true);
+			break;
+		case AnimationType.JUMP_PUNCH:
+			set_motion( AnimationType.JUMP_AIR, true);
 			break;
 		case AnimationType.JUMP_START:
 			set_motion( AnimationType.JUMP_AIR, true);
-			//			set_motion( AnimationType.JUMP_START, true);
 			break;
 		case AnimationType.KICK1:
 			set_motion( AnimationType.STANCE, true);
@@ -475,7 +460,28 @@ public class player : MonoBehaviour {
 		case AnimationType.RUN:
 			set_motion( AnimationType.RUN, true);
 			break;
+		case AnimationType.SIT:
+			set_motion( AnimationType.SIT, true);
+			break;
+		case AnimationType.SIT_ATTACK1:
+			set_motion( AnimationType.SIT, true);
+			break;
+		case AnimationType.SIT_ATTACK2:
+			set_motion( AnimationType.SIT, true);
+			break;
+		case AnimationType.SIT_KICK:
+			set_motion( AnimationType.SIT, true);
+			break;
+		case AnimationType.SIT_PANCH:
+			set_motion( AnimationType.SIT, true);
+			break;
+		case AnimationType.SITDOWN:
+			set_motion( AnimationType.SIT, true);
+			break;
 		case AnimationType.STANCE:
+			set_motion( AnimationType.STANCE, true);
+			break;
+		case AnimationType.STANDUP:
 			set_motion( AnimationType.STANCE, true);
 			break;
 		case AnimationType.WAIT:
@@ -486,6 +492,66 @@ public class player : MonoBehaviour {
 			break;
 		}
 		return true;
+	}
+
+	//コリジョンコールバック
+	public void collision_callback( gamemain.COLLISION my, gamemain.COLLISION you )
+	{
+		switch( you.coltype )
+		{
+		case gamemain.COLTYPE.EN_COLTYPE_PLAYER:
+			//相手がプレイヤー
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_PLAYER_SHOT:
+			//相手がプレイヤー攻撃
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_ENEMY:
+			//相手が敵
+			//重ならない様に位置を補正
+			//敵側の位置もここで補正するので敵側に補正処理はいらない
+			{
+			player playerclass = my.obj.GetComponent<player>();
+			enemy enemyclass = you.obj.GetComponent<enemy>();
+
+			Vector2 mypos = playerclass.player_pos; 
+			Vector2 youpos = enemyclass.player_pos; 
+
+			if ( mypos.x < youpos.x )
+			{
+				//自分の右側から相手の左側を引くと移動量がでる
+				float move_x = ( mypos.x + ( my.w / 2.0f ) ) - ( youpos.x - ( you.w / 2.0f ) );
+				move_x = move_x / 2.0f;
+
+				mypos.x = mypos.x - move_x; 
+				playerclass.player_pos = mypos;
+
+				youpos.x = youpos.x + move_x; 
+				enemyclass.player_pos = youpos;
+			}
+			else
+			{
+				//自分の右側から相手の左側を引くと移動量がでる
+				float move_x = ( youpos.x + ( you.w / 2.0f ) ) - ( mypos.x - ( my.w / 2.0f ) );
+				move_x = move_x / 2.0f;
+				
+				mypos.x = mypos.x + move_x; 
+				playerclass.player_pos = mypos;
+
+				youpos.x = youpos.x - move_x; 
+				enemyclass.player_pos = youpos;
+			}
+			}
+
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_ENEMY_SHOT:
+			//相手が敵の攻撃
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_ITEM:
+			//相手がアイテム
+			break;
+		}
+
+
 	}
 
 }

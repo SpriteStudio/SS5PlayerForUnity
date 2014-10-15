@@ -230,8 +230,11 @@ public class gamemain : MonoBehaviour {
 							    )
 							{
 								//ヒットコールバック
-//									SetplayerDamege( collision[i], collision[j] );
-//									SetEnemyDamege( collision[j], collision[i] );
+								player playerclass = collision[i].obj.GetComponent<player>();
+								playerclass.collision_callback( collision[i], collision[j] );
+
+								enemy enemyclass = collision[j].obj.GetComponent<enemy>();
+								enemyclass.collision_callback( collision[j], collision[i] );
 							}
 						}
 					}
