@@ -5,7 +5,7 @@ public class enemy : MonoBehaviour {
 
 	//スプライトスタジオアニメを操作するためのクラス
 	//Unity側で関連をつけておく
-	public Script_SpriteStudio_PartsRoot spriteStudioRoot;
+	private Script_SpriteStudio_PartsRoot spriteStudioRoot;
 	
 	//アニメーションに含まれるモーション番号
 	enum AnimationType
@@ -49,12 +49,16 @@ public class enemy : MonoBehaviour {
 	private float jump_speed = 0;								//ジャンプ中の移動速度
 	public Vector2 player_pos = new Vector2(-400.0f, -500.0f);	//プレイヤーの位置（表示位置とは別）
 	private float init_scale = 0.7f;							//プレイヤーの初期スケール
-	private int direction = 0;									//向き 0:左　1:右
+	public int direction = 0;									//向き 0:左　1:右
 	private bool anime_end = false;								//アニメーションの終了フラグ
 	private int attack_wait_init = 20;							//攻撃の硬直時間設定値
 	private int attack_wait = 0;								//攻撃の硬直時間
 	private int ren_attack_count = 0;							//連続攻撃の回数
-	
+	private int knockback = 0;									//ノックバック
+	private int attack_time = 0;								//攻撃開始からの時間
+	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
+	private int timer = 0;										//生存時間
+
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
 	private int dash_command_count = 0;		//前回のキー入力からの時間
@@ -64,15 +68,19 @@ public class enemy : MonoBehaviour {
 	//ゲームコントロール
 	private gamemain GameControl;
 	private camera2d Camera2DControl;
+	private effect_control effectcontrol;
 
 	// Use this for initialization
 	void Start () {
+		//ルートパーツの取得
+		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
 
 		//ゲームコントロールスクリプトの取得
 		var go = GameObject.Find("GameControl");
 		GameControl = go.GetComponent<gamemain>();
 		Camera2DControl = go.GetComponent<camera2d>();
-		
+		effectcontrol = go.GetComponent<effect_control>();
+
 		
 		//アニメーションの終了割り込みを設定
 		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
@@ -188,12 +196,15 @@ public class enemy : MonoBehaviour {
 				// 下キーを押し続けていたら
 			}
 		}
+*/
 		//ボタンを押したら攻撃
 		if ( (attack_wait == 0) || (is_wait () == false) ){
-			if (GameControl.IsPushKey ((int)gamemain.INPUTBUTTON.BUTTON_1)) {
+//			if (GameControl.IsPushKey ((int)gamemain.INPUTBUTTON.BUTTON_1)) {
+			if ( ( timer % 180 ) == 0 ){
 				attack_wait = attack_wait_init;							//攻撃の硬直時間設定値
 				ren_attack_count++;										//連続攻撃の回数
-				
+				attack_time = 0;
+
 				if (isground == true) {
 					if ((ren_attack_count % 2) == 1) {
 						set_motion (AnimationType.ATTACK1);
@@ -205,21 +216,12 @@ public class enemy : MonoBehaviour {
 				}
 			}
 		}
-*/
 		attack_wait--;
 		if ( attack_wait < 0 )
 		{
 			attack_wait = 0;
 		}
-		
-		//移動範囲を設定
-		if (Position.x < -3000.0f) {
-			Position.x = -3000.0f;
-		}
-		if (Position.x > 3000.0f) {
-			Position.x = 3000.0f;
-		}
-		
+
 		//jump制御
 		jump_force = jump_force - gravitiy;
 		Position.y += ( jump_force * 0.02f ) ; 
@@ -259,6 +261,39 @@ public class enemy : MonoBehaviour {
 			}
 		}
 
+		//ノックバック移動
+		if ( knockback > 0 )
+		{
+			float move_x = (float)( knockback * knockback ) * 0.08f;
+			if (direction == 0) {
+				//左向き
+				Position.x += move_x;
+			}
+			else{
+				//右向き
+				Position.x -= move_x;
+			}
+			set_motion(AnimationType.DAMEGE);
+		}
+		knockback--;
+		if ( knockback == 0 )
+		{
+			//ノックバック終了
+			set_motion(AnimationType.STANCE);
+		}
+		if ( knockback < 0 )
+		{
+			knockback = 0;
+			hit_muteki = 0;
+		}
+
+		//移動範囲を設定
+		if (Position.x < -3000.0f) {
+			Position.x = -3000.0f;
+		}
+		if (Position.x > 3000.0f) {
+			Position.x = 3000.0f;
+		}
 
 		//向きを反映
 		if (direction == 0) {
@@ -292,22 +327,26 @@ public class enemy : MonoBehaviour {
 //			case AnimationType.KICK2:
 			case AnimationType.JUMP_ATTACK1:
 			case AnimationType.JUMP_ATTACK2:
-				h = 300.0f;
-				w = 300.0f;
-				yofs = 250.0f;
-				GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_ENEMY_SHOT, transform.gameObject, player_pos.x + xofs, player_pos.y + yofs, h, w, 0, 0 );
+				attack_time++;
+				if ( attack_time == 20 )
+				{
+					h = 300.0f;
+					w = 300.0f;
+					yofs = 250.0f;
+					GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_ENEMY_SHOT, transform.gameObject, player_pos.x + xofs, player_pos.y + yofs, h, w, 0, 0 );
+				}
 				break;
 			default:
 				break;
 			}
-			
+
 		}
 		//カメラの位置から表示位置を設定
 		{
 			Vector2 camerapos = Camera2DControl.GetCamera( );
 			transform.position = Position - camerapos;
 		}
-
+		timer++;
 	}
 
 	//モーションを設定する
@@ -454,9 +493,64 @@ public class enemy : MonoBehaviour {
 		return true;
 	}
 
+	//連続ヒットを行う場合に無敵を解除する
+	public void Set_hit_muteki_clear( )
+	{
+		hit_muteki = 0;
+	}
+	public void Set_knockback( int time, int dir )
+	{
+		if ( knockback < time )
+		{
+			knockback = time;									//ノックバック
+		}
+		if ( dir == 0 )
+		{
+			direction = 1;								//向き
+		}
+		else
+		{
+			direction = 0;								//向き
+		}
+//		hit_muteki = 1;		//連続ヒット防止
+	}
+
+
 	//コリジョンコールバック
 	public void collision_callback( gamemain.COLLISION my, gamemain.COLLISION you )
 	{
+		switch( you.coltype )
+		{
+		case gamemain.COLTYPE.EN_COLTYPE_PLAYER:
+			//相手がプレイヤー
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_PLAYER_SHOT:
+			if (my.coltype == gamemain.COLTYPE.EN_COLTYPE_ENEMY)
+			{
+				//相手がプレイヤー攻撃
+				player playerclass = you.obj.GetComponent<player>();
+				enemy enemyclass = my.obj.GetComponent<enemy>();
+
+				if (hit_muteki == 0 )
+				{
+					enemyclass.Set_knockback( 30, playerclass.direction );
+					effectcontrol.CreateEffect(0, you.x, you.y);
+				}
+			}
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_ENEMY:
+			//相手が敵
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_ENEMY_SHOT:
+			//相手が敵の攻撃
+			break;
+		case gamemain.COLTYPE.EN_COLTYPE_ITEM:
+			//相手がアイテム
+			break;
+		}
+		
+		
 	}
+
 
 }

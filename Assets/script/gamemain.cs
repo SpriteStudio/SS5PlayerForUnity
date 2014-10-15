@@ -2,11 +2,10 @@ using UnityEngine;
 using System.Collections;
 
 public class gamemain : MonoBehaviour {
-	public static int scoer;		//スコア
-	public static int gametime;		//ゲーム時間
-	public static int scene;		//シーン
 
+	private int gametime = 0;
 	private camera2d Camera2DControl;
+	private const bool collsion_disp = false;	//コリジョン表示
 
 	public enum COLTYPE{
 		EN_COLTYPE_NONE = 0,
@@ -124,8 +123,11 @@ public class gamemain : MonoBehaviour {
 					coldisp[i].renderer.material.color = Color.green;
 					break;
 				}
-				coldisp[i].transform.position = new Vector3(collision[i].x - camerapos.x, collision[i].y - camerapos.y, 0.0f);
-				coldisp[i].transform.localScale = new Vector3(collision[i].w, collision[i].h, 1.0f);	//コリジョンを表示しない場合はこの行をコメントにする
+				if ( collsion_disp == true)
+				{
+					coldisp[i].transform.position = new Vector3(collision[i].x - camerapos.x, collision[i].y - camerapos.y, 0.0f);
+					coldisp[i].transform.localScale = new Vector3(collision[i].w, collision[i].h, 1.0f);	//コリジョンを表示しない場合はこの行をコメントにする
+				}
 
 
 				float ch1_x1 = 0;
@@ -164,8 +166,11 @@ public class gamemain : MonoBehaviour {
 							    )
 							{
 								//ヒットコールバック
-//								SetplyshotDamege( collision[i], collision[j] );
-//								SetEnemyDamege( collision[j], collision[i] );
+								player playerclass = collision[i].obj.GetComponent<player>();
+								enemy enemyclass = collision[j].obj.GetComponent<enemy>();
+
+								playerclass.collision_callback( collision[i], collision[j] );
+								enemyclass.collision_callback( collision[j], collision[i] );
 							}
 						}
 					}
@@ -197,8 +202,11 @@ public class gamemain : MonoBehaviour {
 							    )
 							{
 								//ヒットコールバック
-//								SeteneshotDamege( collision[i], collision[j] );
-//								SetplayerDamege( collision[j], collision[i] );
+								player playerclass = collision[j].obj.GetComponent<player>();
+								enemy enemyclass = collision[i].obj.GetComponent<enemy>();
+
+								playerclass.collision_callback( collision[j], collision[i] );
+								enemyclass.collision_callback( collision[i], collision[j] );
 							}
 						}
 					}

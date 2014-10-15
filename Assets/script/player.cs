@@ -7,7 +7,7 @@ public class player : MonoBehaviour {
 
 	//スプライトスタジオアニメを操作するためのクラス
 	//Unity側で関連をつけておく
-	public Script_SpriteStudio_PartsRoot spriteStudioRoot;
+	private Script_SpriteStudio_PartsRoot spriteStudioRoot;
 
 	//アニメーションに含まれるモーション番号
 	enum AnimationType
@@ -60,11 +60,15 @@ public class player : MonoBehaviour {
 	private float jump_speed = 0;								//ジャンプ中の移動速度
 	public Vector2 player_pos = new Vector2(0.0f, -500.0f);	//プレイヤーの位置（表示位置とは別）
 	private float init_scale = 0.7f;							//プレイヤーの初期スケール
-	private int direction = 0;									//向き 0:左　1:右
+	public int direction = 0;									//向き 0:左　1:右
 	private bool anime_end = false;								//アニメーションの終了フラグ
 	private int attack_wait_init = 20;							//攻撃の硬直時間設定値
 	private int attack_wait = 0;								//攻撃の硬直時間
 	private int ren_attack_count = 0;							//連続攻撃の回数
+	private int knockback = 0;									//ノックバック
+	private int attack_time = 0;								//攻撃開始からの時間
+	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
+	private int timer = 0;										//生存時間
 
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
@@ -75,14 +79,19 @@ public class player : MonoBehaviour {
 	//ゲームコントロール
 	private gamemain GameControl;
 	private camera2d Camera2DControl;
+	private effect_control effectcontrol;
 
 	// Use this for initialization
 	void Start () 
 	{
+		//ルートパーツの取得
+		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
+
 		//ゲームコントロールスクリプトの取得
 		var go = GameObject.Find("GameControl");
 		GameControl = go.GetComponent<gamemain>();
 		Camera2DControl = go.GetComponent<camera2d>();
+		effectcontrol = go.GetComponent<effect_control>();
 
 		//アニメーションの終了割り込みを設定
 		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
@@ -106,14 +115,13 @@ public class player : MonoBehaviour {
 			//エフェクトの生成（パーティクルシステム）
 //			GameObject hit = Object.Instantiate(hit_effect) as GameObject;
 //			hit.transform.position = new Vector3(0.0f, 0.0f, -30.0f);
-
+/*
 			//エフェクトの生成
-//			Instantiate(Resources.Load("Prefabs/effect2/effect001_Control"),this.transform.position + new Vector3(0,2,0),Quaternion.identity);
 			var go = Instantiate(Resources.Load("Prefabs/effect2/effect001_Control"),new Vector3(0,0,0),Quaternion.identity) as GameObject;
 			//生成したアニメデータは Camera2D Pixel (1080p) の　View　の下に配置しないと表示できない。
 			//このアニメの親（View）を親に設定する必要がある
 			go.transform.parent = transform.parent;
-
+*/
 		}
 
 
@@ -222,6 +230,7 @@ public class player : MonoBehaviour {
 			if (GameControl.IsPushKey ((int)gamemain.INPUTBUTTON.BUTTON_1)) {
 				attack_wait = attack_wait_init;							//攻撃の硬直時間設定値
 				ren_attack_count++;										//連続攻撃の回数
+				attack_time = 0;
 
 				if (isground == true) {
 					if ((ren_attack_count % 2) == 1) {
@@ -238,14 +247,6 @@ public class player : MonoBehaviour {
 		if ( attack_wait < 0 )
 		{
 			attack_wait = 0;
-		}
-
-		//移動範囲を設定
-		if (Position.x < -3000.0f) {
-			Position.x = -3000.0f;
-		}
-		if (Position.x > 3000.0f) {
-			Position.x = 3000.0f;
 		}
 
 		//jump制御
@@ -287,6 +288,41 @@ public class player : MonoBehaviour {
 			}
 		}
 
+		//ノックバック移動
+		if ( knockback > 0 )
+		{
+			float move_x = (float)( knockback * knockback ) * 0.08f;
+			if (direction == 0) {
+				//左向き
+				Position.x += move_x;
+			}
+			else{
+				//右向き
+				Position.x -= move_x;
+			}
+			set_motion(AnimationType.DAMEGE);
+		}
+		knockback--;
+		if ( knockback == 0 )
+		{
+			//ノックバック終了
+			set_motion(AnimationType.STANCE);
+		}
+		if ( knockback < 0 )
+		{
+			knockback = 0;
+			hit_muteki = 0;
+		}
+
+		//移動範囲を設定
+		if (Position.x < -3000.0f) {
+			Position.x = -3000.0f;
+		}
+		if (Position.x > 3000.0f) {
+			Position.x = 3000.0f;
+		}
+		
+
 		//向きを反映
 		if (direction == 0) {
 			transform.localScale = new Vector3(init_scale, init_scale, 1.0f);							//左向き制御スケール
@@ -319,10 +355,14 @@ public class player : MonoBehaviour {
 			case AnimationType.KICK2:
 			case AnimationType.JUMP_ATTACK1:
 			case AnimationType.JUMP_ATTACK2:
-				h = 300.0f;
-				w = 300.0f;
-				yofs = 250.0f;
-				GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_PLAYER_SHOT, transform.gameObject, player_pos.x + xofs, player_pos.y + yofs, h, w, 0, 0 );
+				attack_time++;
+				if ( attack_time == 20 )
+				{
+					h = 300.0f;
+					w = 300.0f;
+					yofs = 250.0f;
+					GameControl.set_collision( gamemain.COLTYPE.EN_COLTYPE_PLAYER_SHOT, transform.gameObject, player_pos.x + xofs, player_pos.y + yofs, h, w, 0, 0 );
+				}
 				break;
 			default:
 				break;
@@ -494,6 +534,27 @@ public class player : MonoBehaviour {
 		return true;
 	}
 
+	//連続ヒットを行う場合に無敵を解除する
+	public void Set_hit_muteki_clear( )
+	{
+		hit_muteki = 0;
+	}
+	public void Set_knockback( int time, int dir )
+	{
+		if ( knockback < time )
+		{
+			knockback = time;									//ノックバック
+		}
+		if ( dir == 0 )
+		{
+			direction = 1;								//向き
+		}
+		else
+		{
+			direction = 0;								//向き
+		}
+	}
+
 	//コリジョンコールバック
 	public void collision_callback( gamemain.COLLISION my, gamemain.COLLISION you )
 	{
@@ -506,45 +567,61 @@ public class player : MonoBehaviour {
 			//相手がプレイヤー攻撃
 			break;
 		case gamemain.COLTYPE.EN_COLTYPE_ENEMY:
-			//相手が敵
-			//重ならない様に位置を補正
-			//敵側の位置もここで補正するので敵側に補正処理はいらない
+			if (my.coltype == gamemain.COLTYPE.EN_COLTYPE_PLAYER)
 			{
-			player playerclass = my.obj.GetComponent<player>();
-			enemy enemyclass = you.obj.GetComponent<enemy>();
+				//相手が敵
+				//重ならない様に位置を補正
+				//敵側の位置もここで補正するので敵側に補正処理はいらない
+				player playerclass = my.obj.GetComponent<player>();
+				enemy enemyclass = you.obj.GetComponent<enemy>();
 
-			Vector2 mypos = playerclass.player_pos; 
-			Vector2 youpos = enemyclass.player_pos; 
+				Vector2 mypos = playerclass.player_pos; 
+				Vector2 youpos = enemyclass.player_pos; 
 
-			if ( mypos.x < youpos.x )
+				if ( mypos.x < youpos.x )
+				{
+					//自分の右側から相手の左側を引くと移動量がでる
+					float move_x = ( mypos.x + ( my.w / 2.0f ) ) - ( youpos.x - ( you.w / 2.0f ) );
+					move_x = move_x / 2.0f;
+
+					mypos.x = mypos.x - move_x; 
+					playerclass.player_pos = mypos;
+
+					youpos.x = youpos.x + move_x; 
+					enemyclass.player_pos = youpos;
+				}
+				else
+				{
+					//自分の右側から相手の左側を引くと移動量がでる
+					float move_x = ( youpos.x + ( you.w / 2.0f ) ) - ( mypos.x - ( my.w / 2.0f ) );
+					move_x = move_x / 2.0f;
+					
+					mypos.x = mypos.x + move_x; 
+					playerclass.player_pos = mypos;
+
+					youpos.x = youpos.x - move_x; 
+					enemyclass.player_pos = youpos;
+				}
+
+			}
+			if (my.coltype == gamemain.COLTYPE.EN_COLTYPE_PLAYER_SHOT)
 			{
-				//自分の右側から相手の左側を引くと移動量がでる
-				float move_x = ( mypos.x + ( my.w / 2.0f ) ) - ( youpos.x - ( you.w / 2.0f ) );
-				move_x = move_x / 2.0f;
-
-				mypos.x = mypos.x - move_x; 
-				playerclass.player_pos = mypos;
-
-				youpos.x = youpos.x + move_x; 
-				enemyclass.player_pos = youpos;
 			}
-			else
-			{
-				//自分の右側から相手の左側を引くと移動量がでる
-				float move_x = ( youpos.x + ( you.w / 2.0f ) ) - ( mypos.x - ( my.w / 2.0f ) );
-				move_x = move_x / 2.0f;
-				
-				mypos.x = mypos.x + move_x; 
-				playerclass.player_pos = mypos;
-
-				youpos.x = youpos.x - move_x; 
-				enemyclass.player_pos = youpos;
-			}
-			}
-
 			break;
 		case gamemain.COLTYPE.EN_COLTYPE_ENEMY_SHOT:
 			//相手が敵の攻撃
+			if (my.coltype == gamemain.COLTYPE.EN_COLTYPE_PLAYER)
+			{
+				//相手がプレイヤー攻撃
+				player playerclass = my.obj.GetComponent<player>();
+				enemy enemyclass = you.obj.GetComponent<enemy>();
+				
+				if (hit_muteki == 0 )
+				{
+					playerclass.Set_knockback( 30, enemyclass.direction );
+					effectcontrol.CreateEffect(0, you.x, you.y);
+				}
+			}
 			break;
 		case gamemain.COLTYPE.EN_COLTYPE_ITEM:
 			//相手がアイテム
