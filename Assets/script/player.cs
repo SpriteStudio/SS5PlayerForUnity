@@ -69,6 +69,7 @@ public class player : MonoBehaviour {
 	private int attack_time = 0;								//攻撃開始からの時間
 	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
 	private int timer = 0;										//生存時間
+	private bool sit = false;										//しゃがみ
 
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
@@ -169,60 +170,66 @@ public class player : MonoBehaviour {
 		bool ismove = false;
 		if (is_wait () == false) {
 			if (isground == true) {
-				// 左キーを押し続けていたら
-				if (GameControl.IsPressKey ((int)gamemain.INPUTBUTTON.BUTTON_LEFT)) {
-					// 代入したPositionに対して加算減算を行う
-					if (dash == true) {
-						Position.x -= SPEED.x * 2.0f;
-					} else {
-						Position.x -= SPEED.x;
-					}
-					direction = 0;
-					ismove = true;
-				} else if (GameControl.IsPressKey ((int)gamemain.INPUTBUTTON.BUTTON_RIGHT)) { // 右キーを押し続けていたら
-					// 代入したPositionに対して加算減算を行う
-					if (dash == true) {
-						Position.x += SPEED.x * 2.0f;
-					} else {
-						Position.x += SPEED.x;
-					}
-					direction = 1;
-					ismove = true;
+				if(GameControl.IsPressKey((int)gamemain.INPUTBUTTON.BUTTON_DOWN)){
+					// 下キーを押し続けていたら
+					sit = true;
 				}
-				if (ismove == false)
+				else
 				{
-					//移動入力がない場合ダッシュ終了
-					dash = false;
-				}
-			}
-			if (GameControl.IsPushKey((int)gamemain.INPUTBUTTON.BUTTON_UP)) {
-				// 上キーを押し続けていたら
-				if (isground == true) {
-					//地面にいたらジャンプを行う
-					jump_force = 2500.0f;
-					set_motion(AnimationType.JUMP_START);
-
-					if (ismove == true) {
+					sit = false;
+					if (GameControl.IsPressKey ((int)gamemain.INPUTBUTTON.BUTTON_LEFT)) {
+							// 左キーを押し続けていたら
+							// 代入したPositionに対して加算減算を行う
+							if (dash == true) {
+								Position.x -= SPEED.x * 2.0f;
+							} else {
+								Position.x -= SPEED.x;
+							}
+							direction = 0;
+							ismove = true;
+					} else if (GameControl.IsPressKey ((int)gamemain.INPUTBUTTON.BUTTON_RIGHT)) { // 右キーを押し続けていたら
+						// 代入したPositionに対して加算減算を行う
 						if (dash == true) {
-							if (direction == 0) {
-								jump_speed = -SPEED.x * 2.0f;								//ジャンプ中の移動速度
-							} else if (direction == 1) {
-								jump_speed = SPEED.x * 2.0f;								//ジャンプ中の移動速度
-							}
+							Position.x += SPEED.x * 2.0f;
 						} else {
-							if (direction == 0) {
-								jump_speed = -SPEED.x * 1.0f;								//ジャンプ中の移動速度
-							} else if (direction == 1) {
-								jump_speed = SPEED.x * 1.0f;								//ジャンプ中の移動速度
-							}
+							Position.x += SPEED.x;
 						}
-					} else {
-						jump_speed = 0;								//ジャンプ中の移動速度
+						direction = 1;
+						ismove = true;
 					}
+					if (ismove == false)
+					{
+						//移動入力がない場合ダッシュ終了
+						dash = false;
+					}
+					if (GameControl.IsPushKey((int)gamemain.INPUTBUTTON.BUTTON_UP)) {
+						// 上キーを押し続けていたら
+						if (isground == true) {
+							//地面にいたらジャンプを行う
+							jump_force = 2500.0f;
+							set_motion(AnimationType.JUMP_START);
 
+							if (ismove == true) {
+								if (dash == true) {
+									if (direction == 0) {
+										jump_speed = -SPEED.x * 2.0f;								//ジャンプ中の移動速度
+									} else if (direction == 1) {
+										jump_speed = SPEED.x * 2.0f;								//ジャンプ中の移動速度
+									}
+								} else {
+									if (direction == 0) {
+										jump_speed = -SPEED.x * 1.0f;								//ジャンプ中の移動速度
+									} else if (direction == 1) {
+										jump_speed = SPEED.x * 1.0f;								//ジャンプ中の移動速度
+									}
+								}
+							} else {
+								jump_speed = 0;								//ジャンプ中の移動速度
+							}
+
+						}
+					}
 				}
-			} else if(GameControl.IsPushKey((int)gamemain.INPUTBUTTON.BUTTON_DOWN)){
-				// 下キーを押し続けていたら
 			}
 		}
 		//ボタンを押したら攻撃
@@ -233,10 +240,20 @@ public class player : MonoBehaviour {
 				attack_time = 0;
 
 				if (isground == true) {
-					if ((ren_attack_count % 2) == 1) {
-						set_motion (AnimationType.ATTACK1);
-					} else {
-						set_motion (AnimationType.ATTACK2);
+					if ( sit == true )
+					{
+						if ((ren_attack_count % 2) == 1) {
+							set_motion (AnimationType.SIT_KICK);
+						} else {
+							set_motion (AnimationType.SIT_PANCH);
+						}
+					}
+					else{
+						if ((ren_attack_count % 2) == 1) {
+							set_motion (AnimationType.ATTACK1);
+						} else {
+							set_motion (AnimationType.ATTACK2);
+						}
 					}
 				} else {
 					set_motion (AnimationType.JUMP_ATTACK1);
@@ -272,17 +289,41 @@ public class player : MonoBehaviour {
 		}
 
 		//motion set
-		if (is_wait () == false) {
-			if (isground == true) {
-				if (ismove == true) {
-					if (dash == true) {
+		if (is_wait () == false) 
+		{
+			if (isground == true) 
+			{
+				if (ismove == true) 
+				{
+					if (dash == true) 
+					{
 						set_motion(AnimationType.RUN);
-					} else {
+					} else 
+					{
 						set_motion(AnimationType.WALK);
 					}
-				} else {
-					if (motion != AnimationType.JUMP_END) {
-						set_motion(AnimationType.STANCE);
+				} else
+				{
+					if ( sit == true )
+					{
+						if (motion != AnimationType.SIT) 
+						{
+							set_motion(AnimationType.SITDOWN);
+						}
+					}
+					else
+					{
+						if ((motion != AnimationType.JUMP_END) && (motion != AnimationType.STANDUP))
+						{
+							if (motion == AnimationType.SIT) 
+							{
+								set_motion(AnimationType.STANDUP);
+							}
+							else
+							{
+								set_motion(AnimationType.STANCE);
+							}
+						}
 					}
 				}
 			}
@@ -355,6 +396,10 @@ public class player : MonoBehaviour {
 			case AnimationType.KICK2:
 			case AnimationType.JUMP_ATTACK1:
 			case AnimationType.JUMP_ATTACK2:
+			case AnimationType.SIT_ATTACK1:
+			case AnimationType.SIT_ATTACK2:
+			case AnimationType.SIT_KICK:
+			case AnimationType.SIT_PANCH:
 				attack_time++;
 				if ( attack_time == 20 )
 				{
@@ -407,6 +452,8 @@ public class player : MonoBehaviour {
 		case AnimationType.WAIT:
 		case AnimationType.WALK:
 		case AnimationType.SIT:
+		case AnimationType.SITDOWN:
+		case AnimationType.STANDUP:
 			rc = false;
 			break;
 		default:
@@ -504,15 +551,19 @@ public class player : MonoBehaviour {
 			set_motion( AnimationType.SIT, true);
 			break;
 		case AnimationType.SIT_ATTACK1:
+			ren_attack_count = 0;										//連続攻撃の回数
 			set_motion( AnimationType.SIT, true);
 			break;
 		case AnimationType.SIT_ATTACK2:
+			ren_attack_count = 0;										//連続攻撃の回数
 			set_motion( AnimationType.SIT, true);
 			break;
 		case AnimationType.SIT_KICK:
+			ren_attack_count = 0;										//連続攻撃の回数
 			set_motion( AnimationType.SIT, true);
 			break;
 		case AnimationType.SIT_PANCH:
+			ren_attack_count = 0;										//連続攻撃の回数
 			set_motion( AnimationType.SIT, true);
 			break;
 		case AnimationType.SITDOWN:

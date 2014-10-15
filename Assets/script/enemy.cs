@@ -59,6 +59,11 @@ public class enemy : MonoBehaviour {
 	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
 	private int timer = 0;										//生存時間
 
+	//CPU思考
+	float cpu_renge = 0.0f;					//レンジ
+	int cpu_input_key = 0;					//キー入力
+	int cpu_nextmove_time = 0;				//次のコマンド入力までの時間
+
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
 	private int dash_command_count = 0;		//前回のキー入力からの時間
