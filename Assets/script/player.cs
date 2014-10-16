@@ -81,6 +81,7 @@ public class player : MonoBehaviour {
 	private gamemain GameControl;
 	private camera2d Camera2DControl;
 	private effect_control effectcontrol;
+	private sound soundcontrol;
 
 	// Use this for initialization
 	void Start () 
@@ -89,10 +90,16 @@ public class player : MonoBehaviour {
 		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
 
 		//ゲームコントロールスクリプトの取得
-		var go = GameObject.Find("GameControl");
-		GameControl = go.GetComponent<gamemain>();
-		Camera2DControl = go.GetComponent<camera2d>();
-		effectcontrol = go.GetComponent<effect_control>();
+		{
+			var go = GameObject.Find("GameControl");
+			GameControl = go.GetComponent<gamemain>();
+			Camera2DControl = go.GetComponent<camera2d>();
+			effectcontrol = go.GetComponent<effect_control>();
+		}
+		{
+			var go = GameObject.Find("SoundContrlo");
+			soundcontrol = go.GetComponent<sound>();
+		}
 
 		//アニメーションの終了割り込みを設定
 		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
@@ -107,24 +114,6 @@ public class player : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		// for test code 
-		//ボタンを押したら攻撃
-		if (GameControl.IsPushKey((int)gamemain.INPUTBUTTON.BUTTON_1)) {
-//			set_motion(AnimationType.JUMP_END);
-
-//			set_motion(AnimationType.JUMP_AIR, true);
-			//エフェクトの生成（パーティクルシステム）
-//			GameObject hit = Object.Instantiate(hit_effect) as GameObject;
-//			hit.transform.position = new Vector3(0.0f, 0.0f, -30.0f);
-/*
-			//エフェクトの生成
-			var go = Instantiate(Resources.Load("Prefabs/effect2/effect001_Control"),new Vector3(0,0,0),Quaternion.identity) as GameObject;
-			//生成したアニメデータは Camera2D Pixel (1080p) の　View　の下に配置しないと表示できない。
-			//このアニメの親（View）を親に設定する必要がある
-			go.transform.parent = transform.parent;
-*/
-		}
-
 
 		//アニメーションの終了を監視
 		if (anime_end == true) {
@@ -132,10 +121,8 @@ public class player : MonoBehaviour {
 			//次のモーションを設定
 			set_next_motion();
 		}
-			
 
 		// 現在位置をPositionに代入
-//		Vector2 Position = transform.position;
 		Vector2 Position = player_pos;
 
 		//コマンド処理
@@ -239,6 +226,9 @@ public class player : MonoBehaviour {
 				ren_attack_count++;										//連続攻撃の回数
 				attack_time = 0;
 
+				//SE再生
+				soundcontrol.PlaySE( sound.SE_TYPE.ATK );
+
 				if (isground == true) {
 					if ( sit == true )
 					{
@@ -274,7 +264,10 @@ public class player : MonoBehaviour {
 			Position.y = ground_y; 
 			if ( isground == false)
 			{
-				set_motion(AnimationType.JUMP_END);
+				if (knockback == 0)
+				{
+					set_motion(AnimationType.JUMP_END);
+				}
 			}
 			isground = true;
 		}else{
@@ -298,6 +291,10 @@ public class player : MonoBehaviour {
 					if (dash == true) 
 					{
 						set_motion(AnimationType.RUN);
+						if ( ( timer % 10 ) == 0 )
+						{
+							effectcontrol.CreateEffect(5, Position.x, Position.y - 0.0f );
+						}
 					} else 
 					{
 						set_motion(AnimationType.WALK);
@@ -425,6 +422,15 @@ public class player : MonoBehaviour {
 			transform.position = Position - camerapos;
 		}
 
+		timer++;
+
+	}
+
+	//ジャンプ力を設定
+	public void setjump( int f)
+	{
+		jump_force = f;
+		
 	}
 
 	//モーションを設定する
@@ -669,8 +675,14 @@ public class player : MonoBehaviour {
 				
 				if (hit_muteki == 0 )
 				{
+					//SE再生
+					soundcontrol.PlaySE( sound.SE_TYPE.HIT1 );
+					//ノックバック設定
 					playerclass.Set_knockback( 30, enemyclass.direction );
+					playerclass.setjump(1000);
+					//エフェクトの作成
 					effectcontrol.CreateEffect(0, you.x, you.y);
+					effectcontrol.CreateEffect(6, you.x, you.y);
 				}
 			}
 			break;

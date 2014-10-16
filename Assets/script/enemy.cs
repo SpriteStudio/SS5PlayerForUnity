@@ -58,6 +58,8 @@ public class enemy : MonoBehaviour {
 	private int attack_time = 0;								//攻撃開始からの時間
 	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
 	private int timer = 0;										//生存時間
+	private int life = 1;										//ライフ
+	private int dead_count = 0;										//ライフ
 
 	//CPU思考
 	float cpu_renge = 0.0f;					//レンジ
@@ -74,6 +76,7 @@ public class enemy : MonoBehaviour {
 	private gamemain GameControl;
 	private camera2d Camera2DControl;
 	private effect_control effectcontrol;
+	private sound soundcontrol;
 
 	// Use this for initialization
 	void Start () {
@@ -81,18 +84,23 @@ public class enemy : MonoBehaviour {
 		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
 
 		//ゲームコントロールスクリプトの取得
-		var go = GameObject.Find("GameControl");
-		GameControl = go.GetComponent<gamemain>();
-		Camera2DControl = go.GetComponent<camera2d>();
-		effectcontrol = go.GetComponent<effect_control>();
+		{
+			var go = GameObject.Find("GameControl");
+			GameControl = go.GetComponent<gamemain>();
+			Camera2DControl = go.GetComponent<camera2d>();
+			effectcontrol = go.GetComponent<effect_control>();
+		}
+		{
+			var go = GameObject.Find("SoundContrlo");
+			soundcontrol = go.GetComponent<sound>();
+		}
 
 		
 		//アニメーションの終了割り込みを設定
 		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
-		//初期アニメーションを設定
-		set_motion( AnimationType.STANCE, true);
-		
-		direction = 0;									//左向き
+
+		//バッファ初期化
+		charinit();
 
 	}
 	
@@ -210,6 +218,9 @@ public class enemy : MonoBehaviour {
 				ren_attack_count++;										//連続攻撃の回数
 				attack_time = 0;
 
+				//SE再生
+				soundcontrol.PlaySE( sound.SE_TYPE.ATK );
+
 				if (isground == true) {
 					if ((ren_attack_count % 2) == 1) {
 						set_motion (AnimationType.ATTACK1);
@@ -235,7 +246,10 @@ public class enemy : MonoBehaviour {
 			Position.y = ground_y; 
 			if ( isground == false)
 			{
-				set_motion(AnimationType.JUMP_END);
+				if (knockback == 0)
+				{
+					set_motion(AnimationType.JUMP_END);
+				}
 			}
 			isground = true;
 		}else{
@@ -309,6 +323,39 @@ public class enemy : MonoBehaviour {
 		
 		// 現在の位置を設定
 		player_pos = Position;
+
+		if ( life <= 0 )
+		{
+			//死亡
+			set_motion(AnimationType.DEAD1);
+			dead_count++;										//ライフ
+			if ( dead_count >= 120 )
+			{
+				if ( (dead_count % 10 ) == 0 )
+				{
+					Camera2DControl.SetShake( 4 );
+					float ex = (int)UnityEngine.Random.Range (-100, 100);
+					float ey = (int)UnityEngine.Random.Range (-100, 100);
+					effectcontrol.CreateEffect(2, player_pos.x + ex, player_pos.y + ey);
+					//SE再生
+					if ( dead_count < 180 )
+					{
+						soundcontrol.PlaySE( sound.SE_TYPE.DEAD1 );
+					}
+				}
+			}
+
+			if ( dead_count >= 180 )
+			{
+				Camera2DControl.SetShake( 40 );
+				effectcontrol.CreateEffect(4, player_pos.x, player_pos.y);
+				soundcontrol.PlaySE( sound.SE_TYPE.DEAD2 );
+				dead_count = 0;
+				charinit();
+			}
+		}
+
+
 		//コリジョンの設定
 		{
 			//体
@@ -353,10 +400,42 @@ public class enemy : MonoBehaviour {
 		}
 		timer++;
 	}
+	//バッファ初期化
+	void charinit()
+	{
+		jump_force = 0;								//ジャンプ力
+		jump_speed = 0;								//ジャンプ中の移動速度
+		float x = (float)UnityEngine.Random.Range (-2500, +2500);
+		player_pos = new Vector2(x, 0);	//プレイヤーの位置（表示位置とは別）
+		direction = 0;									//向き 0:左　1:右
+		attack_wait = 0;								//攻撃の硬直時間
+		ren_attack_count = 0;							//連続攻撃の回数
+		knockback = 0;									//ノックバック
+		attack_time = 0;								//攻撃開始からの時間
+		hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
+		timer = 0;										//生存時間
+		life = 1;										//ライフ
+		dead_count = 0;										//ライフ
+
+		//初期アニメーションを設定
+		set_motion( AnimationType.STANCE, true);
+		direction = 0;									//左向き
+	}
+
+	//ジャンプ力を設定
+	public void setjump( int f)
+	{
+		jump_force = f;
+
+	}
 
 	//モーションを設定する
 	void set_motion( AnimationType now_motion, bool flg = false)
 	{
+		if (life <= 0 )
+		{
+			now_motion = AnimationType.DEAD1;
+		}
 		if ( (motion != now_motion) || ( flg == true ) )
 		{
 			//anime kousin
@@ -368,28 +447,8 @@ public class enemy : MonoBehaviour {
 	//硬直があるかを取得
 	bool is_wait( )
 	{
-		bool rc = false;
+		bool rc = true;
 		switch (motion) {
-		case AnimationType.ATTACK1:
-		case AnimationType.ATTACK2:
-//		case AnimationType.ATTACK3:
-		case AnimationType.CHARGE:
-		case AnimationType.DAMEGE:
-		case AnimationType.DEAD1:
-//		case AnimationType.DEAD2:
-		case AnimationType.DEFENSE:
-		case AnimationType.KICK1:
-//		case AnimationType.KICK2:
-		case AnimationType.NO_ANIME:
-		case AnimationType.PANCH1:
-//		case AnimationType.PANCH2:
-		case AnimationType.PIYO:
-		case AnimationType.POSE1:
-//		case AnimationType.POSE2:
-		case AnimationType.JUMP_ATTACK1:
-		case AnimationType.JUMP_ATTACK2:
-			rc = true;
-			break;
 		case AnimationType.JUMP_AIR:
 		case AnimationType.JUMP_ALL:
 		case AnimationType.JUMP_END:
@@ -399,6 +458,8 @@ public class enemy : MonoBehaviour {
 		case AnimationType.WAIT:
 		case AnimationType.WALK:
 			rc = false;
+			break;
+		default:
 			break;
 		}
 		return rc;
@@ -536,10 +597,18 @@ public class enemy : MonoBehaviour {
 				player playerclass = you.obj.GetComponent<player>();
 				enemy enemyclass = my.obj.GetComponent<enemy>();
 
-				if (hit_muteki == 0 )
+				if ((hit_muteki == 0 ) && ( life > 0 ))
 				{
+					life -= 1;										//ライフ
+
+					//SE再生
+					soundcontrol.PlaySE( sound.SE_TYPE.HIT1 );
+					//ノックバック設定
 					enemyclass.Set_knockback( 30, playerclass.direction );
+					enemyclass.setjump(1000);
+					//エフェクトの作成
 					effectcontrol.CreateEffect(0, you.x, you.y);
+					effectcontrol.CreateEffect(6, you.x, you.y);
 				}
 			}
 			break;
