@@ -29,7 +29,7 @@ public class effect_control : MonoBehaviour {
 			break;
 		case 1:
 			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo02_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
-			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
+			go.transform.localScale = new Vector3( 4.0f,4.0f,1.0f);
 			break;
 		case 2:
 			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo03_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;

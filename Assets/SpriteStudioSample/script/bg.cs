@@ -24,8 +24,8 @@ public class bg : MonoBehaviour {
 		background_center = GameObject.Find("background_center");
 		background_back = GameObject.Find("backgroung_back");
 
-		background_front.transform.position = new Vector3(-81.08362f, 52.46774f, 169.4585f);
-		background_center.transform.position = new Vector3(-48.76801f, 359.1096f, 119.4256f);
+		background_front.transform.position = new Vector3(-81.08362f, -53.67706f, 169.4585f);
+		background_center.transform.position = new Vector3(-48.76801f, 227.8253f, 119.4256f);
 		background_back.transform.position = new Vector3(-81.75049f, 237.6096f, 405.6156f);
 
 		background_front_initpos = background_front.transform.position;

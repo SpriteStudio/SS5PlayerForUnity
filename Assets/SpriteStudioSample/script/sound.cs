@@ -9,6 +9,7 @@ public class sound : MonoBehaviour {
 	public AudioClip audioClip_dead2;
 	public AudioClip audioClip_run;
 	public AudioClip audioClip_jump;
+	public AudioClip audioClip_defense;
 
 	private AudioSource audioSource;
 
@@ -22,6 +23,7 @@ public class sound : MonoBehaviour {
 		DEAD2,
 		RUN,
 		JUMP,
+		DEFENSE,
 	}
 	// Use this for initialization
 	void Start () {
@@ -75,6 +77,9 @@ public class sound : MonoBehaviour {
 			break;
 		case SE_TYPE.JUMP:
 			audioSource.clip = audioClip_jump;
+			break;
+		case SE_TYPE.DEFENSE:
+			audioSource.clip = audioClip_defense;
 			break;
 		}
 		audioSource.PlayOneShot(audioSource.clip);

@@ -30,14 +30,15 @@ public class camera2d : MonoBehaviour {
 
 	public void SetCamera( Vector2 vec )
 	{
+		float camera_max = 2200.0f;
 		gamecamera = vec;
-		if ( gamecamera.x < -1800.0f )
+		if ( gamecamera.x < -camera_max )
 		{
-			gamecamera.x = -1800.0f;
+			gamecamera.x = -camera_max;
 		}
-		if ( gamecamera.x > 1800.0f )
+		if ( gamecamera.x > camera_max )
 		{
-			gamecamera.x = 1800.0f;
+			gamecamera.x = camera_max;
 		}
 		if ( gamecamera.y < -100.0f )
 		{

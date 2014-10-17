@@ -69,9 +69,9 @@ public class enemy : MonoBehaviour {
 
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
-	private int dash_command_count = 0;		//前回のキー入力からの時間
-	private int dash_command_time = 25;		//コマンド成立時間
-	private int dash_oldinput_key = 0;		//前回入力されたキー
+//	private int dash_command_count = 0;		//前回のキー入力からの時間
+//	private int dash_command_time = 25;		//コマンド成立時間
+//	private int dash_oldinput_key = 0;		//前回入力されたキー
 	
 	//ゲームコントロール
 	private gamemain GameControl;
@@ -223,7 +223,7 @@ public class enemy : MonoBehaviour {
 		}
 
 		//ボタンを押したら攻撃
-		if ( (attack_wait == 0) || (is_wait () == false) ){
+		if ( (attack_wait == 0) && (is_wait () == false) ){
 			if (cpu_input_key[(int)gamemain.INPUTBUTTON.BUTTON_1] != 0) {
 //			if ( ( timer % 180 ) == 0 ){
 				attack_wait = attack_wait_init;							//攻撃の硬直時間設定値
@@ -673,6 +673,7 @@ public class enemy : MonoBehaviour {
 		if ( player_pos.x < targetpos.x )
 		{
 			//相手は右にいる
+			direction = 1;
 			if ( cpu_renge > dash_renge )
 			{
 				dash = true;
@@ -685,6 +686,7 @@ public class enemy : MonoBehaviour {
 		else
 		{
 			//相手は左にいる
+			direction = 0;
 			if ( cpu_renge > dash_renge )
 			{
 				dash = true;

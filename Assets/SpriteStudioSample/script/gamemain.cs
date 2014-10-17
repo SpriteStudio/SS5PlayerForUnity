@@ -5,7 +5,7 @@ public class gamemain : MonoBehaviour {
 
 	private int gametime = 0;
 	private camera2d Camera2DControl;
-	private const bool collsion_disp = false;	//コリジョン表示
+	private const bool collsion_disp = false;	//コリジョン表示を行う場合はtrue
 
 	public enum COLTYPE{
 		EN_COLTYPE_NONE = 0,

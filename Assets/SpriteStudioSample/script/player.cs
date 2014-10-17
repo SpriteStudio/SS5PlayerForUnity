@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections;
 
 //プレイヤークラス
@@ -69,7 +68,9 @@ public class player : MonoBehaviour {
 	private int attack_time = 0;								//攻撃開始からの時間
 	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
 	private int timer = 0;										//生存時間
-	private bool sit = false;										//しゃがみ
+	private bool sit = false;									//しゃがみ
+	private bool defense = false;								//防御
+	private int defense_knockback = 0;								//防御
 
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
@@ -155,7 +156,7 @@ public class player : MonoBehaviour {
 
 		//プレイヤーのキー入力処理
 		bool ismove = false;
-		if (is_wait () == false) {
+		if ((is_wait () == false) && ( defense == false ) ){
 			if (isground == true) {
 				if(GameControl.IsPressKey((int)gamemain.INPUTBUTTON.BUTTON_DOWN)){
 					// 下キーを押し続けていたら
@@ -222,7 +223,7 @@ public class player : MonoBehaviour {
 			}
 		}
 		//ボタンを押したら攻撃
-		if ( (attack_wait == 0) || (is_wait () == false) ){
+		if ( (attack_wait == 0) && (is_wait () == false) && ( defense == false ) ){
 			if (GameControl.IsPushKey ((int)gamemain.INPUTBUTTON.BUTTON_1)) {
 				attack_wait = attack_wait_init;							//攻撃の硬直時間設定値
 				ren_attack_count++;										//連続攻撃の回数
@@ -249,6 +250,15 @@ public class player : MonoBehaviour {
 					}
 				} else {
 					set_motion (AnimationType.JUMP_ATTACK1);
+				}
+			}
+		}
+		defense = false;
+		if (is_wait () == false){
+			if (isground == true) {
+				if (GameControl.IsPressKey ((int)gamemain.INPUTBUTTON.BUTTON_2)) {
+					//2ボタンはガード
+					defense = true;
 				}
 			}
 		}
@@ -357,6 +367,31 @@ public class player : MonoBehaviour {
 			hit_muteki = 0;
 		}
 
+
+		//ディフェンスノックバック
+		if ( knockback > 0 )
+		{
+			float move_x = (float)( defense_knockback * defense_knockback ) * 0.02f;
+			if (direction == 0) {
+				//左向き
+				Position.x += move_x;
+			}
+			else{
+				//右向き
+				Position.x -= move_x;
+			}
+		}
+		defense_knockback--;
+		if ( defense_knockback < 0 )
+		{
+			defense_knockback = 0;
+		}
+		if ( ( defense == true ) || ( defense_knockback > 0 ) )
+		{
+			defense = true;
+			set_motion(AnimationType.DEFENSE);
+		}
+
 		//移動範囲を設定
 		if (Position.x < -3000.0f) {
 			Position.x = -3000.0f;
@@ -441,6 +476,11 @@ public class player : MonoBehaviour {
 	//モーションを設定する
 	void set_motion( AnimationType now_motion, bool flg = false)
 	{
+		if ( defense == true )
+		{
+			now_motion = AnimationType.DEFENSE;
+		}
+
 		if ( (motion != now_motion) || ( flg == true ) )
 		{
 			//anime kousin
@@ -465,6 +505,7 @@ public class player : MonoBehaviour {
 		case AnimationType.SIT:
 		case AnimationType.SITDOWN:
 		case AnimationType.STANDUP:
+		case AnimationType.DEFENSE:
 			rc = false;
 			break;
 		default:
@@ -616,6 +657,21 @@ public class player : MonoBehaviour {
 			direction = 0;								//向き
 		}
 	}
+	public void Set_defense_knockback( int time, int dir )
+	{
+		if ( defense_knockback < time )
+		{
+			defense_knockback = time;									//ノックバック
+		}
+		if ( dir == 0 )
+		{
+			direction = 1;								//向き
+		}
+		else
+		{
+			direction = 0;								//向き
+		}
+	}
 
 	//コリジョンコールバック
 	public void collision_callback( gamemain.COLLISION my, gamemain.COLLISION you )
@@ -680,15 +736,31 @@ public class player : MonoBehaviour {
 				
 				if (hit_muteki == 0 )
 				{
-					//SE再生
-					soundcontrol.PlaySE( sound.SE_TYPE.HIT1 );
-					//ノックバック設定
-					playerclass.Set_knockback( 30, enemyclass.direction );
-					playerclass.setjump(1000);
-					//エフェクトの作成
-					effectcontrol.CreateEffect(0, you.x, you.y);
-					effectcontrol.CreateEffect(6, you.x, you.y);
-					effectcontrol.CreateEffect(8, you.x, you.y);
+					if ( defense == true )
+					{
+						//SE再生
+						soundcontrol.PlaySE( sound.SE_TYPE.DEFENSE );
+						//ノックバック設定
+						playerclass.Set_defense_knockback( 10, enemyclass.direction );
+						enemyclass.Set_knockback( 20, playerclass.direction );
+//						playerclass.setjump(1000);
+						//エフェクトの作成
+						effectcontrol.CreateEffect(1, you.x, you.y);
+//						effectcontrol.CreateEffect(7, you.x, you.y);
+//						effectcontrol.CreateEffect(8, you.x, you.y);
+					}
+					else
+					{
+						//SE再生
+						soundcontrol.PlaySE( sound.SE_TYPE.HIT1 );
+						//ノックバック設定
+						playerclass.Set_knockback( 30, enemyclass.direction );
+						playerclass.setjump(1000);
+						//エフェクトの作成
+						effectcontrol.CreateEffect(0, you.x, you.y);
+						effectcontrol.CreateEffect(6, you.x, you.y);
+						effectcontrol.CreateEffect(8, you.x, you.y);
+					}
 				}
 			}
 			break;
