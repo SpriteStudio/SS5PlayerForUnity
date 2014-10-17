@@ -126,7 +126,6 @@ public class enemy : MonoBehaviour {
 		
 		
 		// 現在位置をPositionに代入
-//		Vector2 Position = transform.position;
 		Vector2 Position = player_pos;
 /*
 		//コマンド処理
@@ -673,7 +672,10 @@ public class enemy : MonoBehaviour {
 		if ( player_pos.x < targetpos.x )
 		{
 			//相手は右にいる
-			direction = 1;
+			if (is_wait () == false)
+			{
+				direction = 1;
+			}
 			if ( cpu_renge > dash_renge )
 			{
 				dash = true;
@@ -686,7 +688,10 @@ public class enemy : MonoBehaviour {
 		else
 		{
 			//相手は左にいる
-			direction = 0;
+			if (is_wait () == false)
+			{
+				direction = 0;
+			}
 			if ( cpu_renge > dash_renge )
 			{
 				dash = true;
