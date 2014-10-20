@@ -5,6 +5,9 @@ public class gamemain : MonoBehaviour {
 
 	private int gametime = 0;
 	private camera2d Camera2DControl;
+	private AudioSource audioSource;
+	public AudioClip audioClip_bgm;
+
 	private const bool collsion_disp = false;	//コリジョン表示を行う場合はtrue
 
 	public enum COLTYPE{
@@ -51,6 +54,12 @@ public class gamemain : MonoBehaviour {
 		//ゲームコントロールスクリプトの取得
 		var go = GameObject.Find("GameControl");
 		Camera2DControl = go.GetComponent<camera2d>();
+		audioSource = gameObject.GetComponent<AudioSource>();
+
+		audioSource.clip = audioClip_bgm;
+		audioSource.loop = true;
+		audioSource.Play();
+
 
 		KeyInit( );	//キー入力初期化
 
