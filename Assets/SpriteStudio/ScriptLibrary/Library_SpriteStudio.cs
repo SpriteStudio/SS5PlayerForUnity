@@ -1034,6 +1034,7 @@ public static class Library_SpriteStudio
 						InstanceMeshFilter.sharedMesh.Clear();
 						Object.DestroyImmediate(InstanceMeshFilter.sharedMesh);
 					}
+					MeshNew.name = "BatchedMesh";
 					InstanceMeshFilter.sharedMesh = MeshNew;
 
 					/* Clear Draw-Entries */
