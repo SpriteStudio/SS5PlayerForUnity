@@ -2300,9 +2300,9 @@ public static partial class LibraryEditor_SpriteStudio
 					/* Texture File Copy */
 					NameAsset = NamePath + "/" + NameFileBody + NameFileExtensionTexture;
 					File.FileCopyToAsset(File.AssetPathToNativePath(NameAsset), ListImage[i].FileName, true);
-
 					/* Importer Setting */
 					AssetDatabase.ImportAsset(NameAsset);
+#if false
 					TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
 					Importer.anisoLevel = 1;
 					Importer.borderMipmap = false;
@@ -2323,6 +2323,7 @@ public static partial class LibraryEditor_SpriteStudio
 					Importer.textureType  = TextureImporterType.Advanced;
 					Importer.wrapMode = TextureWrapMode.Clamp;
 					AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
+#endif
 					TableTexture[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
 
 					/* Texture's Pixel-Size Check */
