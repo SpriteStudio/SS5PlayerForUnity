@@ -36,17 +36,6 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 	}
 
 	/* Functions */
-#if false
-	void Awake()
-	{
-		Application.RegisterLogCallback(LogWarningHook);
-	}
-	void LogWarningHook(string logString, string stackTrace, LogType type)
-	{
-		string Text = logString;
-	}
-#endif
-	
 	void Start()
 	{
 		InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);

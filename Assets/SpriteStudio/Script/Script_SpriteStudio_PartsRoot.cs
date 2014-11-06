@@ -34,7 +34,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		NO_CHANGE = -1,
 		NORMAL = 0,
 		PINGPONG = 1,
-	}
+	};
 
 	/* Classes */
 	private class ParameterCallBackUserData
@@ -79,6 +79,20 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	}
 
 	public bool FlagHideForce;
+
+	/* CAUTION!: This "rateAlpha" is value for "Instance"-Object. */
+	private	float	rateOpacity;
+	internal	float	RateOpacity
+	{
+		set
+		{
+			rateOpacity = value;
+		}
+		get
+		{
+			return(rateOpacity);
+		}
+	}
 
 	/* CAUTION!: Don't set values from Code(Read-Only in principle). Use Function"AnimationPlay". */
 	/*           "AnimationNo","CountLoopRemain" and "FrameNoInitial" are defined public for Setting on Inspector. */
@@ -281,6 +295,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);
 		InstanceDrawManagerView = Library_SpriteStudio.Utility.DrawManagerViewGetParent(gameObject);
+		rateOpacity = 1.0f;
 
 		arrayListMeshDraw = new Library_SpriteStudio.DrawManager.ArrayListMeshDraw();
 		arrayListMeshDraw.BootUp();

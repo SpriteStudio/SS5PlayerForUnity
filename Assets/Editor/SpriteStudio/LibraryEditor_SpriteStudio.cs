@@ -1131,28 +1131,40 @@ public static partial class LibraryEditor_SpriteStudio
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE;
+										}
 									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.FLIP_X : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.FLIP_X;
+										}
 									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.FLIP_Y : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.FLIP_Y;
+										}
 									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE;
+										}
 									}
 								}
 								break;
@@ -4410,7 +4422,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 				/* Solving Opacity-Rate */
 				if(0 != (FlagInherit & FlagAttributeKeyInherit.OPACITY_RATE))
-				{
+				{	/* Inhelit */
 					if(null == OpacityRate)
 					{
 						/* Create New Frame-Datas */
@@ -4429,6 +4441,13 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							OpacityRate[i] *= OpacityRateParent[i];
 						}
+					}
+				}
+				if(Library_SpriteStudio.KindParts.INSTANCE == ListParts[NodeNo].PartsKind)
+				{
+					if(0 == (ListParts[NodeNo].DataAnimation.FlagInheritance & DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE))
+					{
+						ListDataRuntime[NodeNo].AnimationDataOpacityRate = null;
 					}
 				}
 			}
@@ -5444,7 +5463,7 @@ public static partial class LibraryEditor_SpriteStudio
 						for(int i=0; i<VertexColor.Length; i++)
 						{
 #if false
-							/* MEMO: Ver.5.0-5.2 */
+							/* MEMO: SpriteStudio Ver.5.0-5.2 */
 							VertexColor[i].r = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].r , ValueEnd.VertexColor[i].r, TimeStart, TimeEnd);
 							VertexColor[i].g = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].g , ValueEnd.VertexColor[i].g, TimeStart, TimeEnd);
 							VertexColor[i].b = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].b , ValueEnd.VertexColor[i].b, TimeStart, TimeEnd);
@@ -5452,7 +5471,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 							RatePixelAlpha[i] = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
 #else
-							/* MEMO: Ver.5.2- or Ver -4.x */
+							/* MEMO: SpriteStudio Ver.5.2- or Ver -4.x */
 							float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
 							Rate = (0.0f > Rate) ? 0.0f : Rate;
 							Rate = (1.0f < Rate) ? 1.0f : Rate;
@@ -5561,13 +5580,13 @@ public static partial class LibraryEditor_SpriteStudio
 					ValueQuadrilateral ValueStart = (ValueQuadrilateral)Start;
 					ValueQuadrilateral ValueEnd = (ValueQuadrilateral)End;
 #if false
-					/* MEMO: Ver.5.0-5.2 */
+					/* MEMO: SpriteStudio Ver.5.0-5.2 */
 					for(int i=0; i<Coordinate.Length; i++)
 					{
 						Coordinate[i].Interpolate(Curve, TimeNow, ValueStart.Coordinate[i], ValueEnd.Coordinate[i], TimeStart, TimeEnd);
 					}
 #else
-					/* MEMO: Ver.5.2- or Ver -4.x */
+					/* MEMO: SpriteStudio Ver.5.2- or Ver -4.x */
 					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
 					/* MEMO: VertexCorrection is not Clampped (0.0 - 1.0). */
 

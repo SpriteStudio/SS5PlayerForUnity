@@ -1543,6 +1543,8 @@ public static class Library_SpriteStudio
 			Script_SpriteStudio_PartsRoot ScriptPartsRootSub = PartsInstance.ScriptPartsRootSub;
 			bool FlagPlayReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
 
+			ScriptPartsRootSub.RateOpacity = (0 < AnimationDataOpacityRate.Length) ? AnimationDataOpacityRate[FrameNo] : 1.0f;
+
 			if(0 >= AnimationDataInstance.Length)
 			{	/* Error ... Force Play */
 				goto UpdateInstanceData_PlayCommand_Force;
@@ -1618,31 +1620,6 @@ public static class Library_SpriteStudio
 				ScriptPartsRootSub.AnimationPause(false);
 			}
 			return(true);
-
-#if false
-			if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
-			{
-				PartsInstance.FrameNoPreviousUpdate = -1;
-			}
-			if(-1 == PartsInstance.FrameNoPreviousUpdate)
-			{
-				KeyFrame.ValueInstance.Data DataBody
-				ScriptPartsRootSub.AnimationPlay(	PartsInstance.AnimationNo,
-													1,
-													0,
-													(true == FlagPlayReverse) ? -1.0f : 1.0f,
-													Script_SpriteStudio_PartsRoot.PlayStyle.NORMAL,
-													"_start",
-													0,
-													"_end",
-													0
-												);
-				ScriptPartsRootSub.AnimationPause(false);
-				PartsInstance.FrameNoPreviousUpdate = 0;
-			}
-
-			return(true);
-#endif
 		}
 		private bool UpdateInstanceCheckRange(Script_SpriteStudio_PartsRoot PartsRoot, int FrameCountNow, int AnimationNo, KeyFrame.ValueInstance.Data DataBody)
 		{
@@ -1910,6 +1887,8 @@ public static class Library_SpriteStudio
 			MeshNow.uv = DataUV;
 
 			float RateOpacity = (0 < AnimationDataOpacityRate.Length) ? AnimationDataOpacityRate[FrameNo] : 1.0f;
+			RateOpacity *= ScriptRoot.RateOpacity;
+
 			Vector2[] DataUV2 = new Vector2[CountVertexData];
 			Color32[] DataColor32 = new Color32[CountVertexData];
 			if(0 < AnimationDataColorBlend.Length)	/* Blending-Color & Opacity*/
