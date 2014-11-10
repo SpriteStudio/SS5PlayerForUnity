@@ -15,7 +15,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	static public bool FlagConfirmOverWrite = false;
 	static public bool FlagCreateProjectFolder = false;
 
-	[MenuItem("Custom/SpriteStudio/Import SS5(sspj)")]
+	[MenuItem("Tools/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
 	{
 		EditorWindow.GetWindow<MenuItem_SpriteStudio>(true, "OPTPiX SpriteStudio Import-Settings");
@@ -64,7 +64,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		}
 	}
 
-	[MenuItem("Custom/SpriteStudio/About")]
+	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
 		string VersionText = "1.1";
