@@ -26,7 +26,6 @@ public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 	void Start()
 	{
 #if UNITY_EDITOR
-		// EditorApplication.isPlayingを見る
 		if((true == FlagAutoDevelop) || (true == EditorApplication.isPlaying))
 		{
 			PrefabLinkInstantiate();
