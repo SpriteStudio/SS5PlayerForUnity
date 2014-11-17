@@ -2312,30 +2312,32 @@ public static partial class LibraryEditor_SpriteStudio
 					/* Texture File Copy */
 					NameAsset = NamePath + "/" + NameFileBody + NameFileExtensionTexture;
 					File.FileCopyToAsset(File.AssetPathToNativePath(NameAsset), ListImage[i].FileName, true);
+
 					/* Importer Setting */
 					AssetDatabase.ImportAsset(NameAsset);
-#if false
 					TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
-					Importer.anisoLevel = 1;
-					Importer.borderMipmap = false;
-					Importer.convertToNormalmap = false;
-					Importer.fadeout = false;
-					Importer.filterMode = FilterMode.Bilinear;
-					Importer.generateCubemap = TextureImporterGenerateCubemap.None;
-					Importer.generateMipsInLinearSpace = false;
-					Importer.grayscaleToAlpha = false;
-					Importer.isReadable = false;
-					Importer.lightmap = false;
-					Importer.linearTexture = false;
-					Importer.mipmapEnabled = false;
-					Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
-					Importer.normalmap = false;
-					Importer.npotScale = TextureImporterNPOTScale.None;
-					Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
-					Importer.textureType  = TextureImporterType.Advanced;
-					Importer.wrapMode = TextureWrapMode.Clamp;
-					AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
-#endif
+					if(null != Importer)
+					{
+						Importer.anisoLevel = 1;
+						Importer.borderMipmap = false;
+						Importer.convertToNormalmap = false;
+						Importer.fadeout = false;
+						Importer.filterMode = FilterMode.Bilinear;
+						Importer.generateCubemap = TextureImporterGenerateCubemap.None;
+						Importer.generateMipsInLinearSpace = false;
+						Importer.grayscaleToAlpha = false;
+						Importer.isReadable = false;
+						Importer.lightmap = false;
+						Importer.linearTexture = false;
+						Importer.mipmapEnabled = false;
+						Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
+						Importer.normalmap = false;
+						Importer.npotScale = TextureImporterNPOTScale.None;
+						Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+						Importer.textureType  = TextureImporterType.Advanced;
+						Importer.wrapMode = TextureWrapMode.Clamp;
+						AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
+					}
 					TableTexture[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
 
 					/* Texture's Pixel-Size Check */
