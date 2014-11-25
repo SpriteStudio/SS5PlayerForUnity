@@ -109,6 +109,17 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 		}
 
+		internal static void SettingClearImport()
+		{
+			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, 4096);
+			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, 1.0f);
+			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, true);
+			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, true);
+			EditorPrefs.SetBool(PrefsKeyFlagConfirmOverWrite, true);
+			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, true);
+			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, "");
+		}
+
 		internal static void SettingGetImport(out SettingImport DataSettingImport)
 		{
 			DataSettingImport.TextureSizePixelMaximum = EditorPrefs.GetInt(PrefsKeyTextureSizePixelMaximum, 4096);
