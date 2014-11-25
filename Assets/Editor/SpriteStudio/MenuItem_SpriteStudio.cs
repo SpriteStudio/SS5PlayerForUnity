@@ -19,14 +19,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	static void OpenWindow()
 	{
 		EditorWindow.GetWindow<MenuItem_SpriteStudio>(true, "OPTPiX SpriteStudio Import-Settings");
-
-		LibraryEditor_SpriteStudio.SettingImport SettingImport;
-		LibraryEditor_SpriteStudio.Menu.SettingGetImport(out SettingImport);
-		CollisionThicknessZ = SettingImport.CollisionThicknessZ;
-		FlagAttachRigidBody = SettingImport.FlagAttachRigidBody;
-		FlagAttachControlGameObject = SettingImport.FlagAttachControlGameObject;
-		FlagConfirmOverWrite = SettingImport.FlagConfirmOverWrite;
-		FlagCreateProjectFolder = SettingImport.FlagCreateProjectFolder;
+		SettingGetImport();
 	}
     void OnGUI()
 	{
@@ -62,12 +55,28 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 
 			Close();
 		}
+		EditorGUILayout.Space();
+		if(true == GUILayout.Button("Default Configuration"))
+		{
+			LibraryEditor_SpriteStudio.Menu.SettingClearImport();
+			SettingGetImport();
+		}
+	}
+	private	static void SettingGetImport()
+	{
+		LibraryEditor_SpriteStudio.SettingImport SettingImport;
+		LibraryEditor_SpriteStudio.Menu.SettingGetImport(out SettingImport);
+		CollisionThicknessZ = SettingImport.CollisionThicknessZ;
+		FlagAttachRigidBody = SettingImport.FlagAttachRigidBody;
+		FlagAttachControlGameObject = SettingImport.FlagAttachControlGameObject;
+		FlagConfirmOverWrite = SettingImport.FlagConfirmOverWrite;
+		FlagCreateProjectFolder = SettingImport.FlagCreateProjectFolder;
 	}
 
 	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.1.2";
+		string VersionText = "1.1.5";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"

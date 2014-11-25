@@ -995,11 +995,14 @@ public static class Library_SpriteStudio
 						while(null != DataMeshInformation)
 						{
 							CombineMesh[IndexMesh].mesh = DataMeshInformation.DataMesh;
-							CombineMesh[IndexMesh].transform = MatrixCorrect * DataMeshInformation.DataTransform.localToWorldMatrix;
-							IndexMesh++;
+							if(null != DataMeshInformation.DataTransform)
+							{
+								CombineMesh[IndexMesh].transform = MatrixCorrect * DataMeshInformation.DataTransform.localToWorldMatrix;
+								IndexMesh++;
 
-							IndexVertexNow += DataMeshInformation.DataMesh.vertexCount;
-							IndexTriangleNow += DataMeshInformation.DataMesh.triangles.Length / 3;
+								IndexVertexNow += DataMeshInformation.DataMesh.vertexCount;
+								IndexTriangleNow += DataMeshInformation.DataMesh.triangles.Length / 3;
+							}
 
 							DataMeshInformation = DataMeshInformation.ChainNext;
 						}
