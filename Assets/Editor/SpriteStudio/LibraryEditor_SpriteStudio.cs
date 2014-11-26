@@ -109,6 +109,17 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 		}
 
+		internal static void SettingClearImport()
+		{
+			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, 4096);
+			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, 1.0f);
+			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, true);
+			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, true);
+			EditorPrefs.SetBool(PrefsKeyFlagConfirmOverWrite, true);
+			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, true);
+			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, "");
+		}
+
 		internal static void SettingGetImport(out SettingImport DataSettingImport)
 		{
 			DataSettingImport.TextureSizePixelMaximum = EditorPrefs.GetInt(PrefsKeyTextureSizePixelMaximum, 4096);
@@ -1131,28 +1142,40 @@ public static partial class LibraryEditor_SpriteStudio
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE;
+										}
 									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPH", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.FLIP_X : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.FLIP_X;
+										}
 									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/FLPV", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.FLIP_Y : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.FLIP_Y;
+										}
 									}
 
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/HIDE", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
 										ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
-										DataParts.DataAnimation.FlagInheritance |= (true == ValueBool) ? DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE : 0;
+										if(false == ValueBool)
+										{
+											DataParts.DataAnimation.FlagInheritance &= ~DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE;
+										}
 									}
 								}
 								break;
@@ -2304,25 +2327,28 @@ public static partial class LibraryEditor_SpriteStudio
 					/* Importer Setting */
 					AssetDatabase.ImportAsset(NameAsset);
 					TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
-					Importer.anisoLevel = 1;
-					Importer.borderMipmap = false;
-					Importer.convertToNormalmap = false;
-					Importer.fadeout = false;
-					Importer.filterMode = FilterMode.Bilinear;
-					Importer.generateCubemap = TextureImporterGenerateCubemap.None;
-					Importer.generateMipsInLinearSpace = false;
-					Importer.grayscaleToAlpha = false;
-					Importer.isReadable = false;
-					Importer.lightmap = false;
-					Importer.linearTexture = false;
-					Importer.mipmapEnabled = false;
-					Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
-					Importer.normalmap = false;
-					Importer.npotScale = TextureImporterNPOTScale.None;
-					Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
-					Importer.textureType  = TextureImporterType.Advanced;
-					Importer.wrapMode = TextureWrapMode.Clamp;
-					AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
+					if(null != Importer)
+					{
+						Importer.anisoLevel = 1;
+						Importer.borderMipmap = false;
+						Importer.convertToNormalmap = false;
+						Importer.fadeout = false;
+						Importer.filterMode = FilterMode.Bilinear;
+						Importer.generateCubemap = TextureImporterGenerateCubemap.None;
+						Importer.generateMipsInLinearSpace = false;
+						Importer.grayscaleToAlpha = false;
+						Importer.isReadable = false;
+						Importer.lightmap = false;
+						Importer.linearTexture = false;
+						Importer.mipmapEnabled = false;
+						Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
+						Importer.normalmap = false;
+						Importer.npotScale = TextureImporterNPOTScale.None;
+						Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+						Importer.textureType  = TextureImporterType.Advanced;
+						Importer.wrapMode = TextureWrapMode.Clamp;
+						AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
+					}
 					TableTexture[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
 
 					/* Texture's Pixel-Size Check */
@@ -4409,7 +4435,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 				/* Solving Opacity-Rate */
 				if(0 != (FlagInherit & FlagAttributeKeyInherit.OPACITY_RATE))
-				{
+				{	/* Inhelit */
 					if(null == OpacityRate)
 					{
 						/* Create New Frame-Datas */
@@ -4428,6 +4454,13 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							OpacityRate[i] *= OpacityRateParent[i];
 						}
+					}
+				}
+				if(Library_SpriteStudio.KindParts.INSTANCE == ListParts[NodeNo].PartsKind)
+				{
+					if(0 == (ListParts[NodeNo].DataAnimation.FlagInheritance & DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE))
+					{
+						ListDataRuntime[NodeNo].AnimationDataOpacityRate = null;
 					}
 				}
 			}
@@ -5443,7 +5476,7 @@ public static partial class LibraryEditor_SpriteStudio
 						for(int i=0; i<VertexColor.Length; i++)
 						{
 #if false
-							/* MEMO: Ver.5.0-5.2 */
+							/* MEMO: SpriteStudio Ver.5.0-5.2 */
 							VertexColor[i].r = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].r , ValueEnd.VertexColor[i].r, TimeStart, TimeEnd);
 							VertexColor[i].g = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].g , ValueEnd.VertexColor[i].g, TimeStart, TimeEnd);
 							VertexColor[i].b = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.VertexColor[i].b , ValueEnd.VertexColor[i].b, TimeStart, TimeEnd);
@@ -5451,7 +5484,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 							RatePixelAlpha[i] = Interpolation.Interpolate<float>(Curve, TimeNow, ValueStart.RatePixelAlpha[i], ValueEnd.RatePixelAlpha[i], TimeStart, TimeEnd);
 #else
-							/* MEMO: Ver.5.2- or Ver -4.x */
+							/* MEMO: SpriteStudio Ver.5.2- or Ver -4.x */
 							float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
 							Rate = (0.0f > Rate) ? 0.0f : Rate;
 							Rate = (1.0f < Rate) ? 1.0f : Rate;
@@ -5560,13 +5593,13 @@ public static partial class LibraryEditor_SpriteStudio
 					ValueQuadrilateral ValueStart = (ValueQuadrilateral)Start;
 					ValueQuadrilateral ValueEnd = (ValueQuadrilateral)End;
 #if false
-					/* MEMO: Ver.5.0-5.2 */
+					/* MEMO: SpriteStudio Ver.5.0-5.2 */
 					for(int i=0; i<Coordinate.Length; i++)
 					{
 						Coordinate[i].Interpolate(Curve, TimeNow, ValueStart.Coordinate[i], ValueEnd.Coordinate[i], TimeStart, TimeEnd);
 					}
 #else
-					/* MEMO: Ver.5.2- or Ver -4.x */
+					/* MEMO: SpriteStudio Ver.5.2- or Ver -4.x */
 					float Rate = Interpolation.Interpolate<float>(Curve, TimeNow, 0.0f, 1.0f, TimeStart, TimeEnd);
 					/* MEMO: VertexCorrection is not Clampped (0.0 - 1.0). */
 

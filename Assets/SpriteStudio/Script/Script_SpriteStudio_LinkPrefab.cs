@@ -26,7 +26,6 @@ public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 	void Start()
 	{
 #if UNITY_EDITOR
-		// EditorApplication.isPlayingを見る
 		if((true == FlagAutoDevelop) || (true == EditorApplication.isPlaying))
 		{
 			PrefabLinkInstantiate();
@@ -79,6 +78,9 @@ public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 				{
 					/* Make "Parent-Child"-Relation  */
 					Instance.gameObject.transform.parent = gameObject.transform;
+					Instance.gameObject.transform.localPosition = Vector3.zero;
+					Instance.gameObject.transform.localEulerAngles = Vector3.zero;
+					Instance.gameObject.transform.localScale = Vector3.one;
 				}
 #if UNITY_EDITOR
 				/* Break Prefab Instance */
