@@ -385,6 +385,7 @@ public static class Library_SpriteStudio
 				}
 			}
 
+#if false
 			public int FrameNoBase;
 			public Data DataBody;
 			
@@ -393,6 +394,16 @@ public static class Library_SpriteStudio
 				FrameNoBase = -1;
 				DataBody = null;
 			}
+#else
+			public int FrameNoBase;
+			public int IndexData;
+
+			public ValueCell()
+			{
+				FrameNoBase = -1;
+				IndexData = -1;
+			}
+#endif
 		}
 
 		[System.Serializable]
@@ -464,12 +475,21 @@ public static class Library_SpriteStudio
 				}
 			}
 
+#if false
 			public Data DataBody;
 			
 			public ValueUser()
 			{
 				DataBody = null;
 			}
+#else
+			public int IndexData;
+
+			public ValueUser()
+			{
+				IndexData = -1;
+			}
+#endif
 		}
 
 		[System.Serializable]
@@ -562,7 +582,7 @@ public static class Library_SpriteStudio
 					LabelEnd = "";
 				}
 			}
-
+#if false
 			public int FrameNoBase;
 			public Data DataBody;
 			
@@ -571,6 +591,16 @@ public static class Library_SpriteStudio
 				FrameNoBase = -1;
 				DataBody = null;
 			}
+#else
+			public int FrameNoBase;
+			public int IndexData;
+
+			public ValueInstance()
+			{
+				FrameNoBase = -1;
+				IndexData = -1;
+			}
+#endif
 		}
 
 		/* Dummy Datas */
@@ -1507,6 +1537,7 @@ public static class Library_SpriteStudio
 		}
 		private void UpdateUserDataFoward(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
 		{
+#if false
 			KeyFrame.ValueUser.Data UserData = null;
 			for(int i=FrameNoStart; i<=FrameNoEnd; i++)
 			{
@@ -1516,9 +1547,23 @@ public static class Library_SpriteStudio
 					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
 				}
 			}
+#else
+			int Index = -1;
+			KeyFrame.ValueUser.Data UserData = null;
+			for(int i=FrameNoStart; i<=FrameNoEnd; i++)
+			{
+				Index = ArrayData[i].IndexData;
+				UserData = ((0 <= Index) && (0 < ArrayDataBodyUser.Length)) ? ArrayDataBodyUser[Index] : KeyFrame.DummyDataUser;
+				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
+				{
+					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
+				}
+			}
+#endif
 		}
 		private void UpdateUserDataReverse(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
 		{
+#if false
 			KeyFrame.ValueUser.Data UserData = null;
 			for(int i=FrameNoStart; i>=FrameNoEnd; i--)
 			{
@@ -1528,14 +1573,36 @@ public static class Library_SpriteStudio
 					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
 				}
 			}
+#else
+			int Index = -1;
+			KeyFrame.ValueUser.Data UserData = null;
+			for(int i=FrameNoStart; i>=FrameNoEnd; i--)
+			{
+				Index = ArrayData[i].IndexData;
+				UserData = ((0 <= Index) && (0 < ArrayDataBodyUser.Length)) ? ArrayDataBodyUser[Index] : KeyFrame.DummyDataUser;
+				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
+				{
+					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
+				}
+			}
+#endif
 		}
 		private void UpdateUserDataJustNow(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNo, bool FlagTurnBackPingPong)
 		{
+#if false
 			KeyFrame.ValueUser.Data UserData = AnimationDataUser[FrameNo].DataBody;
 			if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 			{
 				ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, FrameNo, UserData, FlagTurnBackPingPong);
 			}
+#else
+			int Index = ArrayData[FrameNo].IndexData;
+			KeyFrame.ValueUser.Data UserData = ((0 <= Index) && (0 < ArrayDataBodyUser.Length)) ? ArrayDataBodyUser[Index] : KeyFrame.DummyDataUser;
+			if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
+			{
+				ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, FrameNo, UserData, FlagTurnBackPingPong);
+			}
+#endif
 		}
 
 		public bool UpdateInstanceData(int FrameNo, GameObject GameObjectNow, Script_SpriteStudio_PartsRoot ScriptRoot, Script_SpriteStudio_PartsInstance PartsInstance)
@@ -1558,7 +1625,12 @@ public static class Library_SpriteStudio
 			{
 				return(false);
 			}
+#if false
 			DataBody = AnimationDataInstance[FrameNoInstanceBase].DataBody;
+#else
+			int IndexInstanceBody = AnimationDataInstance[FrameNoInstanceBase].IndexData;
+			DataBody = ((0 <= IndexInstanceBody) && (0 < ArrayDataBodyInstance.Length)) ? ArrayDataBodyInstance[IndexInstanceBody] : KeyFrame.DummyDataInstance;
+#endif
 			FlagIndipendent = (0 != (DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(false == FlagIndipendent)
@@ -1684,14 +1756,24 @@ public static class Library_SpriteStudio
 							/* Calculate Sprite-Parts size */
 							Vector2 SizeNew = Vector2.one;
 							Vector2 PivotNew = Vector2.zero;
+#if false
+#else
+							int IndexCell = AnimationDataCell[FrameNo].IndexData;
+							KeyFrame.ValueCell.Data DataBody = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
+#endif
 							{
 								Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
 								Vector2 PivotCollide = Vector2.zero;
 								Vector2 PivotCell = Vector2.zero;
 								if(0 < AnimationDataCell.Length)
 								{
+#if false
 									RectCell = AnimationDataCell[FrameNo].DataBody.Rectangle;
 									PivotCell = AnimationDataCell[FrameNo].DataBody.Pivot;
+#else
+									RectCell = DataBody.Rectangle;
+									PivotCell = DataBody.Pivot;
+#endif
 									PivotCell.x -= (RectCell.width * 0.5f);
 									PivotCell.y -= (RectCell.height * 0.5f);
 								}
@@ -1817,6 +1899,7 @@ public static class Library_SpriteStudio
 			int	VertexCollectionIndexTableNo = 0;
 
 			/* Main-Texture Data Get */
+#if false
 			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].DataBody.TextureNo, KindBlendTarget);
 			if(null != MaterialNow)
 			{
@@ -1832,6 +1915,25 @@ public static class Library_SpriteStudio
 
 				PivotMesh = AnimationDataCell[FrameNo].DataBody.Pivot;
 			}
+#else
+			int IndexCell = AnimationDataCell[FrameNo].IndexData;
+			KeyFrame.ValueCell.Data DataBodyCell = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
+			Material MaterialNow = ScriptRoot.MaterialGet(DataBodyCell.TextureNo, KindBlendTarget);
+			if(null != MaterialNow)
+			{
+				SizeTexture.x = DataBodyCell.SizeOriginal.x;
+				SizeTexture.y = DataBodyCell.SizeOriginal.y;
+			}
+
+			/* Cell-Data Get */
+			if(0 < AnimationDataCell.Length)
+			{
+				RectCell = DataBodyCell.Rectangle;
+				PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
+
+				PivotMesh = DataBodyCell.Pivot;
+			}
+#endif
 
 			/* Disolve Flipping & Texture-Scaling */
 			if(0 < AnimationDataFlags.Length)
@@ -2011,7 +2113,13 @@ public static class Library_SpriteStudio
 			if(false == ScriptRoot.FlagHideForce)
 			{
 				float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
+#if false
 				int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].DataBody.TextureNo : -1;
+#else
+				int IndexCell = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].IndexData : -1;
+				KeyFrame.ValueCell.Data DataBodyCell = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
+				int TextureNo = DataBodyCell.TextureNo;
+#endif
 
 				MeshDataInformation.Priority = PriorityGet(Priority, ID);
 				Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;

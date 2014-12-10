@@ -3597,7 +3597,11 @@ public static partial class LibraryEditor_SpriteStudio
 						DataOriginal = (DataIntermediate.KeyFrame.DataCell)DataOriginalArray[i];
 						IndexKeyBase = DataOriginal.Time;
 						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
+#if false
 						DataOutput[IndexKeyBase].DataBody = ArrayDataBody[i];
+#else
+						DataOutput[IndexKeyBase].IndexData = i;
+#endif
 					}
 
 					/* Solving All-KeyFrame */
@@ -3620,7 +3624,11 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 
 							DataOutput[i].FrameNoBase = IndexKeyBase;
+#if false
 							DataOutput[i].DataBody = DataOutput[IndexKeyBase].DataBody;
+#else
+							DataOutput[i].IndexData = DataOutput[IndexKeyBase].IndexData;
+#endif
 						}
 						else
 						{	/* Valid Key-Data */
@@ -3645,7 +3653,11 @@ public static partial class LibraryEditor_SpriteStudio
 									break;
 								}
 								DataOutput[IndexKeyNow].FrameNoBase = IndexKeyBase;
+#if false
 								DataOutput[IndexKeyNow].DataBody = DataOutput[IndexKeyBase].DataBody;
+#else
+								DataOutput[IndexKeyNow].IndexData = DataOutput[IndexKeyBase].IndexData;
+#endif
 
 								IndexKeyNow--;
 							}
@@ -3729,7 +3741,11 @@ public static partial class LibraryEditor_SpriteStudio
 				for(int i=0; i<CountFrameFull; i++)
 				{
 					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueUser();
+#if false
 					DataOutput[i].DataBody = Library_SpriteStudio.KeyFrame.DummyDataUser;
+#else
+					DataOutput[i].IndexData = -1;
+#endif
 				}
 
 				/* Set Frames */
@@ -3743,7 +3759,11 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Copy Key-Frames */
 						DataOriginal = (DataIntermediate.KeyFrame.DataUser)DataOriginalArray[i];
 						IndexKeyFrame = DataOriginal.Time;
+#if false
 						DataOutput[IndexKeyFrame].DataBody = ArrayDataBody[i];
+#else
+						DataOutput[IndexKeyFrame].IndexData = i;
+#endif
 					}
 				}
 
@@ -3907,7 +3927,11 @@ public static partial class LibraryEditor_SpriteStudio
 						DataOriginal = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
 						IndexKeyBase = DataOriginal.Time;
 						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
+#if false
 						DataOutput[IndexKeyBase].DataBody = ArrayDataBody[i];
+#else
+						DataOutput[IndexKeyBase].IndexData = i;
+#endif
 					}
 
 					/* Solving All-KeyFrame */
@@ -3930,7 +3954,11 @@ public static partial class LibraryEditor_SpriteStudio
 							}
 
 							DataOutput[i].FrameNoBase = IndexKeyBase;
+#if false
 							DataOutput[i].DataBody = DataOutput[IndexKeyBase].DataBody;
+#else
+							DataOutput[i].IndexData = DataOutput[IndexKeyBase].IndexData;
+#endif
 						}
 						else
 						{	/* Valid Key-Data */
@@ -3955,7 +3983,11 @@ public static partial class LibraryEditor_SpriteStudio
 									break;
 								}
 								DataOutput[IndexKeyNow].FrameNoBase = IndexKeyBase;
+#if false
 								DataOutput[IndexKeyNow].DataBody = DataOutput[IndexKeyBase].DataBody;
+#else
+								DataOutput[IndexKeyNow].IndexData = DataOutput[IndexKeyBase].IndexData;
+#endif
 
 								IndexKeyNow--;
 							}
