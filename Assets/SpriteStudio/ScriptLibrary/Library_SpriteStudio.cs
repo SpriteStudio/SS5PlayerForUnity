@@ -368,6 +368,7 @@ public static class Library_SpriteStudio
 			public class  Data
 			{
 				/* Renewal, as same as ValueInstance */
+				public int FrameNoBase;
 				public int TextureNo;
 				public Rect Rectangle;
 				public Vector2 Pivot;
@@ -375,6 +376,7 @@ public static class Library_SpriteStudio
 
 				public Data()
 				{
+					FrameNoBase = -1;
 					TextureNo = -1;
 					Rectangle.x = 0.0f;
 					Rectangle.y = 0.0f;
@@ -384,26 +386,6 @@ public static class Library_SpriteStudio
 					SizeOriginal = Vector2.zero;
 				}
 			}
-
-#if false
-			public int FrameNoBase;
-			public Data DataBody;
-			
-			public ValueCell()
-			{
-				FrameNoBase = -1;
-				DataBody = null;
-			}
-#else
-			public int FrameNoBase;
-			public int IndexData;
-
-			public ValueCell()
-			{
-				FrameNoBase = -1;
-				IndexData = -1;
-			}
-#endif
 		}
 
 		[System.Serializable]
@@ -474,22 +456,6 @@ public static class Library_SpriteStudio
 					Text = "";
 				}
 			}
-
-#if false
-			public Data DataBody;
-			
-			public ValueUser()
-			{
-				DataBody = null;
-			}
-#else
-			public int IndexData;
-
-			public ValueUser()
-			{
-				IndexData = -1;
-			}
-#endif
 		}
 
 		[System.Serializable]
@@ -563,6 +529,7 @@ public static class Library_SpriteStudio
 					CLEAR = 0x00000000,
 				};
 				
+				public int FrameNoBase;
 				public FlagData Flag;
 				public int PlayCount;
 				public float RateTime;
@@ -573,6 +540,7 @@ public static class Library_SpriteStudio
 
 				public Data()
 				{
+					FrameNoBase = -1;
 					Flag = FlagData.CLEAR;
 					PlayCount = 1;
 					RateTime = 1.0f;
@@ -582,25 +550,6 @@ public static class Library_SpriteStudio
 					LabelEnd = "";
 				}
 			}
-#if false
-			public int FrameNoBase;
-			public Data DataBody;
-			
-			public ValueInstance()
-			{
-				FrameNoBase = -1;
-				DataBody = null;
-			}
-#else
-			public int FrameNoBase;
-			public int IndexData;
-
-			public ValueInstance()
-			{
-				FrameNoBase = -1;
-				IndexData = -1;
-			}
-#endif
 		}
 
 		/* Dummy Datas */
@@ -1221,9 +1170,9 @@ public static class Library_SpriteStudio
 
 		public float[] AnimationDataCollisionRadius;
 
-		public KeyFrame.ValueCell[] AnimationDataCell;
-		public KeyFrame.ValueUser[] AnimationDataUser;
-		public KeyFrame.ValueInstance[] AnimationDataInstance;
+		public int[] AnimationDataCell;
+		public int[] AnimationDataUser;
+		public int[] AnimationDataInstance;
 
 		public KeyFrame.ValueCell.Data[] ArrayDataBodyCell;
 		public KeyFrame.ValueUser.Data[] ArrayDataBodyUser;
@@ -1286,20 +1235,20 @@ public static class Library_SpriteStudio
 							if((FrameNo > FrameNoPrevious) || (0 < LoopCount))
 							{	/* Wrap-Around */
 								/* Part-Head */
-								UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, false);
+								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, false);
 							
 								/* Part-Loop */
 								for(int j=1; j<LoopCount ; j++)
 								{
-									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, ScriptRoot.FrameNoStart, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, ScriptRoot.FrameNoStart, false);
 								}
 							
 								/* Part-Tail & Just-Now */
-								UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
+								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
 							}
 							else
 							{	/* Normal */
-								UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), FrameNo, false);
+								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), FrameNo, false);
 							}
 						}
 						else
@@ -1307,20 +1256,20 @@ public static class Library_SpriteStudio
 							if((FrameNo < FrameNoPrevious) || (0 < LoopCount))
 							{	/* Wrap-Around */
 								/* Part-Head */
-								UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
+								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
 
 								/* Part-Loop */
 								for(int j=1; j<LoopCount; j++)
 								{
-									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, ScriptRoot.FrameNoEnd, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, ScriptRoot.FrameNoEnd, false);
 								}
 
 								/* Part-Tail & Just-Now */
-								UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
+								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
 							}
 							else
 							{	/* Normal */
-								UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), FrameNo, false);
+								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), FrameNo, false);
 							}
 						}
 					}
@@ -1346,42 +1295,42 @@ public static class Library_SpriteStudio
 									/* Part-Head */
 									if(true == ScriptRoot.FlagReversePrevious)
 									{	/* Reverse */
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
 									}
 									else
 									{	/* Normal */
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
 									}
 
 									/* Part-Loop */
 									LoopCount--;
 									for(int i=1; i<LoopCount; i++)
 									{
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
 									}
 
 									/* Part-Tail & Just-Now */
-									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
 								}
 								else
 								{	/* Normal */
 									if(true == FlagTurnBackPingPong)
 									{	/* Turn-Back */
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
 									}
 									else
 									{	/* Normal or Wrap-Around */
 										if(FrameNo > FrameNoPrevious)
 										{	/* Wrap-Around */
-											UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-											UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
+											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
+											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
 										}
 										else
 										{	/* Normal */
-											UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, FrameNo, false);
+											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, FrameNo, false);
 										}
 									}
 								}
@@ -1393,42 +1342,42 @@ public static class Library_SpriteStudio
 									/* Part-Head */
 									if(true == ScriptRoot.FlagReversePrevious)
 									{	/* Reverse */
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
 									}
 									else
 									{	/* Normal */
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
 									}
 
 									/* Part-Loop */
 									LoopCount--;
 									for(int i=1; i<LoopCount; i++)
 									{
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
 									}
 
 									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
 								}
 								else
 								{	/* Normal */
 									if(true == FlagTurnBackPingPong)
 									{	/* Turn-Back */
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
 									}
 									else
 									{	/* Normal or Wrap-Around */
 										if(FrameNo < FrameNoPrevious)
 										{	/* Wrap-Around */
-											UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-											UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, true);
+											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
+											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, true);
 										}
 										else
 										{	/* Normal */
-											UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, FrameNo, true);
+											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, FrameNo, true);
 										}
 									}
 								}
@@ -1443,43 +1392,43 @@ public static class Library_SpriteStudio
 									/* Part-Head */
 									if(true == ScriptRoot.FlagReversePrevious)
 									{	/* Reverse */
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
 									}
 									else
 									{	/* Normal */
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
 									}
 
 									/* Part-Loop */
 									LoopCount--;
 									for(int i=1; i<LoopCount; i++)
 									{
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
 									}
 
 									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
-									UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
 								}
 								else
 								{	/* Normal */
 									if(true == FlagTurnBackPingPong)
 									{	/* Turn-Back */
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, true);
 									}
 									else
 									{	/* Normal or Wrap-Around */
 										if(FrameNo > FrameNoPrevious)
 										{	/* Wrap-Around */
-											UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
-											UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, true);
+											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
+											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, true);
 										}
 										else
 										{	/* Normal */
-											UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, FrameNo, true);
+											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, FrameNo, true);
 										}
 									}
 								}
@@ -1491,41 +1440,41 @@ public static class Library_SpriteStudio
 									/* Part-Head */
 									if(true == ScriptRoot.FlagReversePrevious)
 									{	/* Reverse */
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
 									}
 									else
 									{	/* Normal */
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
 									}
 
 									/* Part-Loop */
 									for(int i=1; i<LoopCount; i++)
 									{
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
 									}
 
 									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
 								}
 								else
 								{	/* Normal */
 									if(true == FlagTurnBackPingPong)
 									{	/* Turn-Back */
-										UpdateUserDataReverse(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
-										UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
 									}
 									else
 									{	/* Normal or Wrap-Around */
 										if(FrameNo < FrameNoPrevious)
 										{	/* Wrap-Around */
-											UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-											UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
+											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
+											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
 										}
 										else
 										{	/* Normal */
-											UpdateUserDataFoward(AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, FrameNo, false);
+											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, FrameNo, false);
 										}
 									}
 								}
@@ -1535,74 +1484,42 @@ public static class Library_SpriteStudio
 				}
 			}
 		}
-		private void UpdateUserDataFoward(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
+		private void UpdateUserDataFoward(ref int[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
 		{
-#if false
-			KeyFrame.ValueUser.Data UserData = null;
-			for(int i=FrameNoStart; i<=FrameNoEnd; i++)
-			{
-				UserData = ArrayData[i].DataBody;
-				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-				{
-					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
-				}
-			}
-#else
 			int Index = -1;
 			KeyFrame.ValueUser.Data UserData = null;
 			for(int i=FrameNoStart; i<=FrameNoEnd; i++)
 			{
-				Index = ArrayData[i].IndexData;
+				Index = ArrayData[i];
 				UserData = ((0 <= Index) && (0 < ArrayDataBodyUser.Length)) ? ArrayDataBodyUser[Index] : KeyFrame.DummyDataUser;
 				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 				{
 					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
 				}
 			}
-#endif
 		}
-		private void UpdateUserDataReverse(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
+		private void UpdateUserDataReverse(ref int[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNoStart, int FrameNoEnd, bool FlagTurnBackPingPong)
 		{
-#if false
-			KeyFrame.ValueUser.Data UserData = null;
-			for(int i=FrameNoStart; i>=FrameNoEnd; i--)
-			{
-				UserData = ArrayData[i].DataBody;
-				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-				{
-					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
-				}
-			}
-#else
 			int Index = -1;
 			KeyFrame.ValueUser.Data UserData = null;
 			for(int i=FrameNoStart; i>=FrameNoEnd; i--)
 			{
-				Index = ArrayData[i].IndexData;
+				Index = ArrayData[i];
 				UserData = ((0 <= Index) && (0 < ArrayDataBodyUser.Length)) ? ArrayDataBodyUser[Index] : KeyFrame.DummyDataUser;
 				if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 				{
 					ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, i, UserData, FlagTurnBackPingPong);
 				}
 			}
-#endif
 		}
-		private void UpdateUserDataJustNow(KeyFrame.ValueUser[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNo, bool FlagTurnBackPingPong)
+		private void UpdateUserDataJustNow(ref int[] ArrayData, Script_SpriteStudio_PartsRoot ScriptRoot, GameObject InstanceGameObject, int FrameNo, bool FlagTurnBackPingPong)
 		{
-#if false
-			KeyFrame.ValueUser.Data UserData = AnimationDataUser[FrameNo].DataBody;
-			if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
-			{
-				ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, FrameNo, UserData, FlagTurnBackPingPong);
-			}
-#else
-			int Index = ArrayData[FrameNo].IndexData;
+			int Index = ArrayData[FrameNo];
 			KeyFrame.ValueUser.Data UserData = ((0 <= Index) && (0 < ArrayDataBodyUser.Length)) ? ArrayDataBodyUser[Index] : KeyFrame.DummyDataUser;
 			if(Library_SpriteStudio.KeyFrame.ValueUser.Data.FlagData.CLEAR != UserData.Flag)
 			{
 				ScriptRoot.CallBackExecUserData(InstanceGameObject.name, this, FrameNo, UserData, FlagTurnBackPingPong);
 			}
-#endif
 		}
 
 		public bool UpdateInstanceData(int FrameNo, GameObject GameObjectNow, Script_SpriteStudio_PartsRoot ScriptRoot, Script_SpriteStudio_PartsInstance PartsInstance)
@@ -1620,17 +1537,14 @@ public static class Library_SpriteStudio
 				goto UpdateInstanceData_PlayCommand_Force;
 			}
 
-			FrameNoInstanceBase = AnimationDataInstance[FrameNo].FrameNoBase;
+			int IndexInstanceBody = AnimationDataInstance[FrameNo];
+			DataBody = ((0 <= IndexInstanceBody) && (0 < ArrayDataBodyInstance.Length)) ? ArrayDataBodyInstance[IndexInstanceBody] : KeyFrame.DummyDataInstance;
+			FrameNoInstanceBase = DataBody.FrameNoBase;
 			if(-1 == FrameNoInstanceBase)
 			{
 				return(false);
 			}
-#if false
-			DataBody = AnimationDataInstance[FrameNoInstanceBase].DataBody;
-#else
-			int IndexInstanceBody = AnimationDataInstance[FrameNoInstanceBase].IndexData;
-			DataBody = ((0 <= IndexInstanceBody) && (0 < ArrayDataBodyInstance.Length)) ? ArrayDataBodyInstance[IndexInstanceBody] : KeyFrame.DummyDataInstance;
-#endif
+
 			FlagIndipendent = (0 != (DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(false == FlagIndipendent)
@@ -1756,24 +1670,16 @@ public static class Library_SpriteStudio
 							/* Calculate Sprite-Parts size */
 							Vector2 SizeNew = Vector2.one;
 							Vector2 PivotNew = Vector2.zero;
-#if false
-#else
-							int IndexCell = AnimationDataCell[FrameNo].IndexData;
+							int IndexCell = AnimationDataCell[FrameNo];
 							KeyFrame.ValueCell.Data DataBody = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
-#endif
 							{
 								Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
 								Vector2 PivotCollide = Vector2.zero;
 								Vector2 PivotCell = Vector2.zero;
 								if(0 < AnimationDataCell.Length)
 								{
-#if false
-									RectCell = AnimationDataCell[FrameNo].DataBody.Rectangle;
-									PivotCell = AnimationDataCell[FrameNo].DataBody.Pivot;
-#else
 									RectCell = DataBody.Rectangle;
 									PivotCell = DataBody.Pivot;
-#endif
 									PivotCell.x -= (RectCell.width * 0.5f);
 									PivotCell.y -= (RectCell.height * 0.5f);
 								}
@@ -1899,24 +1805,7 @@ public static class Library_SpriteStudio
 			int	VertexCollectionIndexTableNo = 0;
 
 			/* Main-Texture Data Get */
-#if false
-			Material MaterialNow = ScriptRoot.MaterialGet(AnimationDataCell[FrameNo].DataBody.TextureNo, KindBlendTarget);
-			if(null != MaterialNow)
-			{
-				SizeTexture.x = AnimationDataCell[FrameNo].DataBody.SizeOriginal.x;
-				SizeTexture.y = AnimationDataCell[FrameNo].DataBody.SizeOriginal.y;
-			}
-
-			/* Cell-Data Get */
-			if(0 < AnimationDataCell.Length)
-			{
-				RectCell = AnimationDataCell[FrameNo].DataBody.Rectangle;
-				PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
-
-				PivotMesh = AnimationDataCell[FrameNo].DataBody.Pivot;
-			}
-#else
-			int IndexCell = AnimationDataCell[FrameNo].IndexData;
+			int IndexCell = AnimationDataCell[FrameNo];
 			KeyFrame.ValueCell.Data DataBodyCell = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
 			Material MaterialNow = ScriptRoot.MaterialGet(DataBodyCell.TextureNo, KindBlendTarget);
 			if(null != MaterialNow)
@@ -1933,7 +1822,6 @@ public static class Library_SpriteStudio
 
 				PivotMesh = DataBodyCell.Pivot;
 			}
-#endif
 
 			/* Disolve Flipping & Texture-Scaling */
 			if(0 < AnimationDataFlags.Length)
@@ -2113,28 +2001,20 @@ public static class Library_SpriteStudio
 			if(false == ScriptRoot.FlagHideForce)
 			{
 				float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
-#if false
-				int TextureNo = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].DataBody.TextureNo : -1;
-#else
-				int IndexCell = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo].IndexData : -1;
+				int IndexCell = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo] : -1;
 				KeyFrame.ValueCell.Data DataBodyCell = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
 				int TextureNo = DataBodyCell.TextureNo;
-#endif
 
 				MeshDataInformation.Priority = PriorityGet(Priority, ID);
 				Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
 				if(null != ArrayListMeshDraw)
 				{
-#if false
-					ArrayListMeshDraw.MeshAdd(ScriptRoot.MaterialGet(TextureNo, KindBlendTarget), MeshDataInformation);
-#else
 					Material MaterialNow = ScriptRoot.MaterialGet(TextureNo, KindBlendTarget);
 					if(null == MaterialNow)
 					{	/* has Illegal-Material */
 						return;
 					}
 					ArrayListMeshDraw.MeshAdd(MaterialNow, MeshDataInformation);
-#endif
 				}
 			}
 		}

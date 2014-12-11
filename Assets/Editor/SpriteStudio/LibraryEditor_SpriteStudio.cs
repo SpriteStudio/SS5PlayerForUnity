@@ -3533,10 +3533,10 @@ public static partial class LibraryEditor_SpriteStudio
 				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.RD] = Data.Coordinate[2].Point;
 				DataOutput.Coordinate[(int)Library_SpriteStudio.VertexNo.LD] = Data.Coordinate[3].Point;
 			}
-			private Library_SpriteStudio.KeyFrame.ValueCell[] AnimationDataConvertRuntimeCell(	ref Library_SpriteStudio.KeyFrame.ValueCell.Data[] ArrayDataBody,
-																								ArrayList DataOriginalArray,
-																								Material[] TableMaterial
-																							)
+			private int[] AnimationDataConvertRuntimeCell(	ref Library_SpriteStudio.KeyFrame.ValueCell.Data[] ArrayDataBody,
+															ArrayList DataOriginalArray,
+															Material[] TableMaterial
+														)
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
@@ -3555,6 +3555,7 @@ public static partial class LibraryEditor_SpriteStudio
 					ArrayDataBody[i] = new Library_SpriteStudio.KeyFrame.ValueCell.Data();
 						
 					/* Copy Data-Body */ 
+					ArrayDataBody[i].FrameNoBase = DataOriginal.Time;
 					int TextureNo = DataOriginal.Value.TextureNo;
 					ArrayDataBody[i].TextureNo = TextureNo;
 					ArrayDataBody[i].Rectangle.x = DataOriginal.Value.Rectangle.x;
@@ -3575,11 +3576,17 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Create & Initialize All Frames */
-				Library_SpriteStudio.KeyFrame.ValueCell[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueCell[CountFrameFull];
+				bool[] FlagSetData = new bool[CountFrameFull];
 				for(int i=0; i<CountFrameFull; i++)
 				{
-					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueCell();
+					FlagSetData[i] = false;
 				}
+				int[] DataOutput = new int[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = -1;
+				}
+
 				/* Set Frames */
 				int CountKeyFrame;
 				int IndexKeyBase;
@@ -3596,12 +3603,8 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Create Data-Body */
 						DataOriginal = (DataIntermediate.KeyFrame.DataCell)DataOriginalArray[i];
 						IndexKeyBase = DataOriginal.Time;
-						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
-#if false
-						DataOutput[IndexKeyBase].DataBody = ArrayDataBody[i];
-#else
-						DataOutput[IndexKeyBase].IndexData = i;
-#endif
+						DataOutput[IndexKeyBase] = i;
+						FlagSetData[IndexKeyBase] = true;
 					}
 
 					/* Solving All-KeyFrame */
@@ -3616,19 +3619,14 @@ public static partial class LibraryEditor_SpriteStudio
 							continue;
 						}
 						
-						if(-1 == DataOutput[i].FrameNoBase)
+						if(false == FlagSetData[i])
 						{	/* Not-Solved Frame */
 							if(-1 == IndexKeyBase)
 							{	/* Before First Valid-KeyData */
 								continue;
 							}
-
-							DataOutput[i].FrameNoBase = IndexKeyBase;
-#if false
-							DataOutput[i].DataBody = DataOutput[IndexKeyBase].DataBody;
-#else
-							DataOutput[i].IndexData = DataOutput[IndexKeyBase].IndexData;
-#endif
+							DataOutput[i] = DataOutput[IndexKeyBase];
+							FlagSetData[i] = true;
 						}
 						else
 						{	/* Valid Key-Data */
@@ -3642,7 +3640,7 @@ public static partial class LibraryEditor_SpriteStudio
 									break;
 								}
 								
-								if(-1 != DataOutput[IndexKeyNow].FrameNoBase)
+								if(true == FlagSetData[IndexKeyNow])
 								{	/* Already Solved */
 									break;
 								}
@@ -3652,12 +3650,8 @@ public static partial class LibraryEditor_SpriteStudio
 								{	/**/
 									break;
 								}
-								DataOutput[IndexKeyNow].FrameNoBase = IndexKeyBase;
-#if false
-								DataOutput[IndexKeyNow].DataBody = DataOutput[IndexKeyBase].DataBody;
-#else
-								DataOutput[IndexKeyNow].IndexData = DataOutput[IndexKeyBase].IndexData;
-#endif
+								DataOutput[IndexKeyNow] = DataOutput[IndexKeyBase];
+								FlagSetData[IndexKeyNow] = true;
 
 								IndexKeyNow--;
 							}
@@ -3666,9 +3660,9 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 				return(DataOutput);
 			}
-			private Library_SpriteStudio.KeyFrame.ValueUser[] AnimationDataConvertRuntimeUserData(	ref Library_SpriteStudio.KeyFrame.ValueUser.Data[] ArrayDataBody,
-																									ArrayList DataOriginalArray
-																								)
+			private int[] AnimationDataConvertRuntimeUserData(	ref Library_SpriteStudio.KeyFrame.ValueUser.Data[] ArrayDataBody,
+																ArrayList DataOriginalArray
+															)
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
@@ -3737,15 +3731,10 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Create & Initialize All Frames */
-				Library_SpriteStudio.KeyFrame.ValueUser[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueUser[CountFrameFull];
+				int[] DataOutput = new int[CountFrameFull];
 				for(int i=0; i<CountFrameFull; i++)
 				{
-					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueUser();
-#if false
-					DataOutput[i].DataBody = Library_SpriteStudio.KeyFrame.DummyDataUser;
-#else
-					DataOutput[i].IndexData = -1;
-#endif
+					DataOutput[i] = -1;
 				}
 
 				/* Set Frames */
@@ -3759,63 +3748,19 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Copy Key-Frames */
 						DataOriginal = (DataIntermediate.KeyFrame.DataUser)DataOriginalArray[i];
 						IndexKeyFrame = DataOriginal.Time;
-#if false
-						DataOutput[IndexKeyFrame].DataBody = ArrayDataBody[i];
-#else
-						DataOutput[IndexKeyFrame].IndexData = i;
-#endif
+						DataOutput[IndexKeyFrame] = i;
 					}
 				}
 
 				return(DataOutput);
 			}
-			private Library_SpriteStudio.KeyFrame.ValueInstance[] AnimationDataConvertRuntimeInstance(	ref Library_SpriteStudio.KeyFrame.ValueInstance.Data[] ArrayDataBody,
-																										ArrayList DataOriginalArray
-																									)
+			private int[] AnimationDataConvertRuntimeInstance(	ref Library_SpriteStudio.KeyFrame.ValueInstance.Data[] ArrayDataBody,
+																ArrayList DataOriginalArray
+															)
 			{
 				if(null == DataOriginalArray)
 				{	/* Attribute doesn't exist */
-#if false
-					/* Create Default KeyFrame Datas */
-					DataOriginalArray = new ArrayList();
-					DataIntermediate.KeyFrame.DataInstance DataDummy = null;
-
-					bool FlagFirstFrame = true;
-					for(int i=0; i<CountFrameFull; i++)
-					{
-						if(-1 == IndexAnimationGetFrameNo(i))
-						{
-							FlagFirstFrame = true;
-						}
-						else
-						{
-							if(true == FlagFirstFrame)
-							{
-								DataIntermediate.KeyFrame.ValueInstance Value = new DataIntermediate.KeyFrame.ValueInstance();
-								Value.Flag = LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.CLEAR;
-								Value.Flag |= LibraryEditor_SpriteStudio.DataIntermediate.KeyFrame.ValueInstance.FlagData.INDEPENDENT;
-								Value.LabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
-								Value.OffsetStart = 0;
-								Value.LabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
-								Value.OffsetEnd = 0;
-								Value.PlayCount = 0;
-								Value.RateTime = 1.0f;
-
-								DataDummy = new DataIntermediate.KeyFrame.DataInstance();
-								DataDummy.Time = i;
-								DataDummy.Kind = LibraryEditor_SpriteStudio.DataIntermediate.KindAttributeKey.INSTANCE;
-								DataDummy.Curve = null;
-								DataDummy.ObjectValue = Value;
-
-								DataOriginalArray.Add(DataDummy);
-
-								FlagFirstFrame = false;
-							}
-						}
-					}
-#else
 					return(null);
-#endif
 				}
 				else
 				{	/* Make up a Shortfall */
@@ -3889,7 +3834,8 @@ public static partial class LibraryEditor_SpriteStudio
 					DataOriginal = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
 					ArrayDataBody[i] = new Library_SpriteStudio.KeyFrame.ValueInstance.Data();
 
-					/* Copy Data-Body */ 
+					/* Copy Data-Body */
+					ArrayDataBody[i].FrameNoBase = DataOriginal.Time;
 					ArrayDataBody[i].Flag = Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.CLEAR;
 					ArrayDataBody[i].Flag |= (true == DataOriginal.Value.IsPingPong) ? Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.PINGPONG : 0;
 					ArrayDataBody[i].Flag |= (true == DataOriginal.Value.IsIndependent) ? Library_SpriteStudio.KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT : 0;
@@ -3904,10 +3850,15 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Create & Initialize All Frames */
-				Library_SpriteStudio.KeyFrame.ValueInstance[] DataOutput = new Library_SpriteStudio.KeyFrame.ValueInstance[CountFrameFull];
+				bool[] FlagSetData = new bool[CountFrameFull];
 				for(int i=0; i<CountFrameFull; i++)
 				{
-					DataOutput[i] = new Library_SpriteStudio.KeyFrame.ValueInstance();
+					FlagSetData[i] = false;
+				}
+				int[] DataOutput = new int[CountFrameFull];
+				for(int i=0; i<CountFrameFull; i++)
+				{
+					DataOutput[i] = -1;
 				}
 
 				/* Set Frames */
@@ -3926,12 +3877,8 @@ public static partial class LibraryEditor_SpriteStudio
 						/* Create Data-Body */
 						DataOriginal = (DataIntermediate.KeyFrame.DataInstance)DataOriginalArray[i];
 						IndexKeyBase = DataOriginal.Time;
-						DataOutput[IndexKeyBase].FrameNoBase = IndexKeyBase;
-#if false
-						DataOutput[IndexKeyBase].DataBody = ArrayDataBody[i];
-#else
-						DataOutput[IndexKeyBase].IndexData = i;
-#endif
+						DataOutput[IndexKeyBase] = i;
+						FlagSetData[IndexKeyBase] = true;
 					}
 
 					/* Solving All-KeyFrame */
@@ -3945,20 +3892,16 @@ public static partial class LibraryEditor_SpriteStudio
 							IndexKeyBase = -1;	/* Clear Base-Key */
 							continue;
 						}
-						
-						if(-1 == DataOutput[i].FrameNoBase)
+
+						if(false == FlagSetData[i])
 						{	/* Not-Solved Frame */
 							if(-1 == IndexKeyBase)
 							{	/* Before First Valid-KeyData */
 								continue;
 							}
 
-							DataOutput[i].FrameNoBase = IndexKeyBase;
-#if false
-							DataOutput[i].DataBody = DataOutput[IndexKeyBase].DataBody;
-#else
-							DataOutput[i].IndexData = DataOutput[IndexKeyBase].IndexData;
-#endif
+							DataOutput[i] = DataOutput[IndexKeyBase];
+							FlagSetData[i] = true;
 						}
 						else
 						{	/* Valid Key-Data */
@@ -3971,8 +3914,8 @@ public static partial class LibraryEditor_SpriteStudio
 								{	/* Data Range Over */
 									break;
 								}
-								
-								if(-1 != DataOutput[IndexKeyNow].FrameNoBase)
+
+								if(true == FlagSetData[IndexKeyNow])
 								{	/* Already Solved */
 									break;
 								}
@@ -3982,12 +3925,8 @@ public static partial class LibraryEditor_SpriteStudio
 								{
 									break;
 								}
-								DataOutput[IndexKeyNow].FrameNoBase = IndexKeyBase;
-#if false
-								DataOutput[IndexKeyNow].DataBody = DataOutput[IndexKeyBase].DataBody;
-#else
-								DataOutput[IndexKeyNow].IndexData = DataOutput[IndexKeyBase].IndexData;
-#endif
+								DataOutput[IndexKeyNow] = DataOutput[IndexKeyBase];
+								FlagSetData[IndexKeyNow] = true;
 
 								IndexKeyNow--;
 							}
