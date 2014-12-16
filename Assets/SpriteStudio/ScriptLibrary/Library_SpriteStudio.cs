@@ -1225,30 +1225,34 @@ public static class Library_SpriteStudio
 				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.DECODE_USERDATA))
 				{
 					int LoopCount = ScriptRoot.CountLoopThisTime;
-					if(false == ScriptRoot.StatusStylePigpong)
-					{	/* Play One-Way */
-						int FrameNoPrevious = (-1 == ScriptRoot.FrameNoPrevious) ? FrameNo : ScriptRoot.FrameNoPrevious;
+					bool FlagFirst = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAY_FIRST)) ? true : false;
+					bool FlagReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
+					int FrameNoPrevious = (true == FlagFirst) ? ScriptRoot.FrameNoStart : (ScriptRoot.FrameNoPrevious + ((true == FlagReverse) ? -1 : 1));
+					int FrameNoStart = ScriptRoot.FrameNoStart;
+					int FrameNoEnd = ScriptRoot.FrameNoEnd;
 
+					if(false == ScriptRoot.FlagStylePingpong)
+					{	/* Play One-Way */
 						/* Decoding Skipped Frame */
-						if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
+						if(true == FlagReverse)
 						{	/* backwards */
 							if((FrameNo > FrameNoPrevious) || (0 < LoopCount))
 							{	/* Wrap-Around */
 								/* Part-Head */
-								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), ScriptRoot.FrameNoStart, false);
-							
+								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoStart, false);
+
 								/* Part-Loop */
 								for(int j=1; j<LoopCount ; j++)
 								{
-									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, ScriptRoot.FrameNoStart, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNoStart, false);
 								}
 							
 								/* Part-Tail & Just-Now */
-								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
+								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNo, false);
 							}
 							else
 							{	/* Normal */
-								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious - 1), FrameNo, false);
+								UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNo, false);
 							}
 						}
 						else
@@ -1256,20 +1260,20 @@ public static class Library_SpriteStudio
 							if((FrameNo < FrameNoPrevious) || (0 < LoopCount))
 							{	/* Wrap-Around */
 								/* Part-Head */
-								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), ScriptRoot.FrameNoEnd, false);
+								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoEnd, false);
 
 								/* Part-Loop */
 								for(int j=1; j<LoopCount; j++)
 								{
-									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, ScriptRoot.FrameNoEnd, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, false);
 								}
 
 								/* Part-Tail & Just-Now */
-								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
+								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNo, false);
 							}
 							else
 							{	/* Normal */
-								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, (FrameNoPrevious + 1), FrameNo, false);
+								UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNo, false);
 							}
 						}
 					}
@@ -1277,205 +1281,111 @@ public static class Library_SpriteStudio
 					{	/* Play PingPong */
 						bool FlagStyleReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.STYLE_REVERSE)) ? true : false;
 						bool FlagTurnBackPingPong = ScriptRoot.FlagTurnBackPingPong;
-						int FrameNoStart_Next = ScriptRoot.FrameNoStart + 1;
-						int FrameNoEnd_Before = ScriptRoot.FrameNoEnd - 1;
-						int FrameNoPrevious = (-1 == ScriptRoot.FrameNoPrevious) ? FrameNo : ScriptRoot.FrameNoPrevious;
-						int FrameNoPrevious_After = FrameNoPrevious + 1;
-						int FrameNoPrevious_Before = FrameNoPrevious - 1;
-						FrameNoPrevious_After = (FrameNoPrevious_After > ScriptRoot.FrameNoEnd) ? ScriptRoot.FrameNoEnd : FrameNoPrevious_After;
-						FrameNoPrevious_Before = (FrameNoPrevious_Before < ScriptRoot.FrameNoStart) ? ScriptRoot.FrameNoStart : FrameNoPrevious_Before;
 
 						/* Decoding Skipped Frame */
 						if(true == FlagStyleReverse)
-						{	/* Style-Reverse */
-							if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
-							{	/* Play-backward */
-								if(0 < LoopCount)
-								{	/* Loop */
-									/* Part-Head */
-									if(true == ScriptRoot.FlagReversePrevious)
-									{	/* Reverse */
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
-									}
-									else
-									{	/* Normal */
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-									}
+						{	/* Reverse */
+							if(0 < LoopCount)
+							{
+								/* Part-Head */
+								/* MEMO: Loop & Turn-Back ... Always "Foward to Reverse" */
+								FrameNoPrevious = ScriptRoot.FrameNoPrevious + 1;	/* Force */
+								if(FrameNoPrevious <= FrameNoEnd)
+								{
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoEnd, true);
+								}
+								/* MEMO: Need "else (Foward to Reverse)" */
 
-									/* Part-Loop */
-									LoopCount--;
-									for(int i=1; i<LoopCount; i++)
-									{
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
-									}
-
-									/* Part-Tail & Just-Now */
-									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
+								/* Part-Loop */
+								LoopCount--;
+								for(int i=1; i<LoopCount; i++)
+								{
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNoStart, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, true);
+								}
+								
+								/* Part-Tail & Just-Now */
+								if(true == FlagReverse)
+								{	/* Now-Reverse */
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNo, false);
 								}
 								else
-								{	/* Normal */
-									if(true == FlagTurnBackPingPong)
-									{	/* Turn-Back */
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, false);
-									}
-									else
-									{	/* Normal or Wrap-Around */
-										if(FrameNo > FrameNoPrevious)
-										{	/* Wrap-Around */
-											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, false);
-										}
-										else
-										{	/* Normal */
-											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, FrameNo, false);
-										}
-									}
+								{	/* Now-Foward */
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNoStart, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNo, true);
 								}
 							}
 							else
-							{	/* Play-foward */
-								if(0 < LoopCount)
-								{	/* Loop */
-									/* Part-Head */
-									if(true == ScriptRoot.FlagReversePrevious)
-									{	/* Reverse */
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-									}
-									else
-									{	/* Normal */
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
-									}
-
-									/* Part-Loop */
-									LoopCount--;
-									for(int i=1; i<LoopCount; i++)
-									{
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, true);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, false);
-									}
-
-									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
+							{	/* Normal */
+								if(true == FlagTurnBackPingPong)
+								{	/* Turn-Back */
+									/* MEMO: No-Loop & Turn-Back ... Always "Reverse to Foward" */
+									FrameNoPrevious = ScriptRoot.FrameNoPrevious - 1;	/* Force */
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoStart, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNo, true);
 								}
 								else
 								{	/* Normal */
-									if(true == FlagTurnBackPingPong)
-									{	/* Turn-Back */
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, false);
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
+									if(true == FlagReverse)
+									{	/* Reverse */
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNo, false);
 									}
 									else
-									{	/* Normal or Wrap-Around */
-										if(FrameNo < FrameNoPrevious)
-										{	/* Wrap-Around */
-											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, true);
-											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, true);
-										}
-										else
-										{	/* Normal */
-											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, FrameNo, true);
-										}
+									{	/* Foward */
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNo, true);
 									}
 								}
 							}
 						}
 						else
-						{	/* Style-Normal */
-							if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE))
-							{	/* Play-backward */
-								if(0 < LoopCount)
-								{	/* Loop */
-									/* Part-Head */
-									if(true == ScriptRoot.FlagReversePrevious)
-									{	/* Reverse */
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
-									}
-									else
-									{	/* Normal */
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
-									}
+						{	/* Normal */
+							if(0 < LoopCount)
+							{
+								/* Part-Head */
+								FrameNoPrevious = ScriptRoot.FrameNoPrevious - 1;	/* Force */
+								if(FrameNoPrevious >= FrameNoStart)
+								{
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoStart, true);
+								}
+								/* MEMO: Need "else (Foward to Reverse)" */
 
-									/* Part-Loop */
-									LoopCount--;
-									for(int i=1; i<LoopCount; i++)
-									{
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
-									}
-
-									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
-									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, true);
+								/* Part-Loop */
+								LoopCount--;
+								for(int i=1; i<LoopCount; i++)
+								{
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNoStart, true);
+								}
+									
+								/* Part-Tail & Just-Now */
+								if(true == FlagReverse)
+								{	/* Now-Reverse */
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNo, true);
 								}
 								else
-								{	/* Normal */
-									if(true == FlagTurnBackPingPong)
-									{	/* Turn-Back */
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, FrameNo, true);
-									}
-									else
-									{	/* Normal or Wrap-Around */
-										if(FrameNo > FrameNoPrevious)
-										{	/* Wrap-Around */
-											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
-											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoEnd, FrameNo, true);
-										}
-										else
-										{	/* Normal */
-											UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, FrameNo, true);
-										}
-									}
+								{	/* Now-Foward */
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNo, false);
 								}
 							}
 							else
-							{	/* Play-foward */
-								if(0 < LoopCount)
-								{	/* Loop */
-									/* Part-Head */
-									if(true == ScriptRoot.FlagReversePrevious)
-									{	/* Reverse */
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
-									}
-									else
-									{	/* Normal */
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
-									}
-
-									/* Part-Loop */
-									for(int i=1; i<LoopCount; i++)
-									{
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, ScriptRoot.FrameNoEnd, false);
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd_Before, ScriptRoot.FrameNoStart, true);
-									}
-
-									/* Part-Tail & Just-Now */
-									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
+							{	/* Normal */
+								if(true == FlagTurnBackPingPong)
+								{	/* Turn-Back */
+									/* MEMO: No-Loop & Turn-Back ... Always "Foward to Revese" */
+									FrameNoPrevious = ScriptRoot.FrameNoPrevious + 1;	/* Force */
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoEnd, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNo, true);
 								}
 								else
 								{	/* Normal */
-									if(true == FlagTurnBackPingPong)
-									{	/* Turn-Back */
-										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_Before, ScriptRoot.FrameNoStart, true);
-										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart_Next, FrameNo, false);
+									if(true == FlagReverse)
+									{	/* Reverse */
+										UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNo, true);
 									}
 									else
-									{	/* Normal or Wrap-Around */
-										if(FrameNo < FrameNoPrevious)
-										{	/* Wrap-Around */
-											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, ScriptRoot.FrameNoEnd, false);
-											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, ScriptRoot.FrameNoStart, FrameNo, false);
-										}
-										else
-										{	/* Normal */
-											UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious_After, FrameNo, false);
-										}
+									{	/* Foward */
+										UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNo, false);
 									}
 								}
 							}

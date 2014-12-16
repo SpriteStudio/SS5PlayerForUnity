@@ -273,8 +273,8 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 			}
 
 			EditorGUILayout.Space();
-			Data.StatusStylePigpong = EditorGUILayout.Toggle("Play-Pingpong", Data.StatusStylePigpong);
-			
+			Data.FlagStylePingpong = EditorGUILayout.Toggle("Play-Pingpong", Data.FlagStylePingpong);
+
 			EditorGUILayout.Space();
 			Data.RateTimeAnimation = EditorGUILayout.FloatField("Rate Time-Progress", Data.RateTimeAnimation);
 			EditorGUILayout.LabelField("(set Negative-Value, Play Backwards.)");
@@ -290,7 +290,7 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 				Data.FrameNoInitial = 0;
 				Data.RateTimeAnimation = 1.0f;
 				Data.PlayTimes = 0;
-				Data.StatusStylePigpong = false;
+				Data.FlagStylePingpong = false;
 				Data.NameLabelStart = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultStart);
 				Data.OffsetFrameStart = 0;
 				Data.NameLabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
@@ -300,7 +300,8 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 
 			EditorGUI.indentLevel = LevelIndent;
 
-			if(true == FlagUpdate){
+			if(true == FlagUpdate)
+			{
 				Data.AnimationPlay();
 			}
 		}

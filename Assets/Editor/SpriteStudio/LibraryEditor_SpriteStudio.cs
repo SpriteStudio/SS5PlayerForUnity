@@ -2179,7 +2179,6 @@ public static partial class LibraryEditor_SpriteStudio
 							PartsRoot.OffsetFrameStart = 0;
 							PartsRoot.NameLabelEnd = string.Copy(Library_SpriteStudio.AnimationInformationPlay.LabelDefaultEnd);
 							PartsRoot.OffsetFrameEnd = 0;
-							PartsRoot.Status = Script_SpriteStudio_PartsRoot.BitStatus.CLEAR;
 						}
 						break;
 
