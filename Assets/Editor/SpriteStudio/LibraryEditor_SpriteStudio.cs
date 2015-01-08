@@ -150,7 +150,9 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, Name64);
 		}
 
-		public static void ImportSSPJ(SettingImport DataSettingImport)
+		/* Caution: "NameInputFullPathSSPJ" must be Full-Path Name. */
+		/* Caution: "NameOutputAssetFolder" must be Relative-Path Name("Assets/"). */
+		public static bool ImportSSPJ(SettingImport DataSettingImport, string NameInputFullPathSSPJ="", string NameOutputAssetFolderBase="")
 		{
 			/* Prefs Save */
 			SettingSetImport(ref DataSettingImport);
@@ -159,15 +161,30 @@ public static partial class LibraryEditor_SpriteStudio
 			string NameDirectory = "";
 			string NameFileBody = "";
 			string NameFileExtension = "";
-			if(false == File.FileNameGetFileDialog(	out NameDirectory,
-													out NameFileBody,
-													out NameFileExtension,
-													"Select Importing SSPJ-File",
-													"sspj"
-													)
-				)
-			{	/* Cancelled */
-				return;
+			if(true == String.IsNullOrEmpty(NameInputFullPathSSPJ))
+			{	/* Select */
+				if(false == File.FileNameGetFileDialog(	out NameDirectory,
+														out NameFileBody,
+														out NameFileExtension,
+														"Select Importing SSPJ-File",
+														"sspj"
+														)
+					)
+				{	/* Cancelled */
+					return(false);
+				}
+			}
+			else
+			{	/* Force */
+				if(false == System.IO.File.Exists(NameInputFullPathSSPJ))
+				{	/* Not Found */
+					Debug.LogError("SSPJ Importing Error: File Not Found [" + NameInputFullPathSSPJ + "]");
+					return(false);
+				}
+
+				NameDirectory = Path.GetDirectoryName(NameInputFullPathSSPJ);
+				NameFileBody = Path.GetFileNameWithoutExtension(NameInputFullPathSSPJ);
+				NameFileExtension = Path.GetExtension(NameInputFullPathSSPJ);
 			}
 
 			/* Initialize */
@@ -232,11 +249,25 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			/* Importing Base-Folder Get & Create Destination-Folders */
-			string NamePathBase = AssetUtility.NamePathGetSelectNow(null);
-			if( true == String.IsNullOrEmpty(NamePathBase) )
-			{
-				Debug.LogError("SSPJ Importing Error: Please select the folder you want to store in before import.");
-				goto Menu_ImportSSPJ_ErrorEnd;
+			string NamePathBase = "";
+			if(true == String.IsNullOrEmpty(NameOutputAssetFolderBase))
+			{	/* Select */
+				NamePathBase = AssetUtility.NamePathGetSelectNow(null);
+				if(true == String.IsNullOrEmpty(NamePathBase))
+				{
+					Debug.LogError("SSPJ Importing Error: Please select the folder you want to store in before import.");
+					goto Menu_ImportSSPJ_ErrorEnd;
+				}
+			}
+			else
+			{	/* Force */
+				if(false == System.IO.Directory.Exists(NameOutputAssetFolderBase))
+				{	/* Not Found */
+					ProgressBarUpdate("Import Stop", -1, -1);
+					Debug.LogError("SSPJ Importing Error: Output-Base-Folder Not Found [" + NameOutputAssetFolderBase + "]");
+					return(false);
+				}
+				NamePathBase = String.Copy(NameOutputAssetFolderBase);
 			}
 			NamePathBase = DataOutput[0].CreateDestinationFolders(	NamePathBase,
 																	(true == DataSettingImport.FlagCreateProjectFolder) ? NameFileBody : null
@@ -367,7 +398,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 			/* End of Importing (Success) */
 			ProgressBarUpdate("Import End", -1, -1);
-			return;
+			return(true);
 
 		Menu_ImportSSPJ_ErrorEnd:;
 			/* End of Importing (Failure) */
@@ -376,7 +407,7 @@ public static partial class LibraryEditor_SpriteStudio
 											"Import Interrupted! Check Error on Console.",
 									 		"OK"
 										);
-			return;
+			return(false);
 		}
 		private static void ProgressBarUpdate(string NowTaskName, int Step, int StepFull)
 		{

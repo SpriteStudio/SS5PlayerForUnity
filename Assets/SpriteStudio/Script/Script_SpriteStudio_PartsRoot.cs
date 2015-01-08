@@ -1047,8 +1047,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Parameter.FlagWayBack = FlagWayBack;
 		Parameter.Data = Data;
 		ListCallBackUserData.Add(Parameter);
-
-//		Debug.Log("SS5PU CallBack: FrameNo[" + frameNoPrevious + "-" + frameNoNow + "] (" + CountLoopThisTime + ") : " + Data.NumberInt + " ["+ FlagWayBack.ToString() + "]");
 	}
 
 	/* ******************************************************** */

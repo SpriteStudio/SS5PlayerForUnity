@@ -1227,6 +1227,7 @@ public static class Library_SpriteStudio
 					int LoopCount = ScriptRoot.CountLoopThisTime;
 					bool FlagFirst = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAY_FIRST)) ? true : false;
 					bool FlagReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
+					bool FlagReversePrevious = ScriptRoot.FlagReversePrevious;
 					int FrameNoPrevious = (true == FlagFirst) ? ScriptRoot.FrameNoStart : (ScriptRoot.FrameNoPrevious + ((true == FlagReverse) ? -1 : 1));
 					int FrameNoStart = ScriptRoot.FrameNoStart;
 					int FrameNoEnd = ScriptRoot.FrameNoEnd;
@@ -1288,22 +1289,25 @@ public static class Library_SpriteStudio
 							if(0 < LoopCount)
 							{
 								/* Part-Head */
-								/* MEMO: Loop & Turn-Back ... Always "Foward to Reverse" */
-								FrameNoPrevious = ScriptRoot.FrameNoPrevious + 1;	/* Force */
-								if(FrameNoPrevious <= FrameNoEnd)
+								if(true == FlagReversePrevious)
 								{
+									FrameNoPrevious = ScriptRoot.FrameNoPrevious - 1;	/* Force */
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoStart, false);
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, true);
+								}
+								else
+								{
+									FrameNoPrevious = ScriptRoot.FrameNoPrevious + 1;	/* Force */
 									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoEnd, true);
 								}
-								/* MEMO: Need "else (Foward to Reverse)" */
 
 								/* Part-Loop */
-								LoopCount--;
 								for(int i=1; i<LoopCount; i++)
 								{
 									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNoStart, false);
 									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, true);
 								}
-								
+
 								/* Part-Tail & Just-Now */
 								if(true == FlagReverse)
 								{	/* Now-Reverse */
@@ -1342,15 +1346,19 @@ public static class Library_SpriteStudio
 							if(0 < LoopCount)
 							{
 								/* Part-Head */
-								FrameNoPrevious = ScriptRoot.FrameNoPrevious - 1;	/* Force */
-								if(FrameNoPrevious >= FrameNoStart)
+								if(true == FlagReversePrevious)
 								{
+									FrameNoPrevious = ScriptRoot.FrameNoPrevious - 1;	/* Force */
 									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoStart, true);
 								}
-								/* MEMO: Need "else (Foward to Reverse)" */
+								else
+								{
+									FrameNoPrevious = ScriptRoot.FrameNoPrevious + 1;	/* Force */
+									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoPrevious, FrameNoEnd, false);
+									UpdateUserDataReverse(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoEnd, FrameNoStart, true);
+								}
 
 								/* Part-Loop */
-								LoopCount--;
 								for(int i=1; i<LoopCount; i++)
 								{
 									UpdateUserDataFoward(ref AnimationDataUser, ScriptRoot, GameObjectNow, FrameNoStart, FrameNoEnd, false);
