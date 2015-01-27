@@ -15,8 +15,6 @@ using System.Collections.Generic;
 
 public sealed class MenuItem_SpriteStudio_Sample_BatchImport : EditorWindow
 {
-	LibraryEditor_SpriteStudio_Sample_BachImport.SettingImport DataSetting;
-
 	[MenuItem("Tools/SpriteStudio/Sample/BatchImport(sspj)")]
 	static void OpenWindow()
 	{

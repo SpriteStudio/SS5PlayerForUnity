@@ -15,12 +15,6 @@ using System.Collections.Generic;
 
 public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 {
-	/* Interfaces between Unity's-Menu-Script */
-	public struct SettingImport
-	{
-		public string NameListFile;
-	}
-
 	/* First-Character(Prifix) of the Special-Line */
 	private const char PrefixChangeSetting = '?';
 	private const char PrefixRemarks = '*';
