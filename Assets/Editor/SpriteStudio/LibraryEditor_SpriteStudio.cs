@@ -111,7 +111,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 		internal static void SettingClearImport()
 		{
-			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, 4096);
+			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, 8192);
 			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, 1.0f);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, true);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, true);
@@ -152,23 +152,29 @@ public static partial class LibraryEditor_SpriteStudio
 
 		/* Caution: "NameInputFullPathSSPJ" must be Full-Path Name. */
 		/* Caution: "NameOutputAssetFolder" must be Relative-Path Name("Assets/"). */
-		public static bool ImportSSPJ(SettingImport DataSettingImport, string NameInputFullPathSSPJ="", string NameOutputAssetFolderBase="")
+		public static bool ImportSSPJ(SettingImport DataSettingImport, string NameInputFullPathSSPJ="", string NameOutputAssetFolderBase="", bool FlagSaveSetting=true, bool FlagDisplayProgressBar=true, bool FlagDisplayErrorDialog=true)
 		{
+			bool FlagValidSSPJ = String.IsNullOrEmpty(NameInputFullPathSSPJ);
+//			bool FlagValidAssetImport = String.IsNullOrEmpty(NameOutputAssetFolderBase);
+
 			/* Prefs Save */
-			SettingSetImport(ref DataSettingImport);
+			if(true == FlagSaveSetting)
+			{
+				SettingSetImport(ref DataSettingImport);
+			}
 
 			/* Select Project,Imported(.sspj) */
 			string NameDirectory = "";
 			string NameFileBody = "";
 			string NameFileExtension = "";
-			if(true == String.IsNullOrEmpty(NameInputFullPathSSPJ))
+			if(true == FlagValidSSPJ)
 			{	/* Select */
 				if(false == File.FileNameGetFileDialog(	out NameDirectory,
 														out NameFileBody,
 														out NameFileExtension,
 														"Select Importing SSPJ-File",
 														"sspj"
-														)
+													)
 					)
 				{	/* Cancelled */
 					return(false);
@@ -190,7 +196,10 @@ public static partial class LibraryEditor_SpriteStudio
 			/* Initialize */
 			int StepNow = 0;
 			int StepFull = 0;
-			ProgressBarUpdate("Decoding Project Files", 0, 1);
+			if(true == FlagDisplayProgressBar)
+			{
+				ProgressBarUpdate("Decoding Project Files", 0, 1);
+			}
 
 			/* ".sspj" Import */
 			ParseOPSS.InformationSSPJ InformationSSPJ = ParseOPSS.ImportSSPJ(NameDirectory, NameFileBody + NameFileExtension);
@@ -206,10 +215,13 @@ public static partial class LibraryEditor_SpriteStudio
 			for(int i=0; i<Count; i++)
 			{
 				StepNow++;
-				ProgressBarUpdate(	"Decoding SSCE Files: " + i.ToString() + "-" + Count.ToString(),
-									StepNow,
-									StepFull
-								);
+				if(true == FlagDisplayProgressBar)
+				{
+					ProgressBarUpdate(	"Decoding SSCE Files: " + i.ToString() + "-" + Count.ToString(),
+										StepNow,
+										StepFull
+									);
+				}
 
 				DataListImage[i] = new DataIntermediate.PartsImage();
 				DataListImage[i].CleanUp();
@@ -231,10 +243,13 @@ public static partial class LibraryEditor_SpriteStudio
 			for(int i=0; i<Count; i++)
 			{
 				StepNow++;
-				ProgressBarUpdate(	"Decoding SSAE Files: " + i.ToString() + "-" + Count.ToString(),
-									StepNow,
-									StepFull
-								);
+				if(true == FlagDisplayProgressBar)
+				{
+					ProgressBarUpdate(	"Decoding SSAE Files: " + i.ToString() + "-" + Count.ToString(),
+										StepNow,
+										StepFull
+									);
+				}
 
 				/* Create Data-Trunk */
 				DataOutput[i] = new DataIntermediate.TrunkParts();
@@ -263,7 +278,10 @@ public static partial class LibraryEditor_SpriteStudio
 			{	/* Force */
 				if(false == System.IO.Directory.Exists(NameOutputAssetFolderBase))
 				{	/* Not Found */
-					ProgressBarUpdate("Import Stop", -1, -1);
+					if(true == FlagDisplayProgressBar)
+					{
+						ProgressBarUpdate("Import Stop", -1, -1);
+					}
 					Debug.LogError("SSPJ Importing Error: Output-Base-Folder Not Found [" + NameOutputAssetFolderBase + "]");
 					return(false);
 				}
@@ -275,10 +293,13 @@ public static partial class LibraryEditor_SpriteStudio
 			StepNow++;
 
 			/* Materials Creating */
-			ProgressBarUpdate(	"Creating Materials",
-								StepNow,
-								StepFull
-							);
+			if(true == FlagDisplayProgressBar)
+			{
+				ProgressBarUpdate(	"Creating Materials",
+									StepNow,
+									StepFull
+								);
+			}
 			Material[] TableMaterial = DataOutput[0].CreateAssetMaterial(NameFileBody, NamePathBase, ref DataSettingImport);
 			StepNow += InformationSSPJ.ListSSCE.Count;
 
@@ -289,10 +310,13 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				/* Progress-Bar Update */
 				StepNow++;
-				ProgressBarUpdate(	"Creating Animation Prefabs: " + i.ToString() + "-" + Count.ToString(),
-									StepNow,
-									StepFull
-								);
+				if(true == FlagDisplayProgressBar)
+				{
+					ProgressBarUpdate(	"Creating Animation Prefabs: " + i.ToString() + "-" + Count.ToString(),
+										StepNow,
+										StepFull
+									);
+				}
 
 				/* GameObjects Create */
 				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
@@ -397,16 +421,25 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			/* End of Importing (Success) */
-			ProgressBarUpdate("Import End", -1, -1);
+			if(true == FlagDisplayProgressBar)
+			{
+				ProgressBarUpdate("Import End", -1, -1);
+			}
 			return(true);
 
 		Menu_ImportSSPJ_ErrorEnd:;
 			/* End of Importing (Failure) */
-			ProgressBarUpdate("Import Stop", -1, -1);
-			EditorUtility.DisplayDialog(	"SpriteStudio5 Player for Unity",
+			if(true == FlagDisplayProgressBar)
+			{
+				ProgressBarUpdate("Import Stop", -1, -1);
+			}
+			if(true == FlagDisplayErrorDialog)
+			{
+				EditorUtility.DisplayDialog(	"SpriteStudio5 Player for Unity",
 											"Import Interrupted! Check Error on Console.",
 									 		"OK"
 										);
+			}
 			return(false);
 		}
 		private static void ProgressBarUpdate(string NowTaskName, int Step, int StepFull)

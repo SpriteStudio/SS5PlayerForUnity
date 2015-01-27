@@ -1,0 +1,140 @@
+* ==========================================
+*	Batch-Importing Sample List-File
+* ==========================================
+* 
+*	SpriteStudio5 Player for Unity
+* 
+*	Copyright(C) Web Technology Corp. 
+*	All rights reserved.
+* 
+
+* ------------------------------------------
+* [Usage]
+* 
+* The character at the beginning of the line, there are those that have a special meaning.
+* 
+* "*" ... Remarks.
+*         Lines beginning with this character, is ignored.
+* 
+* "?" ... Change Import Setting.
+*         In instruction written after this character, you can change the settings at the time of import.
+*         You can change settings even the middle of the list .
+* 
+* Blank-Line ... Blank-Line is ignored.
+* 
+* Other ... InputFileName(.sspj)
+* 
+* 
+* 
+* [Instructions] (Line that has been described is "?" at the beginning of a line)
+* ---------------------
+* TextureSizePixelMaximum > PixelSize
+*   PixelSize ... Max Texture Pixel-Size (int)
+*                 default == 8192
+* 
+* ex.
+* TextureSizePixelMaximum > 4096
+* 
+* ---------------------
+* CollisionThicknessZ > ValueZ
+*   ValueZ ... Z-Axis Collision Thickness (float)
+*              default == 1.0
+* 
+* This is the same function as "Collider-Thickness" in the import settings.
+* 
+* ex.
+* CollisionThicknessZ > 1.0
+* 
+* ---------------------
+* FlagAttachRigidBody > Flag
+*   Flag ... true / false (bool)
+*            default == true
+* 
+* This is the same function as "Attach Ridgid-Body to Collider" in the import settings.
+* 
+* ex:
+* FlagAttachRigidBody > true
+* 
+* ---------------------
+* FlagAttachControlGameObject > Flag
+*   Flag ... true / false (bool)
+*            default == true
+* 
+* This is the same function as "Create Control-Prefab" in the import settings.
+* 
+* ex:
+* FlagAttachControlGameObject > false
+* 
+* ---------------------
+* FlagConfirmOverWrite > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Confirm Overwrite-Prefab" in the import settings.
+* 
+* ex:
+* FlagConfirmOverWrite > false
+* 
+* ---------------------
+* FlagCreateProjectFolder > Flag
+*   Flag ... true / false (bool)
+*            default == true
+* 
+* This is the same function as "Create Project Folder" in the import settings.
+* 
+* ex:
+* FlagConfirmOverWrite > false
+* 
+* ---------------------
+* NameBaseFolderSS5Data > FolderName
+*   FolderName ... Reference folder of the file(sspj) you want to import.
+*                  default == "" (Empty)
+* 
+* It becomes Base-Folder of files that have been described in the list.
+* 
+* ex:
+* NameBaseFolderSS5Data > E://SS5Data
+* 
+* ---------------------
+* NameBaseFolderSS5Data > AssetFolderName
+*   AssetFolderName ... Imported datas are Base-Asset-folder.
+*                       default == Selected Folder in "Project".
+* 
+* Imported datas will be stored under this Asset-Folder.
+* 
+* ex:
+* NameBaseFolderAsset > Assets/SS5PU_Data
+* 
+* ------------------------------------------
+* 
+* 
+* 
+* [Caution]
+* 
+* - Please describe only Single-Byte-Characters only.
+*   (If you use Multi-Byte-Characters, you may difference of Character-Code in each environment to interfere with the processing.)
+*
+* - You must be create import destination Asset-Folders in advance.
+*
+
+* ++++++++++++++++++++++++++++++++++++++++
+? TextureSizePixelMaximum > 4096
+? CollisionThicknessZ > 1.0
+? FlagAttachRigidBody > true
+? FlagAttachControlGameObject > true
+? FlagConfirmOverWrite > false
+? FlagCreateProjectFolder > true
+
+? NameBaseFolderSS5Data > D:/User/ApplicationData/SS5/Menu
+? NameBaseFolderAsset > Assets/Graphic/Menu
+
+Menu/Confirm.sspj
+Nowloading/NowLoading.sspj
+
+* ++++++++++++++++++++++++++++++++++++++++
+? NameBaseFolderSS5Data > D:/User/ApplicationData/SS5/Character
+? NameBaseFolderAsset > Assets/Graphic/Character
+
+Character01.sspj
+Character02.sspj
+
