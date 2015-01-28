@@ -6,6 +6,7 @@
 */
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [System.Serializable]
@@ -25,7 +26,12 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 	public int OffsetDrawQueue;
 
 	private Camera InstanceCameraDraw;
+#if false
+	/* MEMO: Non-Generic List-Class */
 	private ArrayList DrawEntryPartsRoot;
+#else
+	private List<InformationDrawObject> DrawEntryPartsRoot;
+#endif
 	private Library_SpriteStudio.DrawManager.ArrayListMeshDraw arrayListMeshDraw;
 	public Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw
 	{
@@ -40,8 +46,14 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 	{
 		InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);
 
+#if false
+		/* MEMO: Non-Generic List-Class */
 		DrawEntryPartsRoot = new ArrayList();
 		DrawEntryPartsRoot.Clear();
+#else
+		DrawEntryPartsRoot = new List<InformationDrawObject>();
+		DrawEntryPartsRoot.Clear();
+#endif
 
 		arrayListMeshDraw = new Library_SpriteStudio.DrawManager.ArrayListMeshDraw();
 		arrayListMeshDraw.BootUp();
@@ -57,7 +69,12 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		}
 		if(null == DrawEntryPartsRoot)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			DrawEntryPartsRoot = new ArrayList();
+#else
+			DrawEntryPartsRoot = new List<InformationDrawObject>();
+#endif
 		}
 	}
 
@@ -79,13 +96,23 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		int Count = DrawEntryPartsRoot.Count;
 		for(int i=0; i<Count; i++)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			DrawObject = DrawEntryPartsRoot[i] as InformationDrawObject;
+#else
+			DrawObject = DrawEntryPartsRoot[i];
+#endif
 			ArrayListMeshDrawObject = DrawObject.PartsRoot.ArrayListMeshDraw;
 			int CountList = ArrayListMeshDrawObject.TableListMesh.Count;
 			for(int j=0; j<CountList; j++)
 			{
 				/* Add Mesh-List */
+#if false
+				/* MEMO: Non-Generic List-Class */
 				ListMeshDraw = ArrayListMeshDrawObject.TableListMesh[j] as Library_SpriteStudio.DrawManager.ListMeshDraw;
+#else
+				ListMeshDraw = ArrayListMeshDrawObject.TableListMesh[j];
+#endif
 				arrayListMeshDraw.TableListMesh.Add(ListMeshDraw);
 			}
 
@@ -99,7 +126,12 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		Script_SpriteStudio_PartsRoot ScriptPartsRootSub = null;
 		for(int i=0; i<arrayListMeshDraw.TableListMesh.Count; )
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			ListMeshDraw = arrayListMeshDraw.TableListMesh[i] as Library_SpriteStudio.DrawManager.ListMeshDraw;
+#else
+			ListMeshDraw = arrayListMeshDraw.TableListMesh[i];
+#endif
 			if(null == ListMeshDraw)
 			{
 				arrayListMeshDraw.TableListMesh.RemoveAt(i);
@@ -119,7 +151,12 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 					ArrayListMeshDrawObject = ScriptPartsRootSub.ArrayListMeshDraw;
 					for(int j=0; j<ArrayListMeshDrawObject.TableListMesh.Count; j++)
 					{
+#if false
+						/* MEMO: Non-Generic List-Class */
 						ListMeshDrawSub = ArrayListMeshDrawObject.TableListMesh[j] as Library_SpriteStudio.DrawManager.ListMeshDraw;
+#else
+						ListMeshDrawSub = ArrayListMeshDrawObject.TableListMesh[j];
+#endif
 						arrayListMeshDraw.TableListMesh.Insert((i + j), ListMeshDrawSub);
 					}
 
@@ -133,12 +170,23 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 
 		/* Optimize Draw-Parts List */
 		Library_SpriteStudio.DrawManager.ListMeshDraw ListMeshDrawNext = null;
+#if false
+		/* MEMO: Non-Generic List-Class */
 		ArrayList TableListMesh = arrayListMeshDraw.TableListMesh;
+#else
+		List<Library_SpriteStudio.DrawManager.ListMeshDraw> TableListMesh = arrayListMeshDraw.TableListMesh;
+#endif
 		for(int i=0; i<(TableListMesh.Count - 1); )
 		{
 			Count = i + 1;	/* "Count" is temporary */
+#if false
+			/* MEMO: Non-Generic List-Class */
 			ListMeshDraw = TableListMesh[i] as Library_SpriteStudio.DrawManager.ListMeshDraw;
 			ListMeshDrawNext = TableListMesh[Count] as Library_SpriteStudio.DrawManager.ListMeshDraw;
+#else
+			ListMeshDraw = TableListMesh[i];
+			ListMeshDrawNext = TableListMesh[Count];
+#endif
 			if(ListMeshDraw.MaterialOriginal == ListMeshDrawNext.MaterialOriginal)
 			{
 				/* Mesh-List Merge */
@@ -157,7 +205,12 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		int CountMesh = 0;
 		for(int i=0; i<Count; i++)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			ListMeshDraw = TableListMesh[i] as Library_SpriteStudio.DrawManager.ListMeshDraw;
+#else
+			ListMeshDraw = TableListMesh[i];
+#endif
 			CountMesh += ListMeshDraw.Count;
 		}
 
@@ -172,8 +225,14 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		/* Boot-Check */
 		if(null == DrawEntryPartsRoot)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			DrawEntryPartsRoot = new ArrayList();
 			DrawEntryPartsRoot.Clear();
+#else
+			DrawEntryPartsRoot = new List<InformationDrawObject>();
+			DrawEntryPartsRoot.Clear();
+#endif
 		}
 
 		/* Get Priority */
@@ -196,7 +255,12 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 		int Index = 0;
 		for(int i=0; i<Count; i++)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			DrawObject = DrawEntryPartsRoot[i] as InformationDrawObject;
+#else
+			DrawObject = DrawEntryPartsRoot[i];
+#endif
 			if(DrawObject.Priority < DrawObjectNew.Priority)
 			{
 				goto DrawEntryObject_Insert;

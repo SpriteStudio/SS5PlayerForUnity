@@ -6,6 +6,7 @@
 */
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [System.Serializable]
@@ -217,7 +218,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 
+#if false
+	/* MEMO: Non-Generic List-Class */
 	private ArrayList ListCallBackUserData;
+#else
+	private List<ParameterCallBackUserData> ListCallBackUserData;
+#endif
 	private Library_SpriteStudio.FunctionCallBackUserData functionUserData;
 	internal Library_SpriteStudio.FunctionCallBackUserData FunctionUserData
 	{
@@ -293,8 +299,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		arrayListMeshDraw = new Library_SpriteStudio.DrawManager.ArrayListMeshDraw();
 		arrayListMeshDraw.BootUp();
 
+#if false
+		/* MEMO: Non-Generic List-Class */
 		ListCallBackUserData = new ArrayList();
 		ListCallBackUserData.Clear();
+#else
+		ListCallBackUserData = new List<ParameterCallBackUserData>();
+		ListCallBackUserData.Clear();
+#endif
 
 		if(null == ListInformationPlay)
 		{
@@ -329,8 +341,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 		if(null == ListCallBackUserData)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			ListCallBackUserData = new ArrayList();
 			ListCallBackUserData.Clear();
+#else
+			ListCallBackUserData = new List<ParameterCallBackUserData>();
+			ListCallBackUserData.Clear();
+#endif
 		}
 
 		/* Entry Object to Draw */
@@ -654,7 +672,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			ParameterCallBackUserData Parameter = null;
 			for(int i=0; i<Count; i++)
 			{
+#if false
+				/* MEMO: Non-Generic List-Class */
 				Parameter = ListCallBackUserData[i] as ParameterCallBackUserData;
+#else
+				Parameter = ListCallBackUserData[i];
+#endif
 				functionUserData(	transform.parent.gameObject,
 									Parameter.PartsName,
 									Parameter.AnimationDataParts,
@@ -903,7 +926,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		/* UserData-CallBack Buffer Create */
 		if(null == ListCallBackUserData)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			ListCallBackUserData = new ArrayList();
+#else
+			ListCallBackUserData = new List<ParameterCallBackUserData>();
+#endif
 		}
 		ListCallBackUserData.Clear();
 
@@ -1036,8 +1064,14 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		if(null == ListCallBackUserData)
 		{
+#if false
+			/* MEMO: Non-Generic List-Class */
 			ListCallBackUserData = new ArrayList();
 			ListCallBackUserData.Clear();
+#else
+			ListCallBackUserData = new List<ParameterCallBackUserData>();
+			ListCallBackUserData.Clear();
+#endif
 		}
 
 		ParameterCallBackUserData Parameter = new ParameterCallBackUserData();
