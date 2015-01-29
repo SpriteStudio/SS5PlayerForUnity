@@ -6,6 +6,7 @@
 */
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public static class Library_SpriteStudio
 {
@@ -716,6 +717,8 @@ public static class Library_SpriteStudio
 			public Library_SpriteStudio.DrawManager.KindDrawQueue KindRenderQueueBase;
 			public int OffsetDrawQueue;
 
+#if false
+			/* MEMO: Non-Generic List-Class */
 			private ArrayList tableListMesh;
 			public ArrayList TableListMesh
 			{
@@ -724,11 +727,27 @@ public static class Library_SpriteStudio
 					return(tableListMesh);
 				}
 			}
+#else
+			private List<ListMeshDraw> tableListMesh;
+			public List<ListMeshDraw> TableListMesh
+			{
+				get
+				{
+					return(tableListMesh);
+				}
+			}
+#endif
 
 			public void BootUp()
 			{
+#if false
+				/* MEMO: Non-Generic List-Class */
 				tableListMesh = new ArrayList();
 				tableListMesh.Clear();
+#else
+				tableListMesh = new List<ListMeshDraw>();
+				tableListMesh.Clear();
+#endif
 
 				KindRenderQueueBase = Library_SpriteStudio.DrawManager.KindDrawQueue.SHADER_SETTING;
 				OffsetDrawQueue = 0;
@@ -779,10 +798,20 @@ public static class Library_SpriteStudio
 				else
 				{
 					ListNo = 0;
+#if false
+					/* MEMO: Non-Generic List-Class */
 					ListMesh = tableListMesh[0] as ListMeshDraw;
+#else
+					ListMesh = tableListMesh[0];
+#endif
 					for(int i=1; i<CountList; i++)
 					{
+#if false
+						/* MEMO: Non-Generic List-Class */
 						ListMesh = tableListMesh[i] as ListMeshDraw;
+#else
+						ListMesh = tableListMesh[i];
+#endif
 						if(DataMeshInformation.Priority < ListMesh.PriorityMinimum)
 						{
 							ListNo = i - 1;
@@ -793,7 +822,12 @@ public static class Library_SpriteStudio
 					if(null == ListMesh)
 					{	/* Highest-Priority */
 						ListNo = CountList - 1;
+#if false
+						/* MEMO: Non-Generic List-Class */
 						ListMesh = tableListMesh[ListNo] as ListMeshDraw;
+#else
+						ListMesh = tableListMesh[ListNo];
+#endif
 						if(null != DataMeshInformation.PartsInstance)
 						{	/* Instance-Parts */
 							if(DataMeshInformation.Priority < ListMesh.PriorityMaximum)
@@ -822,7 +856,12 @@ public static class Library_SpriteStudio
 					}
 					else
 					{
+#if false
+						/* MEMO: Non-Generic List-Class */
 						ListMesh = tableListMesh[ListNo] as ListMeshDraw;
+#else
+						ListMesh = tableListMesh[ListNo];
+#endif
 						if(null != DataMeshInformation.PartsInstance)
 						{	/* Instance-Parts */
 							if(DataMeshInformation.Priority < ListMesh.PriorityMaximum)
@@ -860,7 +899,12 @@ public static class Library_SpriteStudio
 									}
 									else
 									{
+#if false
+										/* MEMO: Non-Generic List-Class */
 										ListMeshDraw ListMeshNext = tableListMesh[ListNo] as ListMeshDraw;
+#else
+										ListMeshDraw ListMeshNext = tableListMesh[ListNo];
+#endif
 										if(ListMeshNext.MaterialOriginal != MaterialOriginal)
 										{
 											ListNo--;
@@ -938,7 +982,12 @@ public static class Library_SpriteStudio
 					int CountMesh = 0;
 					for(int i=0; i<Count; i++)
 					{
+#if false
+						/* MEMO: Non-Generic List-Class */
 						ListMesh = tableListMesh[i] as ListMeshDraw;
+#else
+						ListMesh = tableListMesh[i];
+#endif
 						
 						CountMesh += ListMesh.Count;
 
@@ -967,7 +1016,12 @@ public static class Library_SpriteStudio
 					int IndexMesh = 0;
 					for(int i=0; i<Count; i++)
 					{
+#if false
+						/* MEMO: Non-Generic List-Class */
 						ListMesh = tableListMesh[i] as ListMeshDraw;
+#else
+						ListMesh = tableListMesh[i];
+#endif
 						IndexVertex[i] = IndexVertexNow;
 						IndexTriangle[i] = IndexTriangleNow;
 						DataMeshInformation = ListMesh.MeshDataTop;
