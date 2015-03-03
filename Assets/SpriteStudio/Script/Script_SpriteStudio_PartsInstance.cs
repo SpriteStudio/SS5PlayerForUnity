@@ -15,7 +15,20 @@ using UnityEditor;
 public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 {
 	/* Variables & Propaties */
-	public Library_SpriteStudio.AnimationData SpriteStudioData;
+	private Library_SpriteStudio.AnimationData spriteStudioData;
+	public Library_SpriteStudio.AnimationData SpriteStudioData
+	{
+		set
+		{
+			spriteStudioData = value;
+		}
+		get
+		{
+			return(spriteStudioData);
+		}
+	}
+
+	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 	public bool FlagHideForce;
 
@@ -53,10 +66,22 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 		DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
 
 		frameNoPreviousUpdate = -1;
+
+		/* Get Animation-Data-Referenced */
+		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		{
+			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
 	}
 
 	void Update()
 	{
+		/* Get Animation-Data-Referenced */
+		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		{
+			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
 		/* Clear Instance-Part's Draw-List */
 		DrawListClearInstance();
 
@@ -92,19 +117,19 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 		if(null != InstanceGameObjectPartsRootSub)
 		{
 			/* Update User-CallBack */
-			SpriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
+			spriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
 
 			/* Update Instance-Data */
-			bool FlagValidInstanceData = SpriteStudioData.UpdateInstanceData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot, this);
+			bool FlagValidInstanceData = spriteStudioData.UpdateInstanceData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot, this);
 
 			/* Set Matrix for Transform (to the GameObject) */
-			if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
+			if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
 			{	/* Show Instance */
 				/* MEMO: "Instance"-Parts has no mesh */
 				DataMeshInformation.DataMesh = null;
 				DataMeshInformation.DataTransform = transform;
 				DataMeshInformation.PartsInstance = this;
-				SpriteStudioData.DrawEntryInstance(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
+				spriteStudioData.DrawEntryInstance(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
 			}
 		}
 
@@ -253,7 +278,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	*/
 	public void BootUpForce()
 	{
-		SpriteStudioData = new Library_SpriteStudio.AnimationData();
+		spriteStudioData = new Library_SpriteStudio.AnimationData();
 		InstanceGameObjectPartsRootSub = null;
 	}
 

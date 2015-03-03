@@ -12,7 +12,20 @@ using System.Collections;
 public class Script_SpriteStudio_Triangle2 : Library_SpriteStudio.SpriteBase
 {
 	/* Variables & Propaties */
-	public Library_SpriteStudio.AnimationDataSprite SpriteStudioData;
+	private Library_SpriteStudio.AnimationData spriteStudioData;
+	public Library_SpriteStudio.AnimationData SpriteStudioData
+	{
+		set
+		{
+			spriteStudioData = value;
+		}
+		get
+		{
+			return(spriteStudioData);
+		}
+	}
+
+	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 	public bool FlagHideForce;
 
@@ -21,10 +34,22 @@ public class Script_SpriteStudio_Triangle2 : Library_SpriteStudio.SpriteBase
 	{
 		MeshCreate();
 		DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
+
+		/* Get Animation-Data-Referenced */
+		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		{
+			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
 	}
 
 	void Update()
 	{
+		/* Get Animation-Data-Referenced */
+		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		{
+			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
 		/* Boot-Check */
 		if(null == dataMesh)
 		{
@@ -36,18 +61,18 @@ public class Script_SpriteStudio_Triangle2 : Library_SpriteStudio.SpriteBase
 		}
 
 		/* Update User-CallBack */
-		SpriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
+		spriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
 
 		/* Mesh-Data Update */
-		SpriteStudioData.UpdateMesh(dataMesh, ScriptRoot.FrameNoNow, ScriptRoot);
+		spriteStudioData.UpdateMesh(dataMesh, ScriptRoot.FrameNoNow, ScriptRoot);
 
 		/* Set Matrix for Transform (to the GameObject) */
-		if((true == SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (false == FlagHideForce))
+		if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (false == FlagHideForce))
 		{	/* Show the Sprite */
 			DataMeshInformation.DataMesh = dataMesh;
 			DataMeshInformation.DataTransform = transform;
 			DataMeshInformation.PartsInstance = null;
-			SpriteStudioData.DrawEntry(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
+			spriteStudioData.DrawEntry(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
 		}
 	}
 
@@ -91,7 +116,7 @@ public class Script_SpriteStudio_Triangle2 : Library_SpriteStudio.SpriteBase
 	*/
 	public void BootUpForce()
 	{
-		SpriteStudioData = new Library_SpriteStudio.AnimationDataSprite();
+		spriteStudioData = new Library_SpriteStudio.AnimationData();
 	}
 
 	private void MeshCreate()

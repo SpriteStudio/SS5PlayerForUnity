@@ -36,6 +36,9 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 			DataSettingImport.FlagAttachControlGameObject = true;
 			DataSettingImport.FlagConfirmOverWrite = false;		/* Caution!: This item is different */
 			DataSettingImport.FlagCreateProjectFolder = true;
+			DataSettingImport.FlagGetAnimationReferencedPartsRoot = false;
+			DataSettingImport.FlagGetMaterialPartsRoot = false;
+			DataSettingImport.FlagGetTextureMaterial = false;
 
 			UnityEngine.Object ObjectSelected = Selection.activeObject;
 			if(null == ObjectSelected)
@@ -108,6 +111,10 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 		private const string CommandFlagConfirmOverWrite = "FlagConfirmOverWrite";
 		private const string CommandFlagCreateProjectFolder = "FlagCreateProjectFolder";
 
+		private const string CommandFlagGetAnimationReferencedPartsRoot = "FlagGetAnimationReferencedPartsRoot";
+		private const string CommandFlagGetMaterialPartsRoot = "FlagGetMaterialPartsRoot";
+		private const string CommandFlagGetTextureMaterial = "FlagGetTextureMaterial";
+
 		private const string CommandNameBaseFolderSS5Data = "NameBaseFolderSS5Data";
 		private const string CommandNameBaseFolderAsset = "NameBaseFolderAsset";
 
@@ -164,6 +171,21 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 					/* FlagCreateProjectFolder [true/false] */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.FlagCreateProjectFolder = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagGetAnimationReferencedPartsRoot:	/* FlagGetAnimationReferencedPartsRoot */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagGetAnimationReferencedPartsRoot = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagGetMaterialPartsRoot:	/* FlagGetMaterialPartsRoot */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagGetMaterialPartsRoot = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagGetTextureMaterial:	/* FlagGetTextureMaterial */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagGetTextureMaterial = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandNameBaseFolderSS5Data:	/* NameBaseFolderSS5Data */
