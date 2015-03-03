@@ -142,9 +142,9 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, true);
 			EditorPrefs.SetBool(PrefsKeyFlagConfirmOverWrite, true);
 			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, true);
-			EditorPrefs.SetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, false);
-			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, false);
-			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, false);
+			EditorPrefs.SetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, true);
+			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
+			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, true);
 			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, "");
 		}
 
@@ -156,9 +156,9 @@ public static partial class LibraryEditor_SpriteStudio
 			DataSettingImport.FlagAttachControlGameObject = EditorPrefs.GetBool(PrefsKeyFlagAttachControlGameObject, true);
 			DataSettingImport.FlagConfirmOverWrite = EditorPrefs.GetBool(PrefsKeyFlagConfirmOverWrite, true);
 			DataSettingImport.FlagCreateProjectFolder = EditorPrefs.GetBool(PrefsKeyFlagCreateProjectFolder, true);
-			DataSettingImport.FlagGetAnimationReferencedPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, false);
-			DataSettingImport.FlagGetMaterialPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetMaterialPartsRoot, false);
-			DataSettingImport.FlagGetTextureMaterial = EditorPrefs.GetBool(PrefsKeyFlagGetTextureMaterial, false);
+			DataSettingImport.FlagGetAnimationReferencedPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, true);
+			DataSettingImport.FlagGetMaterialPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
+			DataSettingImport.FlagGetTextureMaterial = EditorPrefs.GetBool(PrefsKeyFlagGetTextureMaterial, true);
 		}
 		internal static void SettingSetImport(ref SettingImport DataSettingImport)
 		{
