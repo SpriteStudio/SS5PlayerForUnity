@@ -1630,7 +1630,12 @@ public static class Library_SpriteStudio
 		{
 //			bool FlagUpdateTransform = ((0 >= AnimationDataPosition.Length) && (0 >= AnimationDataRotation.Length) && (0 >= AnimationDataScaling.Length)) ? false : true;
 			bool FlagUpdateTransform = ((null == AnimationDataPosition) && (null == AnimationDataRotation) && (null == AnimationDataScaling)) ? false : true;
+			if(false == FlagUpdateTransform)
+			{/* No-Update Transform */
+				return(false);	/* Hide */
+			}
 			/* MEMO: No Transform-Datas, Not Changing "GameObject" */
+			FlagUpdateTransform = ((0 >= AnimationDataPosition.Length) && (0 >= AnimationDataRotation.Length) && (0 >= AnimationDataScaling.Length)) ? false : true;
 			if(false == FlagUpdateTransform)
 			{	/* No-Update Transform */
 				if(false == FlagSprite)
