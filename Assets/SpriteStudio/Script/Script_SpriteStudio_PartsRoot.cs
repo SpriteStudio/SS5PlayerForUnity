@@ -314,6 +314,13 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
 		}
 		Status = ~BitStatus.MASK_INITIAL;
+
+		/* Get Animation-Data-Referenced */
+		if(null != SpriteStudioDataReferenced)
+		{
+			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
+			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
+		}
 	}
 
 	void Start()
