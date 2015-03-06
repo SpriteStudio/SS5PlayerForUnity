@@ -1652,9 +1652,9 @@ public static class Library_SpriteStudio
 					if(0 < AnimationDataPosition.Length)
 					{
 						TransformTemp = AnimationDataPosition[FrameNo];
+						GameObjectNow.transform.localPosition = TransformTemp;
 					}
 				}
-				GameObjectNow.transform.localPosition = TransformTemp;
 
 //				GameObjectNow.transform.localEulerAngles = (0 < AnimationDataRotation.Length) ? AnimationDataRotation[FrameNo] : Vector3.zero;
 				TransformTemp = Vector3.zero;
@@ -1663,9 +1663,9 @@ public static class Library_SpriteStudio
 					if(0 < AnimationDataRotation.Length)
 					{
 						TransformTemp = AnimationDataRotation[FrameNo];
+						GameObjectNow.transform.localEulerAngles = TransformTemp;
 					}
 				}
-				GameObjectNow.transform.localEulerAngles = TransformTemp;
 
 				TransformTemp = Vector3.one;
 				if(null != AnimationDataScaling)
@@ -1674,9 +1674,9 @@ public static class Library_SpriteStudio
 					{
 						TransformTemp.x = AnimationDataScaling[FrameNo].x;
 						TransformTemp.y = AnimationDataScaling[FrameNo].y;
+						GameObjectNow.transform.localScale = TransformTemp;
 					}
 				}
-				GameObjectNow.transform.localScale = TransformTemp;
 			}
 
 //			if(0 >= AnimationDataFlags.Length)
