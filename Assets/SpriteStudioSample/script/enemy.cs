@@ -97,7 +97,8 @@ public class enemy : MonoBehaviour {
 			soundcontrol = go.GetComponent<sound>();
 		}
 		{
-			var go = GameObject.Find("character_template_3head");
+			//プレイヤーのgameobjectから動作を判断する
+			var go = GameObject.Find("character_template_3head_Control");
 			playercntrol = go.GetComponent<player>();
 		}
 
