@@ -202,7 +202,7 @@ public class player : MonoBehaviour {
 						//移動入力がない場合ダッシュ終了
 						dash = false;
 					}
-					if (GameControl.IsPushKey((int)gamemain.INPUTBUTTON.BUTTON_UP)) {
+					if (GameControl.IsPressKey((int)gamemain.INPUTBUTTON.BUTTON_UP)) {
 						// 上キーを押し続けていたら
 						if (isground == true) {
 							//地面にいたらジャンプを行う

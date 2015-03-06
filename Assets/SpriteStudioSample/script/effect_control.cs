@@ -24,35 +24,35 @@ public class effect_control : MonoBehaviour {
 		switch( type )
 		{
 		case 0:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo01"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo01_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
 			break;
 		case 1:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo02"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo02_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 4.0f,4.0f,1.0f);
 			break;
 		case 2:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo03"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo03_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 4.0f,4.0f,1.0f);
 			break;
 		case 3:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo04"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo04_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
 			break;
 		case 4:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo05"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo05_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
 			break;
 		case 5:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo06"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo06_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
 			break;
 		case 6:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo07"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo07_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
 			break;
 		case 7:
-			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/Prefab/effect_comipo08"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
+			go = Instantiate(Resources.Load("Prefabs/hiteffect/effect_comipo/effect_comipo08_Control"),new Vector3(x,y,-1),Quaternion.identity) as GameObject;
 			go.transform.localScale = new Vector3( 2.5f,2.5f,1.0f);
 			break;
 		case 8:

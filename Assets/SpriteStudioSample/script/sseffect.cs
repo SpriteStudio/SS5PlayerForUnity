@@ -22,19 +22,28 @@ public class sseffect : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
 		//spritestudioルートクラスの取得
 		//spriteStudioRootを使用してアニメーションの制御を行います。
-		if ( spriteStudioRoot == null )
+		if(null == spriteStudioRoot)
 		{
-			//ルートパーツの取得
-			spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
-			
-			//アニメーションの終了割り込みを設定
-			spriteStudioRoot.FunctionPlayEnd = AnimEnd;
-			//アニメーションの再生
-			spriteStudioRoot.AnimationPlay(0, 1, 0, 1.0f);	
+			int Count = transform.childCount;
+			Transform InstanceTransformChild = null;
+			for(int i=0; i<Count; i++)
+			{
+				InstanceTransformChild = transform.GetChild(i);
+				spriteStudioRoot = InstanceTransformChild.gameObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+				if(null != spriteStudioRoot)
+				{
+					//初期化
+					//アニメーションの終了割り込みを設定
+					spriteStudioRoot.FunctionPlayEnd = AnimEnd;
+					//アニメーションの再生
+					spriteStudioRoot.AnimationPlay(0, 1, 0, 1.0f);	
+					break;
+				}
+			}
 		}
-
 
 		Vector2 camera = Camera2DControl.GetCamera();
 		Vector2 tmp = new Vector2(pos.x - camera.x, pos.y - camera.y);
