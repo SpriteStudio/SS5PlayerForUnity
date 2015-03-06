@@ -48,9 +48,35 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	}
 
 	/* Variables & Propaties */
+	private Library_SpriteStudio.AnimationInformationPlay[] listInformationPlay;
+	public Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay
+	{
+		get
+		{
+			return(listInformationPlay);
+		}
+		set
+		{
+			listInformationPlay = value;
+		}
+	}
+
+	private Library_SpriteStudio.AnimationData spriteStudioData;
+	public Library_SpriteStudio.AnimationData SpriteStudioData
+	{
+		set
+		{
+			spriteStudioData = value;
+		}
+		get
+		{
+			return(spriteStudioData);
+		}
+	}
+
 	internal BitStatus Status;
-	public Library_SpriteStudio.AnimationData SpriteStudioData;
-	public Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay;
+	public int ID;
+	public Script_SpriteStudio_AnimationReferenced SpriteStudioDataReferenced;
 
 	public float RateTimeAnimation;
 	public string NameLabelStart;
@@ -106,7 +132,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		set
 		{
-			if((value != animationNo) && ((value < ListInformationPlay.Length) && ((0 <= ListInformationPlay.Length))))
+			if((value != animationNo) && ((value < listInformationPlay.Length) && ((0 <= listInformationPlay.Length))))
 			{
 				AnimationStop();
 				FrameNoInitial = 0;
@@ -288,6 +314,13 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
 		}
 		Status = ~BitStatus.MASK_INITIAL;
+
+		/* Get Animation-Data-Referenced */
+		if(null != SpriteStudioDataReferenced)
+		{
+			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
+			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
+		}
 	}
 
 	void Start()
@@ -308,7 +341,13 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		ListCallBackUserData.Clear();
 #endif
 
-		if(null == ListInformationPlay)
+		/* Get Animation-Data-Referenced */
+		if(null != SpriteStudioDataReferenced)
+		{
+			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
+			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+		if(null == listInformationPlay)
 		{
 			frameNoStart = 0;
 			frameNoEnd = 0;
@@ -366,7 +405,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return;
 		}
 
-		if(null == ListInformationPlay)
+		if(null == listInformationPlay)
 		{
 			return;
 		}
@@ -736,9 +775,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return(-1);
 		}
 
-		for(int i=0; i<ListInformationPlay.Length; i++)
+		/* Get Animation-Data-Referenced */
+		if(null != SpriteStudioDataReferenced)
 		{
-			if(0 == AnimationName.CompareTo(ListInformationPlay[i].Name))
+			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
+//			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
+		for(int i=0; i<listInformationPlay.Length; i++)
+		{
+			if(0 == AnimationName.CompareTo(listInformationPlay[i].Name))
 			{
 				return(i);
 			}
@@ -819,7 +865,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		/* Error-Check */
 		animationNo = (-1 != No) ? No : animationNo;	/* Don't Use "AnimationNo" (occur "Stack-Overflow") */
-		if((0 > animationNo) || (ListInformationPlay.Length <= animationNo))
+		if((0 > animationNo) || (listInformationPlay.Length <= animationNo))
 		{
 			return(false);
 		}
@@ -845,7 +891,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		/* Set Animation Information */
 		int FrameNo;
 
-		Library_SpriteStudio.AnimationInformationPlay InformationAnimation = ListInformationPlay[animationNo];
+		Library_SpriteStudio.AnimationInformationPlay InformationAnimation = listInformationPlay[animationNo];
 		string Label = "";
 
 		Label = string.Copy((true == string.IsNullOrEmpty(LabelStart)) ? NameLabelStart : LabelStart);

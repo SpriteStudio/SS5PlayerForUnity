@@ -11,22 +11,47 @@ using System.Collections;
 [System.Serializable]
 public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 {
-	public Library_SpriteStudio.AnimationData SpriteStudioData;
+	/* Variables & Propaties */
+	private Library_SpriteStudio.AnimationData spriteStudioData;
+	public Library_SpriteStudio.AnimationData SpriteStudioData
+	{
+		set
+		{
+			spriteStudioData = value;
+		}
+		get
+		{
+			return(spriteStudioData);
+		}
+	}
+
+	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 	public bool FlagHideForce;
 
 	void Start()
 	{
+		/* Get Animation-Data-Referenced */
+		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		{
+			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
 	}
 
 	void Update()
 	{
+		/* Get Animation-Data-Referenced */
+		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		{
+			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
 		/* Update User-CallBack */
-		SpriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
+		spriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
 
 		/* Set Matrix for Transform (to the GameObject) */
 		/* MEMO: Return-Value is ignored, 'cause NULL-Node has no Meshes. */
-		SpriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, false);
+		spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, false);
 	}
 
 	void LateUpdate()
@@ -69,6 +94,6 @@ public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 	*/
 	public void BootUpForce()
 	{
-		SpriteStudioData = new Library_SpriteStudio.AnimationData();
+		spriteStudioData = new Library_SpriteStudio.AnimationData();
 	}
 }

@@ -12,6 +12,7 @@ using System.Xml;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 public static partial class LibraryEditor_SpriteStudio
 {
@@ -25,7 +26,6 @@ public static partial class LibraryEditor_SpriteStudio
 		Shader.Find("Custom/SpriteStudio5/Mul")
 	};
 
-	/* Utility for Inspectors */
 	public static class Utility
 	{
 		public static void HideSetForce(GameObject InstanceGameObject, bool FlagSwitch, bool FlagSetChild, bool FlagSetInstance)
@@ -72,6 +72,25 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 		}
+
+		internal static int IndexGetOrderedDictionary(OrderedDictionary DataList, string Key)
+		{
+			int Count = DataList.Count;
+			if(0 < Count)
+			{
+				ICollection DictionaryKey = DataList.Keys;
+				string[] NameKeys = new string[Count];
+				DictionaryKey.CopyTo(NameKeys, 0);
+				for(int i=0; i<Count; i++)
+				{
+					if(0 == String.Compare(Key, NameKeys[i]))
+					{
+						return(i);
+					}
+				}
+			}
+			return(-1);
+		}
 	}
 	
 	/* Interfaces between Unity's-Menu-Script and OPSS(SS5)Data-Importing-Script */
@@ -83,6 +102,9 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagAttachControlGameObject;
 		public bool FlagConfirmOverWrite;
 		public bool FlagCreateProjectFolder;
+		public bool FlagGetAnimationReferencedPartsRoot;
+		public bool FlagGetMaterialPartsRoot;
+		public bool FlagGetTextureMaterial;
 	}
 	internal readonly static string PrefsKeyTextureSizePixelMaximum = "SS5PU_Importer_TextureSizePixelMaximum";
 	internal readonly static string PrefsKeyCollisionThicknessZ = "SS5PU_Importer_CollisionThicknessZ";
@@ -90,6 +112,9 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static string PrefsKeyFlagAttachControlGameObject = "SS5PU_Importer_FlagAttachControlGameObject";
 	internal readonly static string PrefsKeyFlagConfirmOverWrite = "SS5PU_Importer_FlagConfirmOverWrite";
 	internal readonly static string PrefsKeyFlagCreateProjectFolder = "SS5PU_Importer_FlagCreateProjectFolder";
+	internal readonly static string PrefsKeyFlagGetAnimationReferencedPartsRoot = "SS5PU_Importer_FlagGetAnimationReferencedPartsRoot";
+	internal readonly static string PrefsKeyFlagGetMaterialPartsRoot = "SS5PU_Importer_FlagGetMaterialPartsRoot";
+	internal readonly static string PrefsKeyFlagGetTextureMaterial = "SS5PU_Importer_FlagGetTextureMaterial";
 	internal readonly static string PrefsKeyFolderNameImpoertLast = "SS5PU_Importer_FolderNameImpoertLast";
 
 	public static partial class Menu
@@ -111,12 +136,15 @@ public static partial class LibraryEditor_SpriteStudio
 
 		internal static void SettingClearImport()
 		{
-			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, 8192);
+			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, 4096);
 			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, 1.0f);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, true);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, true);
 			EditorPrefs.SetBool(PrefsKeyFlagConfirmOverWrite, true);
 			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, true);
+			EditorPrefs.SetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, true);
+			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
+			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, true);
 			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, "");
 		}
 
@@ -128,6 +156,9 @@ public static partial class LibraryEditor_SpriteStudio
 			DataSettingImport.FlagAttachControlGameObject = EditorPrefs.GetBool(PrefsKeyFlagAttachControlGameObject, true);
 			DataSettingImport.FlagConfirmOverWrite = EditorPrefs.GetBool(PrefsKeyFlagConfirmOverWrite, true);
 			DataSettingImport.FlagCreateProjectFolder = EditorPrefs.GetBool(PrefsKeyFlagCreateProjectFolder, true);
+			DataSettingImport.FlagGetAnimationReferencedPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, true);
+			DataSettingImport.FlagGetMaterialPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
+			DataSettingImport.FlagGetTextureMaterial = EditorPrefs.GetBool(PrefsKeyFlagGetTextureMaterial, true);
 		}
 		internal static void SettingSetImport(ref SettingImport DataSettingImport)
 		{
@@ -137,6 +168,9 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, DataSettingImport.FlagAttachControlGameObject);
 			EditorPrefs.SetBool(PrefsKeyFlagConfirmOverWrite, DataSettingImport.FlagConfirmOverWrite);
 			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, DataSettingImport.FlagCreateProjectFolder);
+			EditorPrefs.SetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, DataSettingImport.FlagGetAnimationReferencedPartsRoot);
+			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, DataSettingImport.FlagGetMaterialPartsRoot);
+			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, DataSettingImport.FlagGetTextureMaterial);
 		}
 		internal static void SettingGetFolderImport(out string NameFolder)
 		{
@@ -155,7 +189,7 @@ public static partial class LibraryEditor_SpriteStudio
 		public static bool ImportSSPJ(SettingImport DataSettingImport, string NameInputFullPathSSPJ="", string NameOutputAssetFolderBase="", bool FlagSaveSetting=true, bool FlagDisplayProgressBar=true, bool FlagDisplayErrorDialog=true)
 		{
 			bool FlagValidSSPJ = String.IsNullOrEmpty(NameInputFullPathSSPJ);
-//			bool FlagValidAssetImport = String.IsNullOrEmpty(NameOutputAssetFolderBase);
+			string NameFileBodySSAE = "";
 
 			/* Prefs Save */
 			if(true == FlagSaveSetting)
@@ -287,10 +321,22 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 				NamePathBase = String.Copy(NameOutputAssetFolderBase);
 			}
-			NamePathBase = DataOutput[0].CreateDestinationFolders(	NamePathBase,
-																	(true == DataSettingImport.FlagCreateProjectFolder) ? NameFileBody : null
-																);
+
+			/* Create Destination Folder (Base) */
+			NamePathBase = DataIntermediate.TrunkParts.CreateDestinationFolder(	NamePathBase,
+																				(true == DataSettingImport.FlagCreateProjectFolder) ? NameFileBody : null
+																			);
 			StepNow++;
+
+			/* Get Old-Prefabs */
+			/* MEMO: Need not Instantiate, for Access Root-Node */
+			Count = InformationSSPJ.ListSSAE.Count;
+			for(int i=0; i<Count; i++)
+			{
+				NameFileBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
+				string NamePathPrefabOld = NamePathBase + "/" + DataIntermediate.NamePathSubImportPrefab + "/" + NameFileBodySSAE + "." + DataIntermediate.NameExtensionPrefab;
+				DataOutput[i].PrefabDataOld = AssetDatabase.LoadAssetAtPath(NamePathPrefabOld, typeof(GameObject));
+			}
 
 			/* Materials Creating */
 			if(true == FlagDisplayProgressBar)
@@ -300,11 +346,65 @@ public static partial class LibraryEditor_SpriteStudio
 									StepFull
 								);
 			}
-			Material[] TableMaterial = DataOutput[0].CreateAssetMaterial(NameFileBody, NamePathBase, ref DataSettingImport);
+
+			Count = InformationSSPJ.ListSSAE.Count;
+			int[][] TableIndexMaterial = new int[Count][];
+			OrderedDictionary ListMaterial = new OrderedDictionary();	/* Key=AssetPath / value=DataIntermediate.TrunkParts.InformationMaterial */
+			OrderedDictionary ListTexture = new OrderedDictionary();	/* Key=AssetPath / value=DataIntermediate.TrunkParts.InformationTexture */
+			ListMaterial.Clear();
+			ListTexture.Clear();
+			for(int i=0; i<Count; i++)
+			{
+				/* Get Old Materials & Textures */
+				NameFileBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
+				DataOutput[i].GetAssetMaterial(	out TableIndexMaterial[i],
+												ListMaterial,
+												ListTexture,
+												NamePathBase,
+												NameFileBody,	/* NameFileBodySSAE, */
+												ref DataSettingImport
+											);
+			}
+			Material[][] TableMaterial = new Material[Count][];
+
+			int CountListMaterial = ListMaterial.Count;
+			int CountListTexture = ListTexture.Count;
+			if(0 < CountListMaterial)
+			{
+				bool[] FlagCreateMaterial = new bool[CountListMaterial];
+				for(int i=0; i<CountListMaterial; i++)
+				{
+					FlagCreateMaterial[i] = false;
+				}
+
+				CountListTexture = (0 < CountListTexture) ? CountListTexture : 1;
+				bool[] FlagCreateTexture = new bool[CountListTexture];
+				for(int i=0; i<CountListTexture; i++)
+				{
+					FlagCreateTexture[i] = false;
+				}
+
+				for(int i=0; i<Count; i++)
+				{
+					/* Update Materials & Textures */
+					DataOutput[i].UpdateAssetMaterial(	out TableMaterial[i],
+														ref FlagCreateMaterial,
+														ref FlagCreateTexture,
+														TableIndexMaterial[i],
+														ListMaterial,
+														ListTexture,
+														NameFileBody,
+														NamePathBase,
+														ref DataSettingImport
+													);
+				}
+			}
+			ListMaterial.Clear();
+			ListTexture.Clear();
+
 			StepNow += InformationSSPJ.ListSSCE.Count;
 
 			/* Animations Creating */
-			string FileNameBodySSAE = "";
 			Count = InformationSSPJ.ListSSAE.Count;
 			for(int i=0; i<Count; i++)
 			{
@@ -319,10 +419,10 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* GameObjects Create */
-				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
-				if(false == DataOutput[i].CreateDataGameObjectSprite(	FileNameBodySSAE,
+				NameFileBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[i]);
+				if(false == DataOutput[i].CreateDataGameObjectSprite(	NameFileBodySSAE,
 																		NamePathBase,
-																		TableMaterial,
+																		TableMaterial[i],
 																		ref DataSettingImport
 																	)
 					)
@@ -333,7 +433,7 @@ public static partial class LibraryEditor_SpriteStudio
 						DataOutput[i].GameObjectRoot = null;
 					}
 
-					Debug.LogError("SSAE-Convert-GameObject Error:" + FileNameBodySSAE);
+					Debug.LogError("SSAE-Convert-GameObject Error:" + NameFileBodySSAE);
 					goto Menu_ImportSSPJ_ErrorEnd;
 				}
 			}
@@ -387,7 +487,7 @@ public static partial class LibraryEditor_SpriteStudio
 																	)
 							)
 						{	/* Error (Not Found SSAE-Name) */
-							Debug.LogError("Instance Calling Data Name:" + FileNameBodySSAE);
+							Debug.LogError("Instance Calling Data Name:" + NameFileBodySSAE);
 							goto Menu_ImportSSPJ_ErrorEnd;
 						}
 
@@ -401,21 +501,21 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
-			/* Prefab Create */
+			/* Prefab Create & Destroy Old-PrefabData */
 			int IndexOrder;
 			for(int i=0; i<Count; i++)
 			{
 				IndexOrder = OrderCreatePrefab[i];
-				FileNameBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[IndexOrder]);
+				NameFileBodySSAE = Path.GetFileNameWithoutExtension((string)InformationSSPJ.ListSSAE[IndexOrder]);
 				if(false == DataOutput[IndexOrder].CreateDataPrefabSprite(	DataOutput,
-																			FileNameBodySSAE,
+																			NameFileBodySSAE,
 																			NamePathBase,
 																			InformationSSPJ,
 																			ref DataSettingImport
 																		)
 					)
 				{
-					Debug.LogError("SSAE-Convert-Prefab Error:" + FileNameBodySSAE);
+					Debug.LogError("SSAE-Convert-Prefab Error:" + NameFileBodySSAE);
 					goto Menu_ImportSSPJ_ErrorEnd;
 				}
 			}
@@ -1197,7 +1297,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 							case KindVersionSSAE.VERSION_010002:
 								{
-									/* MEMO: Attributes'-Tag always exists.() */
+									/* MEMO: Attributes'-Tag always exists. */
 									string ValueTextBool = "";
 									bool ValueBool = false;
 									DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
@@ -2113,12 +2213,11 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 
 		/* Confirm Overwrite */
-		internal static bool ObjectCheckOverwrite(out UnityEngine.Object ObjectExisting, string NameAsset, Type TypeObject, bool FlagComfirmOverwrite)
+		internal static bool ObjectCheckOverwrite(UnityEngine.Object ObjectExisting, Type TypeObject, bool FlagComfirmOverwrite)
 		{
-			ObjectExisting = AssetDatabase.LoadAssetAtPath(NameAsset, TypeObject);
 			if((null != ObjectExisting) && (true == FlagComfirmOverwrite))
 			{	/* Existing & Overwrite-Cheking */
-				if(false == EditorUtility.DisplayDialog(	"The asset already exists.\n" + NameAsset,
+				if(false == EditorUtility.DisplayDialog(	"The asset already exists.\n" + AssetDatabase.GetAssetPath(ObjectExisting),
 															"Do you want to overwrite?",
 															"Yes",
 															"No"
@@ -2164,24 +2263,16 @@ public static partial class LibraryEditor_SpriteStudio
 				return(true);
 			}
 
-			internal static UnityEngine.Object Prefab(GameObject GameObjectInstanceTop, string Name, string NamePath, bool FlagComfirmOverwrite)
+			internal static UnityEngine.Object Prefab(GameObject GameObjectInstanceTop, string Name, string NamePath)
 			{
 				/* Check Existing */
-				UnityEngine.Object PrefabNow = null;
-				string NamePathAsset = NamePath + "/" + Name + ".prefab";
-				if(false == AssetUtility.ObjectCheckOverwrite(out PrefabNow, NamePathAsset, typeof(GameObject), FlagComfirmOverwrite))
-				{	/* Exist & Cancel */
-					Debug.Log("SSAE-Create-Prefab: Not-Overwritten Prefab[" + NamePathAsset + "]");
-					return(PrefabNow);
-				}
-
+				string NamePathAsset = NamePath + "/" + Name + "." + DataIntermediate.NameExtensionPrefab;
+				UnityEngine.Object PrefabNow = AssetDatabase.LoadAssetAtPath(NamePathAsset, typeof(GameObject));
 				if(null == PrefabNow)
 				{	/* Create New */
 					PrefabNow = PrefabUtility.CreateEmptyPrefab(NamePathAsset);
 				}
 				PrefabNow = PrefabUtility.ReplacePrefab(GameObjectInstanceTop, PrefabNow, ReplacePrefabOptions.Default);
-//				PrefabNow = PrefabUtility.ReplacePrefab(GameObjectInstanceTop, PrefabNow, ReplacePrefabOptions.ConnectToPrefab);
-
 				return(PrefabNow);
 			}
 
@@ -2294,9 +2385,13 @@ public static partial class LibraryEditor_SpriteStudio
 
 	internal static class DataIntermediate
 	{
-		private readonly static string NamePathSubImportTexture = "Texture";
-		private readonly static string NamePathSubImportMaterial = "Material";
-		private readonly static string NamePathSubImportPrefab = "Prefab";
+		internal readonly static string NamePathSubImportTexture = "Texture";
+		internal readonly static string NamePathSubImportMaterial = "Material";
+		internal readonly static string NamePathSubImportPrefab = "Prefab";
+		internal readonly static string NamePathSubImportAnimation = "Animation";
+
+		internal readonly static string NameExtensionPrefab = "prefab";
+		internal readonly static string NameExtensionAnimation = "asset";
 
 		/* Animation-Parts Trunk */
 		internal class TrunkParts
@@ -2305,6 +2400,7 @@ public static partial class LibraryEditor_SpriteStudio
 			internal PartsImage[] ListImage = null;
 			internal Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay = null;
 			internal ArrayList ListPartsInstance = null;
+			internal Library_SpriteStudio.AnimationData[] ListDataRuntime = null;
 
 			internal ParseOPSS.KindVersionSSAE VersionCodeSSAE;
 
@@ -2314,18 +2410,27 @@ public static partial class LibraryEditor_SpriteStudio
 
 			internal GameObject GameObjectRoot = null;
 			internal UnityEngine.Object PrefabData = null;
+			internal UnityEngine.Object PrefabDataOld = null;
+
+			internal Script_SpriteStudio_AnimationReferenced DataAnimationReferenced = null;
+			internal ScriptableObject PrefabDataAnimationReferenced = null;
 
 			internal void BootUp()
 			{
 				ListPartsInstance = new ArrayList();
 				ListPartsInstance.Clear();
+				ListDataRuntime = null;
 
 				GameObjectRoot = null;
 				PrefabData = null;
+				PrefabDataOld = null;
+
+				DataAnimationReferenced = null;
+				PrefabDataAnimationReferenced = null;
 			}
 
 			/* Create Destination Folders */
-			internal string CreateDestinationFolders(string NamePath, string NamePathSubFolder)
+			internal static string CreateDestinationFolder(string NamePath, string NamePathSubFolder)
 			{
 				string NamePathBase = String.Copy(NamePath);
 
@@ -2336,129 +2441,400 @@ public static partial class LibraryEditor_SpriteStudio
 					NamePathBase += "/" + NamePathSubFolder;
 				}
 
-				/* Create Destination-Folders */
-				AssetUtility.Create.Folder(NamePathSubImportTexture, NamePathBase);
-				AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePathBase);
-				AssetUtility.Create.Folder(NamePathSubImportPrefab, NamePathBase);
-
 				return(NamePathBase);
 			}
 
-			/* Create Assets (Materials & Textures) */
-			internal Material[] CreateAssetMaterial(string Name, string NamePath, ref SettingImport DataSettingImport)
+			/* Asset Allocation Informations */
+			/* MEMO: OrderedDictionarys' "value" for List-Materials & List-Textures */
+			internal class InformationTexture
 			{
-				string NamePathImportAssetSub = "";
+				internal Texture2D SubstanceAsset;
+				internal int IndexImage;
 
-				/* Create Texture-Assets */
-				NamePathImportAssetSub = NamePath + "/" + NamePathSubImportTexture;
-				Texture2D[] TebleTexture = CreateTextureTable(	NamePathImportAssetSub,
-																ListImage,
-																ListImage.Length,
+				internal InformationTexture()
+				{
+					SubstanceAsset = null;
+					IndexImage = -1;
+				}
+			}
+			internal class InformationMaterial
+			{
+				internal Material SubstanceAsset;
+				internal int IndexTextureInformation;
+
+				internal InformationMaterial()
+				{
+					SubstanceAsset = null;
+					IndexTextureInformation = -1;
+				}
+			}
+			/* Create Assets (Materials & Textures) */
+			internal void GetAssetMaterial(	out int[] TableIndexMaterial,
+											OrderedDictionary ListMaterial,
+											OrderedDictionary ListTexture,
+											string NamePathBase,
+											string NameFileBodySSAE,
+											ref SettingImport DataSettingImport
+										)
+			{
+				GameObject ObjectRootParts = PrefabDataOld as GameObject;
+				int CountTexture = ListImage.Length;
+				int CountMaterial = CountTexture * ShaderOperationMax;
+				TableIndexMaterial = new int[CountMaterial];
+				for(int i=0; i<CountMaterial; i++)
+				{
+					TableIndexMaterial[i] = -1;
+				}
+
+				/* Create Material-Table */
+				if((null == ObjectRootParts) || (false == DataSettingImport.FlagGetMaterialPartsRoot))
+				{	/* Create-New */
+					goto GetAssetMaterial_CreateNew;
+				}
+				else
+				{	/* Update */
+					Script_SpriteStudio_PartsRoot ScriptRoot = ObjectRootParts.GetComponent<Script_SpriteStudio_PartsRoot>();
+					if(null != ScriptRoot)
+					{
+						/* Copy Material & Texture */
+						int CountMaterialOld = ScriptRoot.TableMaterial.Length;
+						if(CountMaterial != CountMaterialOld)
+						{	/* Different count: Create-New */
+#if false
+							int CountTextureOld = ScriptRoot.TableMaterial.Length / ShaderOperationMax;
+							for(int i=0; i<CountTexture; i++)
+							{
+								if(i < CountTextureOld)
+								{
+									GetAssetMaterial_SetUpdate(	TableIndexMaterial,
+																ListMaterial, ListTexture,
+																NamePathBase, NameFileBodySSAE,
+																i,
+																ScriptRoot,
 																ref DataSettingImport
 															);
-
-				/* Create Material-Assets */
-				NamePathImportAssetSub = NamePath + "/" + NamePathSubImportMaterial;
-				Material[] TableMaterial = CreateMaterialTable(	NamePathImportAssetSub,
-																TebleTexture
+								}
+								else
+								{	/* Create Asset in Default-Folder */
+									GetAssetMaterial_CreateNew(	TableIndexMaterial,
+																ListMaterial, ListTexture,
+																NamePathBase, NameFileBodySSAE,
+																i
 															);
-
-				/* Fixing Created Assets */
-				AssetDatabase.SaveAssets();
-				return(TableMaterial);
-			}
-			private static Texture2D[] CreateTextureTable(	string NamePath,
-															PartsImage[] ListImage,
-															int Count,
-															ref SettingImport DataSettingImport
-														)
-			{
-				Texture2D[] TableTexture = new Texture2D[Count];
-				string NameFileBody = "";
-				string NameFileExtensionTexture = "";
-				string NameAsset = "";
-
-				for(int i=0; i<Count; i++)
-				{
-					NameFileBody = Path.GetFileNameWithoutExtension(ListImage[i].FileName);
-					NameFileExtensionTexture = Path.GetExtension(ListImage[i].FileName);
-
-					/* Texture File Copy */
-					NameAsset = NamePath + "/" + NameFileBody + NameFileExtensionTexture;
-					File.FileCopyToAsset(File.AssetPathToNativePath(NameAsset), ListImage[i].FileName, true);
-
-					/* Importer Setting */
-					AssetDatabase.ImportAsset(NameAsset);
-					TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
-					if(null != Importer)
-					{
-						Importer.anisoLevel = 1;
-						Importer.borderMipmap = false;
-						Importer.convertToNormalmap = false;
-						Importer.fadeout = false;
-						Importer.filterMode = FilterMode.Bilinear;
-						Importer.generateCubemap = TextureImporterGenerateCubemap.None;
-						Importer.generateMipsInLinearSpace = false;
-						Importer.grayscaleToAlpha = false;
-						Importer.isReadable = false;
-						Importer.lightmap = false;
-						Importer.linearTexture = false;
-						Importer.mipmapEnabled = false;
-						Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
-						Importer.normalmap = false;
-						Importer.npotScale = TextureImporterNPOTScale.None;
-						Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
-						Importer.textureType  = TextureImporterType.Advanced;
-						Importer.wrapMode = TextureWrapMode.Clamp;
-						AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
-					}
-					TableTexture[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
-
-					/* Texture's Pixel-Size Check */
-					if((true != PixelSizeCheck(TableTexture[i].width)) || (true != PixelSizeCheck(TableTexture[i].height)))
-					{
-						Debug.LogWarning("SSCE-Texture Warning: CellMap Pixel-Size is not multiples of powerd by 2: (" + ListImage[i].FileName + ")");
-					}
-				}
-
-				/* Fixing Created Assets */
-				AssetDatabase.SaveAssets();
-				return(TableTexture);
-			}
-			private static Material[] CreateMaterialTable(string NamePath, Texture2D[] TableTexture)
-			{
-				int Count = TableTexture.Length;
-				Material[] TableMaterial = new Material[Count * ShaderOperationMax];
-				string NameFileBody = "";
-				string NameAsset = "";
-				for(int i=0; i<Count; i++)
-				{
-					string NameMaterialSuffix = "";
-					int MaterialNo = 0;
-					Library_SpriteStudio.KindColorOperation	KindOperation = Library_SpriteStudio.KindColorOperation.NON;
-					NameFileBody = TableTexture[i].name;
-					for(int j=0; j<ShaderOperationMax; j++)
-					{
-						KindOperation = (Library_SpriteStudio.KindColorOperation)(j + 1);
-						NameMaterialSuffix = KindOperation.ToString();
-
-						MaterialNo = (i * ShaderOperationMax) + j;
-						NameAsset = NamePath + "/" + NameFileBody + "_" + NameMaterialSuffix + ".mat";
-
-						TableMaterial[MaterialNo] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
-						if(null == TableMaterial[MaterialNo])
-						{
-							TableMaterial[MaterialNo] = new Material(Shader_SpriteStudioTriangleX[j]);
-							AssetDatabase.CreateAsset(TableMaterial[MaterialNo], NameAsset);
+								}
+							}
+#else
+							/* MEMO: If the number of the material does not match        */
+							/*        the assigned texture can not be tracked correctly. */
+							Debug.LogWarning(	"Material-Update-Check Warning:" +
+												" Materials are regenerated forcibly in default folder." +
+												" Because the number of material does not match the old data." +
+												" [" + NameFileBodySSAE + ".ssae]");
+							goto GetAssetMaterial_CreateNew;
+#endif
 						}
-						TableMaterial[MaterialNo].mainTexture = TableTexture[i];
-						TableMaterial[MaterialNo] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
+						else
+						{	/* Same count */
+							for(int i=0; i<CountTexture; i++)
+							{
+								GetAssetMaterial_SetUpdate(	TableIndexMaterial,
+															ListMaterial, ListTexture,
+															NamePathBase, NameFileBodySSAE,
+															i,
+															ScriptRoot,
+															ref DataSettingImport
+														);
+							}
+						}
+					}
+					else
+					{	/* Not-Found(Error) ... Create-New */
+						goto GetAssetMaterial_CreateNew;
+					}
+				}
+				return;
+
+			GetAssetMaterial_CreateNew:;
+				/* Create Material-Table */
+				for(int i=0; i<CountTexture; i++)
+				{
+					GetAssetMaterial_CreateNew(	TableIndexMaterial,
+												ListMaterial, ListTexture,
+												NamePathBase, NameFileBodySSAE,
+												i
+											);
+				}
+				return;
+			}
+			private void GetAssetMaterial_CreateNew(	int[] TableIndexMaterial,
+														OrderedDictionary ListMaterial,
+														OrderedDictionary ListTexture,
+														string NamePathBase,
+														string NameBodySSAE,
+														int IndexImage
+													)
+			{
+				string NameFileAsset = "";
+				string NameFileBody = "";
+				string NameFileExtension = "";
+
+				/* Create Texture-Asset's Name */
+				NameFileBody = Path.GetFileNameWithoutExtension(ListImage[IndexImage].FileName);
+				NameFileExtension = Path.GetExtension(ListImage[IndexImage].FileName);
+				NameFileAsset = NamePathBase + "/" + NamePathSubImportTexture + "/" + NameFileBody + NameFileExtension;
+				InformationTexture DataTextureInformation = new InformationTexture();
+				if(false == ListTexture.Contains(NameFileAsset))
+				{	/* Unregistered */
+					DataTextureInformation.SubstanceAsset = null;
+					DataTextureInformation.IndexImage = IndexImage;
+					ListTexture.Add(NameFileAsset, DataTextureInformation);
+				}
+				int IndexTextureList = Utility.IndexGetOrderedDictionary(ListTexture, NameFileAsset);
+
+				/* Create Material-Asset's Name */
+				int IndexMaterialTop = IndexImage * ShaderOperationMax;
+				NameFileAsset = NamePathBase + "/" + NamePathSubImportMaterial + "/" + NameFileBody;
+				string NameFileMaterial = "";
+				Library_SpriteStudio.KindColorOperation	KindOperation = Library_SpriteStudio.KindColorOperation.NON;
+				InformationMaterial DataMaterialInformation = null;
+				for(int i=0; i<ShaderOperationMax; i++)
+				{
+					DataMaterialInformation = new InformationMaterial();
+					KindOperation = (Library_SpriteStudio.KindColorOperation)(i + 1);
+					NameFileMaterial = NameFileAsset + "_" + (KindOperation.ToString()) + ".mat";
+					if(false == ListMaterial.Contains(NameFileMaterial))
+					{	/* Unregistered */
+						DataMaterialInformation.SubstanceAsset = null;
+						DataMaterialInformation.IndexTextureInformation = IndexTextureList;
+						ListMaterial.Add(NameFileMaterial, DataMaterialInformation);
+					}
+					TableIndexMaterial[IndexMaterialTop + i] = Utility.IndexGetOrderedDictionary(ListMaterial, NameFileMaterial);
+				}
+			}
+			private void GetAssetMaterial_SetUpdate(	int[] TableIndexMaterial,
+														OrderedDictionary ListMaterial,
+														OrderedDictionary ListTexture,
+														string NamePathBase,
+														string NameBodySSAE,
+														int IndexImage,
+														Script_SpriteStudio_PartsRoot ScriptRoot,
+														ref SettingImport DataSettingImport
+													)
+			{
+				int IndexTextureList = -1;
+				Material MaterialNow = null;
+				Texture2D TextureNow = null;
+				string NamePathAssetMaterial = "";
+				string NamePathAssetTexture = "";
+				InformationTexture DataTextureInformation = null;
+				InformationMaterial DataMaterialInformation = null;
+
+				/* Meterial Get */
+				int IndexMaterialTop = IndexImage * ShaderOperationMax;
+				for(int i=0; i<ShaderOperationMax; i++)
+				{
+					MaterialNow = ScriptRoot.TableMaterial[IndexMaterialTop + i];
+					if(null != MaterialNow)
+					{	/* Exist */
+						NamePathAssetMaterial = AssetDatabase.GetAssetPath(MaterialNow);
+						if(false == ListMaterial.Contains(NamePathAssetMaterial))
+						{	/* Unregistered */
+							if(true == DataSettingImport.FlagGetTextureMaterial)
+							{	/* Overwrite */
+								/* Texture Get */
+								TextureNow = MaterialNow.mainTexture as Texture2D;
+								if(null != TextureNow)
+								{
+									NamePathAssetTexture = AssetDatabase.GetAssetPath(TextureNow);
+									if(false == ListTexture.Contains(NamePathAssetTexture))
+									{	/* Unregistered */
+										/* Create Texture-Information */
+										DataTextureInformation = new InformationTexture();
+										DataTextureInformation.SubstanceAsset = TextureNow;
+										DataTextureInformation.IndexImage = IndexImage;
+										ListTexture.Add(NamePathAssetTexture, DataTextureInformation);
+									}
+									IndexTextureList = Utility.IndexGetOrderedDictionary(ListTexture, NamePathAssetTexture);
+								}
+								else
+								{	/* Error: Texture is not created*/
+									IndexTextureList = -1;
+								}
+							}
+							else
+							{	/* Create-New, Force */
+								if(false == ListTexture.Contains(NamePathAssetTexture))
+								{	/* Unregistered */
+									string NameFileBody = "";
+									string NameFileExtension = "";
+
+									/* Create Texture-Information */
+									NameFileBody = Path.GetFileNameWithoutExtension(ListImage[IndexImage].FileName);
+									NameFileExtension = Path.GetExtension(ListImage[IndexImage].FileName);
+									NamePathAssetTexture = NamePathBase + "/" + NamePathSubImportTexture + "/" + NameFileBody + NameFileExtension;
+
+									DataTextureInformation = new InformationTexture();
+									DataTextureInformation.SubstanceAsset = null;
+									DataTextureInformation.IndexImage = IndexImage;
+									ListTexture.Add(NamePathAssetTexture, DataTextureInformation);
+								}
+								IndexTextureList = Utility.IndexGetOrderedDictionary(ListTexture, NamePathAssetTexture);
+							}
+
+							/* Create Material-Information */
+							DataMaterialInformation = new InformationMaterial();
+							DataMaterialInformation.SubstanceAsset = MaterialNow;
+							DataMaterialInformation.IndexTextureInformation = IndexTextureList;
+							ListMaterial.Add(NamePathAssetMaterial, DataMaterialInformation);
+						}
+						TableIndexMaterial[IndexMaterialTop + i] = Utility.IndexGetOrderedDictionary(ListMaterial, NamePathAssetMaterial);
+					}
+					else
+					{	/* Error: Material is not created */
+						TableIndexMaterial[IndexMaterialTop + i] = -1;
+					}
+				}
+			}
+			internal void UpdateAssetMaterial(	out Material[] TableMaterial,
+												ref bool[] FlagCreateMaterial,
+												ref bool[] FlagCreateTexture,
+												int[] TableIndexMaterial,
+												OrderedDictionary ListMaterial,
+												OrderedDictionary ListTexture,
+												string NameFileBody,
+												string NamePathBase,
+												ref SettingImport DataSettingImport
+											)
+			{
+				ICollection CollectionKey = null;
+				InformationTexture TextureInformation = null;
+				InformationMaterial MaterialInformation = null;
+
+				/* Create Material Table */
+				int CountMaterial = TableIndexMaterial.Length;
+				int CountTexture = ListTexture.Count;
+				TableMaterial = new Material[CountMaterial];
+				string NameAsset = "";
+
+				/* Update Texture */
+				if(0 < CountTexture)
+				{
+					/* Get Asset-Names */
+					CollectionKey = ListTexture.Keys;
+					string[] Keys = new string[CountTexture];
+					CollectionKey.CopyTo(Keys, 0);
+					for(int i=0; i<CountTexture; i++)
+					{
+						/* Texture File Copy */
+						NameAsset = File.AssetPathToNativePath(Keys[i]);
+						TextureInformation = ListTexture[Keys[i]] as InformationTexture;
+						if(null == TextureInformation.SubstanceAsset)
+						{	/* No Existing */
+							/* Create Destination-Folders */
+							AssetUtility.Create.Folder(NamePathSubImportTexture, NamePathBase);
+						}
+						File.FileCopyToAsset(	NameAsset,
+												ListImage[TextureInformation.IndexImage].FileName,
+												true
+											);
+						NameAsset = String.Copy(Keys[i]);
+						if(false == FlagCreateTexture[i])
+						{
+							/* Importer Setting */
+							AssetDatabase.ImportAsset(NameAsset);
+							TextureImporter Importer = TextureImporter.GetAtPath(NameAsset) as TextureImporter;
+							if(null != Importer)
+							{
+								Importer.anisoLevel = 1;
+								Importer.borderMipmap = false;
+								Importer.convertToNormalmap = false;
+								Importer.fadeout = false;
+								Importer.filterMode = FilterMode.Bilinear;
+								Importer.generateCubemap = TextureImporterGenerateCubemap.None;
+								Importer.generateMipsInLinearSpace = false;
+								Importer.grayscaleToAlpha = false;
+								Importer.isReadable = false;
+								Importer.lightmap = false;
+								Importer.linearTexture = false;
+								Importer.mipmapEnabled = false;
+								Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
+								Importer.normalmap = false;
+								Importer.npotScale = TextureImporterNPOTScale.None;
+								Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+								Importer.textureType  = TextureImporterType.Advanced;
+								Importer.wrapMode = TextureWrapMode.Clamp;
+								AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
+							}
+							TextureInformation.SubstanceAsset = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
+							FlagCreateTexture[i] = true;
+
+							/* Texture's Pixel-Size Check */
+							if(	(true != PixelSizeCheck(TextureInformation.SubstanceAsset.width))
+								|| (true != PixelSizeCheck(TextureInformation.SubstanceAsset.height))
+							)
+							{
+								Debug.LogWarning("SSCE-Texture Warning: CellMap Pixel-Size is not multiples of powerd by 2: (" + ListImage[i].FileName + ")");
+							}
+
+							/* Fixing Created Assets */
+							AssetDatabase.SaveAssets();
+						}
 					}
 				}
 
-				/* Fixing Created Assets */
-				AssetDatabase.SaveAssets();
-				return(TableMaterial);
+				/* Update Material */
+				if(0 < CountMaterial)
+				{
+					/* Get Asset-Names */
+					CollectionKey = ListMaterial.Keys;
+					string[] Keys = new string[CountMaterial];
+					CollectionKey.CopyTo(Keys, 0);
+					int IndexMaterial = -1;
+					int OperationNo = -1;
+					Material MaterialNew = null;
+					for(int i=0; i<CountMaterial; i++)
+					{
+						OperationNo = i % ShaderOperationMax;
+						IndexMaterial = TableIndexMaterial[i];
+						if(0 > IndexMaterial)
+						{	/* No-Creating */
+							TableMaterial[i] = null;
+						}
+						else
+						{
+							MaterialInformation = ListMaterial[IndexMaterial] as InformationMaterial;
+							NameAsset = String.Copy(Keys[i]);
+							if(false == FlagCreateMaterial[i])
+							{	/* Create-New */
+								if(null != MaterialInformation.SubstanceAsset)
+								{	/* Overwrite */
+									MaterialNew = MaterialInformation.SubstanceAsset;
+								}
+								else
+								{	/* Create-New */
+									/* Create Destination-Folders */
+									AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePathBase);
+
+									/* Create new Material */
+									MaterialNew = new Material(Shader_SpriteStudioTriangleX[OperationNo]);
+									AssetDatabase.CreateAsset(MaterialNew, NameAsset);
+								}
+								TextureInformation = ListTexture[MaterialInformation.IndexTextureInformation] as InformationTexture;
+								MaterialNew.mainTexture = TextureInformation.SubstanceAsset;
+								AssetDatabase.SaveAssets();
+
+								TableMaterial[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
+								MaterialInformation.SubstanceAsset = TableMaterial[i];
+								FlagCreateMaterial[i] = true;
+							}
+							else
+							{	/* Already Created */
+								MaterialInformation = ListMaterial[IndexMaterial] as InformationMaterial;
+								TableMaterial[i] = MaterialInformation.SubstanceAsset;
+							}
+						}
+					}
+				}
 			}
 
 			/* Legal-Check Texture's-Pixel-Size, */
@@ -2528,8 +2904,8 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Animation Converting (Intermediate to Runtime) & Attaching Collider */
+				ListDataRuntime = new Library_SpriteStudio.AnimationData[ListParts.Length];
 				{
-					Library_SpriteStudio.AnimationData[] ListDataRuntime = new Library_SpriteStudio.AnimationData[ListParts.Length];
 					Library_SpriteStudio.AnimationData DataSpriteStudio = null;
 					for(int i=0; i<ListParts.Length; i++)
 					{
@@ -2557,6 +2933,7 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 				}
 
+#if false
 				/* Set Nodes Active */
 				AssetUtility.GameObjectSetActive(GameObjectRoot, true);
 				for(int i=0; i<GameObjectParts.Length; i++)
@@ -2566,7 +2943,7 @@ public static partial class LibraryEditor_SpriteStudio
 						AssetUtility.GameObjectSetActive(GameObjectParts[i], true);
 					}
 				}
-
+#endif
 				return(true);
 			}
 
@@ -2579,6 +2956,23 @@ public static partial class LibraryEditor_SpriteStudio
 												ref LibraryEditor_SpriteStudio.SettingImport DataSettingImport
 											)
 			{
+				/* File Overwrite Check */
+				bool FlagOverwrite = PrefabUpdateCheck(	out PrefabData,
+														out PrefabDataAnimationReferenced,
+														Name,
+														NamePath,
+														DataSettingImport.FlagConfirmOverWrite,
+														DataSettingImport.FlagGetAnimationReferencedPartsRoot
+													);
+				if(false == FlagOverwrite)
+				{	/* Not-OverWrite */
+					if(null != GameObjectRoot)
+					{
+						UnityEngine.Object.DestroyImmediate(GameObjectRoot);
+					}
+					return(true);
+				}
+
 				/* Set Prefab-Ref.("Instance"-Parts) */
 				{
 					int Count = ListPartsInstance.Count;
@@ -2612,8 +3006,49 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 				}
 
-				/* Create Prefab */
-				PrefabData = AssetUtility.Create.Prefab(GameObjectRoot, Name, NamePath + "/" + NamePathSubImportPrefab, DataSettingImport.FlagConfirmOverWrite);
+				/* Parts' Animation-Data Transfer to "Refernced-Animation-Data" */
+				{
+					int Count = 0;
+
+					/* Animation-Information-Data Transfar */
+					Count = ListInformationPlay.Length;
+					DataAnimationReferenced.ListInformationAnimation = new Library_SpriteStudio.AnimationInformationPlay[Count];
+					for(int i=0; i<Count; i++)
+					{
+						DataAnimationReferenced.ListInformationAnimation[i] = ListInformationPlay[i];
+					}
+
+					/* Nodes'-Animation-Data Transfar */
+					Count = ListParts.Length;
+					DataAnimationReferenced.ListNodeAnimationData = new Library_SpriteStudio.AnimationData[Count];
+					for(int i=0; i<Count; i++)
+					{
+						DataAnimationReferenced.ListNodeAnimationData[i] = ListDataRuntime[i];
+					}
+
+					EditorUtility.SetDirty(DataAnimationReferenced);
+				}
+
+				/* Set ScriptableObject to Root-Parts */
+				Script_SpriteStudio_PartsRoot PartsRoot = GameObjectRoot.GetComponent<Script_SpriteStudio_PartsRoot>();
+				PartsRoot.SpriteStudioDataReferenced = DataAnimationReferenced;
+
+				/* Set Nodes Active */
+				{
+					AssetUtility.GameObjectSetActive(GameObjectRoot, true);
+					GameObject GameObjectParts = null;
+					for(int i=0; i<ListParts.Length; i++)
+					{
+						GameObjectParts = ListParts[i].GameObjectParts;
+						if(null != GameObjectParts)
+						{
+							AssetUtility.GameObjectSetActive(GameObjectParts, true);
+						}
+					}
+				}
+
+				/* Create Prefab (GameObjects) */
+				PrefabData = PrefabUtility.ReplacePrefab(GameObjectRoot, PrefabData, ReplacePrefabOptions.Default);
 				if(null == PrefabData)
 				{
 					return(false);
@@ -2646,8 +3081,8 @@ public static partial class LibraryEditor_SpriteStudio
 							ScriptLinkPrefab.FlagAutoDevelop = true;
 
 							/* Create Control Prefab */
-							/* MEMO: can't to be confirmed Overwrite */
-							UnityEngine.Object PrefabControl = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath, DataSettingImport.FlagConfirmOverWrite);
+							/* MEMO: Not Confirm Overwrite */
+							UnityEngine.Object PrefabControl = AssetUtility.Create.Prefab(GameObjectControl, NameControl, NamePath);
 							if(null == PrefabControl)
 							{
 								Debug.LogError("Miss-Creating[" + Name + "]");
@@ -2692,6 +3127,64 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 				return(null);
 			}
+			private bool PrefabUpdateCheck(	out UnityEngine.Object PrefabData,
+											out ScriptableObject ObjectDataAnimationReferenced,
+											string Name,
+											string NamePath,
+											bool FlagConfirmOverWrite,
+											bool FlagGetAnimationReferencedPartsRoot
+										)
+			{
+				/* Check Existing */
+				string NamePathDataParts = NamePath + "/" + NamePathSubImportPrefab + "/" + Name + "." + NameExtensionPrefab;
+				string NamePathDataReferenced = NamePath + "/" + NamePathSubImportAnimation + "/" + Name + "." + NameExtensionAnimation;
+				ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+				PrefabData = PrefabDataOld;
+				if(false == AssetUtility.ObjectCheckOverwrite(	PrefabData,
+																typeof(GameObject),
+																FlagConfirmOverWrite
+															)
+					)
+				{	/* Cancelled */
+					Debug.Log("SSAE-Create-Prefab: Not-Overwritten Prefab[" + NamePathDataParts + "]");
+					return(false);
+				}
+
+				if(null == PrefabData)
+				{	/* Data Not-Found */
+					/* Create Destination Folder */
+					AssetUtility.Create.Folder(NamePathSubImportPrefab, NamePath);
+					PrefabData = PrefabUtility.CreateEmptyPrefab(NamePathDataParts);
+				}
+				else
+				{	/* Data Exist */
+					if(true == FlagGetAnimationReferencedPartsRoot)
+					{	/* Get from Prefab-Data */
+						if(null != PrefabDataOld)
+						{	/* Old-Data is existing */
+							GameObject GameObjectRootOld = PrefabDataOld as GameObject;
+							Script_SpriteStudio_PartsRoot ScriptRootOld = GameObjectRootOld.GetComponent<Script_SpriteStudio_PartsRoot>();
+							if(null != ScriptRootOld)
+							{
+								NamePathDataReferenced = AssetDatabase.GetAssetPath(ScriptRootOld.SpriteStudioDataReferenced);
+								ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+							}
+						}
+					}
+				}
+				if(null == ObjectDataAnimationReferenced)
+				{	/* Data Not-Found (Pass-2) : Create New-Data */
+					/* Create Destination Folder */
+					AssetUtility.Create.Folder(NamePathSubImportAnimation, NamePath);
+
+					/* Create New Asset */
+					DataAnimationReferenced = ScriptableObject.CreateInstance<Script_SpriteStudio_AnimationReferenced>();
+					AssetDatabase.CreateAsset(DataAnimationReferenced, NamePathDataReferenced);
+					ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+				}
+				DataAnimationReferenced = ObjectDataAnimationReferenced as Script_SpriteStudio_AnimationReferenced;
+				return(true);
+			}
 			private Library_SpriteStudio.AnimationData NodeSetAnimation(GameObject GameObjectParts, PartsSprite DataParts, Script_SpriteStudio_PartsRoot ScriptRoot, Material[] TableMaterial)
 			{
 				Library_SpriteStudio.AnimationData DataSpriteStudio = null;
@@ -2704,6 +3197,7 @@ public static partial class LibraryEditor_SpriteStudio
 					ComponentScript_Triangle2.BootUpForce();
 					DataSpriteStudio = ComponentScript_Triangle2.SpriteStudioData;
 					DataSpriteStudio.ID = DataParts.ID;
+					ComponentScript_Triangle2.ID = DataParts.ID;
 
 					ComponentScript_Triangle2.SpriteStudioData.KindBlendTarget = DataParts.KindBlendTarget;
 					ComponentScript_Triangle2.ScriptRoot = ScriptRoot;
@@ -2720,6 +3214,7 @@ public static partial class LibraryEditor_SpriteStudio
 						ComponentScript_Triangle4.BootUpForce();
 						DataSpriteStudio = ComponentScript_Triangle4.SpriteStudioData;
 						DataSpriteStudio.ID = DataParts.ID;
+						ComponentScript_Triangle4.ID = DataParts.ID;
 
 						ComponentScript_Triangle4.SpriteStudioData.KindBlendTarget = DataParts.KindBlendTarget;
 						ComponentScript_Triangle4.ScriptRoot = ScriptRoot;
@@ -2736,6 +3231,7 @@ public static partial class LibraryEditor_SpriteStudio
 							ComponentScript_PartsNULL.BootUpForce();
 							DataSpriteStudio = ComponentScript_PartsNULL.SpriteStudioData;
 							DataSpriteStudio.ID = DataParts.ID;
+							ComponentScript_PartsNULL.ID = DataParts.ID;
 
 							ComponentScript_PartsNULL.ScriptRoot = ScriptRoot;
 
@@ -2750,6 +3246,7 @@ public static partial class LibraryEditor_SpriteStudio
 								ComponentScript_PartsInstance.BootUpForce();
 								DataSpriteStudio = ComponentScript_PartsInstance.SpriteStudioData;
 								DataSpriteStudio.ID = DataParts.ID;
+								ComponentScript_PartsInstance.ID = DataParts.ID;
 
 								ComponentScript_PartsInstance.ScriptRoot = ScriptRoot;
 								ComponentScript_PartsInstance.FlagHideForce = false;
@@ -2772,6 +3269,7 @@ public static partial class LibraryEditor_SpriteStudio
 									ComponentScript_PartsRoot.BootUpForce();
 									DataSpriteStudio = ComponentScript_PartsRoot.SpriteStudioData;
 									DataSpriteStudio.ID = DataParts.ID;
+									ComponentScript_PartsRoot.ID = DataParts.ID;
 
 									MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.ROOT];
 									FlagRoot = true;
