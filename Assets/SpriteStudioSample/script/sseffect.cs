@@ -15,14 +15,6 @@ public class sseffect : MonoBehaviour {
 		var go = GameObject.Find("GameControl");
 		Camera2DControl = go.GetComponent<camera2d>();
 
-		//ルートパーツの取得
-		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
-
-		//アニメーションの終了割り込みを設定
-		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
-		//アニメーションの再生
-		spriteStudioRoot.AnimationPlay(0, 1, 0, 1.0f);	
-
 		//初期位置を保存
 		pos = transform.position;
 
@@ -30,6 +22,20 @@ public class sseffect : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		//spritestudioルートクラスの取得
+		//spriteStudioRootを使用してアニメーションの制御を行います。
+		if ( spriteStudioRoot == null )
+		{
+			//ルートパーツの取得
+			spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
+			
+			//アニメーションの終了割り込みを設定
+			spriteStudioRoot.FunctionPlayEnd = AnimEnd;
+			//アニメーションの再生
+			spriteStudioRoot.AnimationPlay(0, 1, 0, 1.0f);	
+		}
+
+
 		Vector2 camera = Camera2DControl.GetCamera();
 		Vector2 tmp = new Vector2(pos.x - camera.x, pos.y - camera.y);
 

@@ -82,9 +82,6 @@ public class enemy : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//ルートパーツの取得
-		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
-
 		//ゲームコントロールスクリプトの取得
 		{
 			var go = GameObject.Find("GameControl");
@@ -101,18 +98,33 @@ public class enemy : MonoBehaviour {
 			var go = GameObject.Find("character_template_3head_Control");
 			playercntrol = go.GetComponent<player>();
 		}
-
-		
-		//アニメーションの終了割り込みを設定
-		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
-
-		//バッファ初期化
-		charinit();
-
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update () 
+	{
+		//spritestudioルートクラスの取得
+		//spriteStudioRootを使用してアニメーションの制御を行います。
+		if(null == spriteStudioRoot)
+		{
+			int Count = transform.childCount;
+			Transform InstanceTransformChild = null;
+			for(int i=0; i<Count; i++)
+			{
+				InstanceTransformChild = transform.GetChild(i);
+				spriteStudioRoot = InstanceTransformChild.gameObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+				if(null != spriteStudioRoot)
+				{
+					//初期化
+					//アニメーションの終了割り込みを設定
+					spriteStudioRoot.FunctionPlayEnd = AnimEnd;
+					//バッファ初期化
+					charinit();
+
+					break;
+				}
+			}
+		}
 
 
 		//CUP思考

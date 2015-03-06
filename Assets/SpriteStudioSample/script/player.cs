@@ -87,9 +87,6 @@ public class player : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-		//ルートパーツの取得
-		spriteStudioRoot = GetComponentInChildren<Script_SpriteStudio_PartsRoot>();
-
 		//ゲームコントロールスクリプトの取得
 		{
 			var go = GameObject.Find("GameControl");
@@ -101,12 +98,6 @@ public class player : MonoBehaviour {
 			var go = GameObject.Find("SoundContrlo");
 			soundcontrol = go.GetComponent<sound>();
 		}
-
-		//アニメーションの終了割り込みを設定
-		spriteStudioRoot.FunctionPlayEnd = AnimEnd;
-		//初期アニメーションを設定
-		set_motion( AnimationType.STANCE, true);
-
 		direction = 0;									//左向き
 
 
@@ -115,6 +106,27 @@ public class player : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
+		//spritestudioルートクラスの取得
+		//spriteStudioRootを使用してアニメーションの制御を行います。
+		if(null == spriteStudioRoot)
+		{
+			int Count = transform.childCount;
+			Transform InstanceTransformChild = null;
+			for(int i=0; i<Count; i++)
+			{
+				InstanceTransformChild = transform.GetChild(i);
+				spriteStudioRoot = InstanceTransformChild.gameObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+				if(null != spriteStudioRoot)
+				{
+					//初期化
+					//アニメーションの終了割り込みを設定
+					spriteStudioRoot.FunctionPlayEnd = AnimEnd;
+					//初期アニメーションを設定
+					set_motion( AnimationType.STANCE, true);
+					break;
+				}
+			}
+		}
 
 		//アニメーションの終了を監視
 		if (anime_end == true) {
