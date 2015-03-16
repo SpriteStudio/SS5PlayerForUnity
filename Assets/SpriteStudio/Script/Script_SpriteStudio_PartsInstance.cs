@@ -70,7 +70,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 		frameNoPreviousUpdate = -1;
 
 		/* Get Animation-Data-Referenced */
-		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		if((null != ScriptRoot.SpriteStudioDataReferenced) && (null == spriteStudioData))
 		{
 			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
 		}
@@ -79,7 +79,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	void Update()
 	{
 		/* Get Animation-Data-Referenced */
-		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		if((null != ScriptRoot.SpriteStudioDataReferenced) && (null == spriteStudioData))
 		{
 			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
 		}

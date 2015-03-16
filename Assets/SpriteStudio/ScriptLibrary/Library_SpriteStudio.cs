@@ -1514,11 +1514,11 @@ public static class Library_SpriteStudio
 			int IndexInstanceBody = AnimationDataInstance[FrameNo];
 //			DataBody = ((0 <= IndexInstanceBody) && (0 < ArrayDataBodyInstance.Length)) ? ArrayDataBodyInstance[IndexInstanceBody] : KeyFrame.DummyDataInstance;
 			DataBody = KeyFrame.DummyDataInstance;
-			if(null == ArrayDataBodyInstance)
+			if(null != ArrayDataBodyInstance)
 			{
 				if((0 <= IndexInstanceBody) && (0 < ArrayDataBodyInstance.Length))
 				{
-					DataBody =  ArrayDataBodyInstance[IndexInstanceBody];
+					DataBody = ArrayDataBodyInstance[IndexInstanceBody];
 				}
 			}
 			FrameNoInstanceBase = DataBody.FrameNoBase;
