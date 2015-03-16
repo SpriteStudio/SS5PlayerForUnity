@@ -28,6 +28,8 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 		}
 	}
 
+	public Collider CollisionComponent;
+
 	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 	public bool FlagHideForce;

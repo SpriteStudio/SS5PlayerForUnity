@@ -27,6 +27,13 @@ public static class Library_SpriteStudio
 		TERMINATOR
 	};
 
+	public enum KindSprite
+	{
+		NON = -1,				/* Not Sprite-Parts: ROOT/NULL/INSTANCE */
+		TRIANGLE2 = 0,			/* No use Vertex-Collection Sprite-Parts */
+		TRIANGLE4,				/* Use Vertex-Collection Sprite-Parts */
+	}
+
 	public enum VertexNo
 	{
 		LU = 0,
@@ -111,31 +118,6 @@ public static class Library_SpriteStudio
 		new Vector3(0.0f, 0.0f, 1.0f)
 	};
 
-	private readonly static int[,] VertexCollrctionOrderVertex = new int[4, (int)VertexNo.TERMINATOR2]
-	{
-		{	/* Normal */
-			(int)VertexNo.LU,
-			(int)VertexNo.RU,
-			(int)VertexNo.RD,
-			(int)VertexNo.LD,
-		}, {	/* Flip-X */
-			(int)VertexNo.RU,
-			(int)VertexNo.LU,
-			(int)VertexNo.LD,
-			(int)VertexNo.RD,
-		}, {	/* Flip-Y */
-			(int)VertexNo.LD,
-			(int)VertexNo.RD,
-			(int)VertexNo.RU,
-			(int)VertexNo.LU,
-		}, {	/* FlipX&Y */
-			(int)VertexNo.RD,
-			(int)VertexNo.LD,
-			(int)VertexNo.LU,
-			(int)VertexNo.RU,
-		}
-	};
-
 	public static class Utility
 	{
 		public static int VertexNoSearchMappingUV(Mesh InstanceMesh, ref Vector2 MappingUV)
@@ -148,23 +130,6 @@ public static class Library_SpriteStudio
 				}
 			}
 			return(-1);
-		}
-
-		public static void CoordinateGetDiagonalIntersection(out Vector2 Output, ref Vector2 LU, ref Vector2 RU, ref Vector2 LD, ref Vector2 RD)
-		{
-			Output = Vector2.zero;
-
-			float c1 = (LD.y - RU.y) * (LD.x - LU.x) - (LD.x - RU.x) * (LD.y - LU.y);
-			float c2 = (RD.x - LU.x) * (LD.y - LU.y) - (RD.y - LU.y) * (LD.x - LU.x);
-			float c3 = (RD.x - LU.x) * (LD.y - RU.y) - (RD.y - LU.y) * (LD.x - RU.x);
-			float ca = c1 / c3;
-			float cb = c2 / c3;
-
-			if(((0.0f <= ca) && (1.0f >= ca)) && ((0.0f <= cb) && (1.0f >= cb)))
-			{
-				Output.x = LU.x + ca * (RD.x - LU.x);
-				Output.y = LU.y + ca * (RD.y - LU.y);
-			}
 		}
 
 		public static Script_SpriteStudio_PartsRoot SpriteStudioDataGetRoot(GameObject GameObjectParts)
@@ -462,18 +427,33 @@ public static class Library_SpriteStudio
 		[System.Serializable]
 		public class ValueBools
 		{
-			public enum FlagData
+			public enum FlagData : int
 			{
-				HIDE = 0x00000001,
-				FLIPX = 0x00000010,
-				FLIPY = 0x00000020,
-				FLIPXTEXTURE = 0x00000100,
-				FLIPYTEXTURE = 0x00000200,
+				VALID = 0x40000000,
+				HIDE = 0x00010000,
+				FLIPX = 0x00100000,			/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
+				FLIPY = 0x00200000,			/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
+				FLIPXTEXTURE = 0x00400000,	/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
+				FLIPYTEXTURE = 0x00200000,	/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
+				TEXTURENO = 0x0000ffff,
 
-				CLEAR = 0x00000000,
+				CLEAR = TEXTURENO,
 			};
 
 			public FlagData Flag;
+
+			public ValueBools()
+			{
+				Flag = FlagData.CLEAR;
+			}
+
+			public bool IsValid
+			{
+				get
+				{
+					return(0 != (Flag & FlagData.VALID));
+				}
+			}
 			public bool IsHide
 			{
 				get
@@ -509,10 +489,13 @@ public static class Library_SpriteStudio
 					return(0 != (Flag & FlagData.FLIPYTEXTURE));
 				}
 			}
-
-			public ValueBools()
+			public int TextureNo
 			{
-				Flag = FlagData.CLEAR;
+				get
+				{
+					FlagData Data = Flag & FlagData.TEXTURENO;
+					return((Data == FlagData.TEXTURENO) ? (-1) : (int)Data);
+				}
 			}
 		}
 
@@ -1197,14 +1180,37 @@ public static class Library_SpriteStudio
 	[System.Serializable]
 	public class AnimationData
 	{
-		public int ID;
-		public KindCollision CollisionKind;
-		public Collider CollisionComponent;	/* Disuse */
+		[System.Serializable]
+		public class MeshAlies
+		{
+			public Vector3[] Coordinate;
+			public Color32[] ColorOverlay;
+			public Vector2[] UV;
+			public Vector2[] UV2;
 
+			public MeshAlies()
+			{
+				Coordinate = null;
+				ColorOverlay = null;
+				UV = null;
+				UV2 = null;
+			}
+
+			public MeshAlies(int Count)
+			{
+				Coordinate = new Vector3[Count];
+				ColorOverlay = new Color32[Count];
+				UV = new Vector2[Count];
+				UV2 = new Vector2[Count];
+			}
+		};
+
+		public int ID;
+		public KindSprite SpriteKind;
+		public KindCollision CollisionKind;
 		public KindColorOperation KindBlendTarget;
 
 		public KeyFrame.ValueBools[] AnimationDataFlags;
-
 		public Vector3[] AnimationDataPosition;
 		public Vector3[] AnimationDataRotation;
 		public Vector2[] AnimationDataScaling;
@@ -1212,44 +1218,31 @@ public static class Library_SpriteStudio
 		public float[] AnimationDataOpacityRate;
 		public float[] AnimationDataPriority;
 
-		public KeyFrame.ValueColor[] AnimationDataColorBlend;
-		public KeyFrame.ValueQuadrilateral[] AnimationDataVertexCorrection;
-		public Vector2[] AnimationDataOriginOffset;
+		public MeshAlies[] AnimationDataMesh;
 
-		public Vector2[] AnimationDataAnchorPosition;
-		public Vector2[] AnimationDataAnchorSize;
+		public Vector3[] AnimationDataCollisionSize;	/* for Box-Collider */
+		public Vector3[] AnimationDataCollisionPivot;	/* for Box-Collider */
+		public float[] AnimationDataCollisionRadius;	/* for Sphere-Collider */
 
-		public Vector2[] AnimationDataTextureTranslate;
-		public float[] AnimationDataTextureRotate;
-		public Vector2[] AnimationDataTextureScale;
-		public Vector2[] AnimationDataTextureExpand;
-
-		public float[] AnimationDataCollisionRadius;
-
-		public int[] AnimationDataCell;
 		public int[] AnimationDataUser;
 		public int[] AnimationDataInstance;
 
-		public KeyFrame.ValueCell.Data[] ArrayDataBodyCell;
 		public KeyFrame.ValueUser.Data[] ArrayDataBodyUser;
 		public KeyFrame.ValueInstance.Data[] ArrayDataBodyInstance;
 
 		/* Buffer for Runtime-Speed-Optimize */
 		private float ColliderRadiusPrevious = -1.0f;	/* for Radius-Collision */
-		private Vector2 ColliderRectSizePrevious = Vector2.zero;	/* for Rectangle-Collision */
-
-		private Vector2 ColliderRectPivotPrevious = Vector2.zero;	/* for Rectangle-Collision */
+		private Vector3 ColliderRectSizePrevious = Vector3.zero;	/* for Rectangle-Collision */
+		private Vector3 ColliderRectPivotPrevious = Vector3.zero;	/* for Rectangle-Collision */
 
 		public AnimationData()
 		{
 			ID = -1;
-			CollisionKind = KindCollision.NON;
-			CollisionComponent = null;
+			CollisionKind = Library_SpriteStudio.KindCollision.NON;
 
 			KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
 
 			AnimationDataFlags = null;
-
 			AnimationDataPosition = null;
 			AnimationDataRotation = null;
 			AnimationDataScaling = null;
@@ -1257,23 +1250,17 @@ public static class Library_SpriteStudio
 			AnimationDataOpacityRate = null;
 			AnimationDataPriority = null;
 
-			AnimationDataColorBlend = null;
-			AnimationDataVertexCorrection = null;
-			AnimationDataOriginOffset = null;
+			AnimationDataMesh = null;
 
-			AnimationDataAnchorPosition = null;
-			AnimationDataAnchorSize = null;
-
-			AnimationDataTextureTranslate = null;
-			AnimationDataTextureRotate = null;
-			AnimationDataTextureScale = null;
-			AnimationDataTextureExpand = null;
-
+			AnimationDataCollisionSize = null;
+			AnimationDataCollisionPivot = null;
 			AnimationDataCollisionRadius = null;
 
-			AnimationDataCell = null;
 			AnimationDataUser = null;
 			AnimationDataInstance = null;
+
+			ArrayDataBodyUser = null;
+			ArrayDataBodyInstance = null;
 		}
 
 		public void UpdateUserData(int FrameNo, GameObject GameObjectNow, Script_SpriteStudio_PartsRoot ScriptRoot)
@@ -1689,60 +1676,28 @@ public static class Library_SpriteStudio
 			}
 
 			/* Collider-Setting */
-			if(null != CollisionComponent)
+			switch(CollisionKind)
 			{
-				switch(CollisionKind)
-				{
-					case KindCollision.SQUARE:
+				case KindCollision.SQUARE:
+					{
+						BoxCollider InstanceCollider = GameObjectNow.GetComponent<BoxCollider>();
+						if(null != InstanceCollider)
 						{
-							/* Calculate Sprite-Parts size */
-							Vector2 SizeNew = Vector2.one;
-							Vector2 PivotNew = Vector2.zero;
-							int IndexCell = AnimationDataCell[FrameNo];
-//							KeyFrame.ValueCell.Data DataBody = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
-							KeyFrame.ValueCell.Data DataBody = KeyFrame.DummyDataCell;
-							if(null != ArrayDataBodyCell)
+							Vector3 SizeNew = Vector3.one;
+							Vector3 PivotNew = Vector3.zero;
+							if(null != AnimationDataCollisionSize)
 							{
-								if((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length))
+								if(0 < AnimationDataCollisionSize.Length)
 								{
-									DataBody = ArrayDataBodyCell[IndexCell];
+									SizeNew = AnimationDataCollisionSize[FrameNo];
 								}
 							}
+							if(null != AnimationDataCollisionPivot)
 							{
-								Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
-								Vector2 PivotCollide = Vector2.zero;
-								Vector2 PivotCell = Vector2.zero;
-//								if(0 < AnimationDataCell.Length)
-								if(null != AnimationDataCell)
+								if(0 < AnimationDataCollisionPivot.Length)
 								{
-									if(0 < AnimationDataCell.Length)
-									{
-										RectCell = DataBody.Rectangle;
-										PivotCell = DataBody.Pivot;
-										PivotCell.x -= (RectCell.width * 0.5f);
-										PivotCell.y -= (RectCell.height * 0.5f);
-									}
+									PivotNew = AnimationDataCollisionPivot[FrameNo];
 								}
-
-								Vector2 RateScaleMesh = Vector2.one;
-//								if(0 < AnimationDataFlags.Length)
-								if(null != AnimationDataFlags)
-								{
-									if(0 < AnimationDataFlags.Length)
-									{
-										RateScaleMesh.x = (true == AnimationDataFlags[FrameNo].IsFlipX) ? -1.0f : 1.0f;
-										RateScaleMesh.y = (true == AnimationDataFlags[FrameNo].IsFlipY) ? -1.0f : 1.0f;
-									}
-								}
-
-								/* Accommodate Pivot's-Offset */
-								SpriteRecalcSizeAndPivot(ref PivotCollide, ref RectCell, ref RateScaleMesh, FrameNo);
-								PivotNew.x = -(PivotCollide.x + PivotCell.x) * RateScaleMesh.x;
-								PivotNew.y = (PivotCollide.y + PivotCell.y) * RateScaleMesh.y;
-
-								/* Get Collision-Size */
-								SizeNew.x = RectCell.width;
-								SizeNew.y = RectCell.height;
 							}
 
 							if((PivotNew != ColliderRectPivotPrevious) || (SizeNew != ColliderRectSizePrevious))
@@ -1752,17 +1707,19 @@ public static class Library_SpriteStudio
 								ColliderRectSizePrevious = SizeNew;
 
 								/* Update Collider */
-								BoxCollider InstanceCollider = CollisionComponent as BoxCollider;
 								InstanceCollider.enabled = true;
 								InstanceCollider.size = ColliderRectSizePrevious;
 								InstanceCollider.center = ColliderRectPivotPrevious;
 							}
 						}
-						break;
+					}
+					break;
 
-					case KindCollision.CIRCLE:
+				case KindCollision.CIRCLE:
+					{
+						CapsuleCollider InstanceCollider = GameObjectNow.GetComponent<CapsuleCollider>();
+						if(null != InstanceCollider)
 						{
-//							float RadiusNew = (0 < AnimationDataCollisionRadius.Length) ? AnimationDataCollisionRadius[FrameNo] : 1.0f;
 							float RadiusNew = 1.0f;
 							if(null != AnimationDataCollisionRadius)
 							{
@@ -1777,61 +1734,20 @@ public static class Library_SpriteStudio
 								ColliderRadiusPrevious = RadiusNew;
 
 								/* Update Collider */
-								CapsuleCollider InstanceCollider = CollisionComponent as CapsuleCollider;
 								InstanceCollider.enabled = true;
 								InstanceCollider.radius = ColliderRadiusPrevious;
 								InstanceCollider.center = Vector3.zero;
 							}
 						}
-						break;
+					}
+					break;
 
-					default:
-						break;
-				}
+				default:
+					break;
 			}
 
 			/* Return-Value is "Inversed Hide-Flag"  */
 			return(!AnimationDataFlags[FrameNo].IsHide);
-		}
-
-		protected void SpriteRecalcSizeAndPivot(ref Vector2 PivotMesh, ref Rect RectCell, ref Vector2 RateScaleMesh, int FrameNo)
-		{
-//			Vector2 PivotOffset = (0 < AnimationDataOriginOffset.Length) ? AnimationDataOriginOffset[FrameNo] : Vector2.zero;
-			Vector2 PivotOffset = Vector2.zero;
-			if(null != AnimationDataOriginOffset)
-			{
-				if(0 < AnimationDataOriginOffset.Length)
-				{
-					PivotOffset = AnimationDataOriginOffset[FrameNo];
-				}
-			}
-			PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
-			PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
-
-			/* Arbitrate Anchor-Size */
-//			if(0 < AnimationDataAnchorSize.Length)
-			if(null != AnimationDataAnchorSize)
-			{
-				if(0 < AnimationDataAnchorSize.Length)
-				{
-					float RatePivot;
-					Vector2 AnchorSize = AnimationDataAnchorSize[FrameNo];
-					if(0.0f <= AnchorSize.x)
-					{
-						RatePivot = PivotMesh.x / RectCell.width;
-						RectCell.x = 0.0f;
-						RectCell.width = AnchorSize.x;
-						PivotMesh.x = AnchorSize.x * RatePivot;
-					}
-					if(0.0f <= AnchorSize.y)
-					{
-						RatePivot = PivotMesh.y / RectCell.height;
-						RectCell.y = 0.0f;
-						RectCell.height = AnchorSize.y;
-						PivotMesh.y = AnchorSize.y * RatePivot;
-					}
-				}
-			}
 		}
 
 		internal static float PriorityGet(float Priority, int ID)
@@ -1861,241 +1777,19 @@ public static class Library_SpriteStudio
 
 		public void UpdateMesh(Mesh MeshNow, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 		{
-			Matrix4x4 MatrixTexture = Matrix4x4.identity;
-			Vector2 SizeTexture = Vector2.one;
-			Vector2 RateScaleTexture = Vector2.one;
-			Vector2 PivotTexture = Vector2.zero;
-			Vector2 RateScaleMesh = Vector2.one;
-			Vector2 PivotMesh = Vector2.zero;
-			Rect RectCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
-			int	VertexCollectionIndexTableNo = 0;
+			float RateOpacity = (null != ScriptRoot) ? ScriptRoot.RateOpacity : 1.0f;
 
-			/* Main-Texture Data Get */
-			int IndexCell = AnimationDataCell[FrameNo];
-//			KeyFrame.ValueCell.Data DataBodyCell = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
-			KeyFrame.ValueCell.Data DataBodyCell = KeyFrame.DummyDataCell;
-			if(null != ArrayDataBodyCell)
+			MeshAlies DataMeshAlies = AnimationDataMesh[FrameNo];
+			Vector2[] DataUV2 = new Vector2[DataMeshAlies.UV2.Length];
+			for(int i=0; i<DataUV2.Length; i++)
 			{
-				if((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length))
-				{
-					DataBodyCell = ArrayDataBodyCell[IndexCell];
-				}
+				DataUV2[i] = DataMeshAlies.UV2[i];
+				DataUV2[i].x *= RateOpacity;
 			}
-
-			Material MaterialNow = ScriptRoot.MaterialGet(DataBodyCell.TextureNo, KindBlendTarget);
-			if(null != MaterialNow)
-			{
-				SizeTexture.x = DataBodyCell.SizeOriginal.x;
-				SizeTexture.y = DataBodyCell.SizeOriginal.y;
-			}
-
-			/* Cell-Data Get */
-//			if(0 < AnimationDataCell.Length)
-			if(null != AnimationDataCell)
-			{
-				if(0 < AnimationDataCell.Length)
-				{
-					RectCell = DataBodyCell.Rectangle;
-					PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
-
-					PivotMesh = DataBodyCell.Pivot;
-				}
-			}
-
-			/* Disolve Flipping & Texture-Scaling */
-//			if(0 < AnimationDataFlags.Length)
-			if(null != AnimationDataFlags)
-			{
-				if(0 < AnimationDataFlags.Length)
-				{
-					RateScaleTexture.x = (true == AnimationDataFlags[FrameNo].IsTextureFlipX) ? -1.0f : 1.0f;
-					RateScaleTexture.y = (true == AnimationDataFlags[FrameNo].IsTextureFlipY) ? -1.0f : 1.0f;
-					if(true == AnimationDataFlags[FrameNo].IsFlipX)
-					{
-						RateScaleMesh.x = -1.0f;
-						VertexCollectionIndexTableNo += 1;
-					}
-					else
-					{
-						RateScaleMesh.x = 1.0f;
-					}
-					if(true == AnimationDataFlags[FrameNo].IsFlipY)
-					{
-						RateScaleMesh.y = -1.0f;
-						VertexCollectionIndexTableNo += 2;
-					}
-					else
-					{
-						RateScaleMesh.y = 1.0f;
-					}
-				}
-			}
-//			if(0 < AnimationDataTextureScale.Length)
-			if(null != AnimationDataTextureScale)
-			{
-				if(0 < AnimationDataTextureScale.Length)
-				{
-					RateScaleTexture.x *= AnimationDataTextureScale[FrameNo].x;
-					RateScaleTexture.y *= AnimationDataTextureScale[FrameNo].y;
-				}
-			}
-
-			/* Calculate Matrix-Texture */
-//			float Rotate = (0 < AnimationDataTextureRotate.Length) ? AnimationDataTextureRotate[FrameNo] :  0.0f;
-			float Rotate = 0.0f;
-			if(null != AnimationDataTextureRotate)
-			{
-				if(0 < AnimationDataTextureRotate.Length)
-				{
-					Rotate = AnimationDataTextureRotate[FrameNo];
-				}
-			}
-//			Vector2 TextureOffset = (0 < AnimationDataTextureTranslate.Length) ? AnimationDataTextureTranslate[FrameNo] : Vector2.zero;
-			Vector2 TextureOffset = Vector2.zero;
-			if(null != AnimationDataTextureTranslate)
-			{
-				if(0 < AnimationDataTextureTranslate.Length)
-				{
-					TextureOffset = AnimationDataTextureTranslate[FrameNo];
-				}
-			}
-
-			Vector3 Translation = new Vector3(	((RectCell.xMin + PivotTexture.x) / SizeTexture.x) + TextureOffset.x,
-												((SizeTexture.y - (RectCell.yMin + PivotTexture.y)) / SizeTexture.y) - TextureOffset.y,
-												0.0f
-											);
-			Vector3 Scaling = new Vector3(	(RectCell.width / SizeTexture.x) * RateScaleTexture.x,
-											(RectCell.height / SizeTexture.y) * RateScaleTexture.y,
-											1.0f
-										);
-			Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, Rotate);
-			MatrixTexture = Matrix4x4.TRS(Translation, Rotation, Scaling);
-
-			/* Set Vertex-Datas */
-			int CountVertexData = MeshNow.vertexCount;
-
-			Vector2[] DataUV = new Vector2[CountVertexData];
-			Vector3 Coodinate = Vector3.zero;
-			for(int i=0; i<CountVertexData; i++)	/* Texture-UV */
-			{	/* Memo: "ArrayUVMappingUV0_Triangle4" of the data up to the "VertexNo.TERMINATOR2"-th elements are same as those of "ArrayUVMappingUV0_Triangle2". */
-				Coodinate = MatrixTexture.MultiplyPoint3x4(ArrayUVMappingUV0_Triangle4[i]);
-				DataUV[i] = new Vector2(Coodinate.x, Coodinate.y);
-			}
-			MeshNow.uv = DataUV;
-
-//			float RateOpacity = (0 < AnimationDataOpacityRate.Length) ? AnimationDataOpacityRate[FrameNo] : 1.0f;
-			float RateOpacity = 1.0f;
-			if(null != AnimationDataOpacityRate)
-			{
-				if(0 < AnimationDataOpacityRate.Length)
-				{
-					RateOpacity = AnimationDataOpacityRate[FrameNo];
-				}
-			}
-			RateOpacity *= ScriptRoot.RateOpacity;
-
-			Vector2[] DataUV2 = new Vector2[CountVertexData];
-			Color32[] DataColor32 = new Color32[CountVertexData];
-//			if(0 < AnimationDataColorBlend.Length)	/* Blending-Color & Opacity*/
-			float OperationDefault = (float)KindColorOperation.NON + 0.01f;	/* "+0.01f" for Rounding-off-Error */
-			for(int i=0; i<CountVertexData; i++)
-			{
-				DataUV2[i] = new Vector2(RateOpacity, OperationDefault);
-				DataColor32[i] = Color.white;
-			}
-			if(null != AnimationDataColorBlend)	/* Blending-Color & Opacity*/
-			{	/* Animation-Data */
-				if(0 < AnimationDataColorBlend.Length)
-				{
-					if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlend[FrameNo].Bound)
-					{
-						for(int i=0; i<CountVertexData; i++)
-						{
-							DataUV2[i] = new Vector2(	AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
-														(float)AnimationDataColorBlend[FrameNo].Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
-													);
-							DataColor32[i] = AnimationDataColorBlend[FrameNo].VertexColor[i];
-						}
-					}
-				}
-			}
-			MeshNow.colors32 = DataColor32;
+			MeshNow.vertices = DataMeshAlies.Coordinate;
+			MeshNow.colors32 = DataMeshAlies.ColorOverlay;
+			MeshNow.uv = DataMeshAlies.UV;
 			MeshNow.uv2 = DataUV2;
-
-			Vector3[] DataCoordinate = new Vector3[CountVertexData];
-			if((int)VertexNo.TERMINATOR4 == CountVertexData)	/* Vertex-Coordinate */
-			{	/* 4-Triangles Mesh */
-				/* Get SpriteSize & Pivot */
-				SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
-
-				/* Get Coordinates */
-				/* MEMO: No Check "AnimationDataVertexCorrection.Length", 'cause 4-Triangles-Mesh necessarily has "AnimationDataVertexCorrection" */
-				float Left = (-PivotMesh.x) * RateScaleMesh.x;
-				float Right = (RectCell.width - PivotMesh.x) * RateScaleMesh.x;
-				float Top = (-PivotMesh.y) * RateScaleMesh.y;
-				float Bottom = (RectCell.height - PivotMesh.y) * RateScaleMesh.y;
-
-				DataCoordinate[(int)VertexNo.LU] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].x,
-																-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].y,
-																0.0f
-															);
-				DataCoordinate[(int)VertexNo.RU] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].x,
-																-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].y,
-																0.0f
-															);
-				DataCoordinate[(int)VertexNo.RD] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].x,
-																-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].y,
-																0.0f
-															);
-				DataCoordinate[(int)VertexNo.LD] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].x,
-																-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].y,
-																0.0f
-															);
-				Vector3 CoordinateLURU = (DataCoordinate[(int)VertexNo.LU] + DataCoordinate[(int)VertexNo.RU]) * 0.5f;
-				Vector3 CoordinateLULD = (DataCoordinate[(int)VertexNo.LU] + DataCoordinate[(int)VertexNo.LD]) * 0.5f;
-				Vector3 CoordinateLDRD = (DataCoordinate[(int)VertexNo.LD] + DataCoordinate[(int)VertexNo.RD]) * 0.5f;
-				Vector3 CoordinateRURD = (DataCoordinate[(int)VertexNo.RU] + DataCoordinate[(int)VertexNo.RD]) * 0.5f;
-				CoordinateGetDiagonalIntersection(	out DataCoordinate[(int)VertexNo.C],
-													ref CoordinateLURU,
-													ref CoordinateRURD,
-													ref CoordinateLULD,
-													ref CoordinateLDRD
-												);
-			}
-			else
-			{	/* 2-Triangles Mesh */
-				/* Get SpriteSize & Pivot */
-				SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
-
-				/* Get Coordinates */
-				float Left = (-PivotMesh.x) * RateScaleMesh.x;
-				float Right = (RectCell.width - PivotMesh.x) * RateScaleMesh.x;
-				float Top = (-PivotMesh.y) * RateScaleMesh.y;
-				float Bottom = (RectCell.height - PivotMesh.y) * RateScaleMesh.y;
-
-				DataCoordinate[(int)VertexNo.LU] = new Vector3(Left, -Top, 0.0f);
-				DataCoordinate[(int)VertexNo.RU] = new Vector3(Right, -Top, 0.0f);
-				DataCoordinate[(int)VertexNo.RD] = new Vector3(Right, -Bottom, 0.0f);
-				DataCoordinate[(int)VertexNo.LD] = new Vector3(Left, -Bottom, 0.0f);
-			}
-			MeshNow.vertices = DataCoordinate;
-		}
-		private static void CoordinateGetDiagonalIntersection(out Vector3 Output, ref Vector3 LU, ref Vector3 RU, ref Vector3 LD, ref Vector3 RD)
-		{
-			/* MEMO: Z-Values are ignored. */
-			Output = Vector3.zero;
-
-			float c1 = (LD.y - RU.y) * (LD.x - LU.x) - (LD.x - RU.x) * (LD.y - LU.y);
-			float c2 = (RD.x - LU.x) * (LD.y - LU.y) - (RD.y - LU.y) * (LD.x - LU.x);
-			float c3 = (RD.x - LU.x) * (LD.y - RU.y) - (RD.y - LU.y) * (LD.x - RU.x);
-			float ca = c1 / c3;
-			float cb = c2 / c3;
-
-			if(((0.0f <= ca) && (1.0f >= ca)) && ((0.0f <= cb) && (1.0f >= cb)))
-			{
-				Output.x = LU.x + ca * (RD.x - LU.x);
-				Output.y = LU.y + ca * (RD.y - LU.y);
-			}
 		}
 
 		public void DrawEntry(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
@@ -2111,26 +1805,8 @@ public static class Library_SpriteStudio
 						Priority = AnimationDataPriority[FrameNo];
 					}
 				}
-//				int IndexCell = (0 < AnimationDataCell.Length) ? AnimationDataCell[FrameNo] : -1;
-				int IndexCell = -1;
-				if(null != AnimationDataCell)
-				{
-					if(0 < AnimationDataCell.Length)
-					{
-						IndexCell = AnimationDataCell[FrameNo];
-					}
-				}
-//				KeyFrame.ValueCell.Data DataBodyCell = ((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length)) ? ArrayDataBodyCell[IndexCell] : KeyFrame.DummyDataCell;
-				KeyFrame.ValueCell.Data DataBodyCell = KeyFrame.DummyDataCell;
-				if(null != ArrayDataBodyCell)
-				{
-					if((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length))
-					{
-						DataBodyCell = ArrayDataBodyCell[IndexCell];
-					}
-				}
-				int TextureNo = DataBodyCell.TextureNo;
 
+				int TextureNo = AnimationDataFlags[FrameNo].TextureNo;
 				MeshDataInformation.Priority = PriorityGet(Priority, ID);
 				Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
 				if(null != ArrayListMeshDraw)
