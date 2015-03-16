@@ -25,6 +25,8 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		}
 	}
 
+	public Collider CollisionComponent;
+
 	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
 	public bool FlagHideForce;

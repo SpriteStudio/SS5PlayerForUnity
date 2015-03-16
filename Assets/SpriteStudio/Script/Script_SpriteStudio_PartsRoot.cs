@@ -74,6 +74,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 
+	public Collider CollisionComponent;
+
 	internal BitStatus Status;
 	public int ID;
 	public Script_SpriteStudio_AnimationReferenced SpriteStudioDataReferenced;
