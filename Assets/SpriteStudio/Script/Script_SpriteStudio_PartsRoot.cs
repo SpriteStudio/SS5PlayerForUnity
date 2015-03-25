@@ -75,6 +75,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	}
 
 	public Collider CollisionComponent;
+	private Library_SpriteStudio.AnimationData.WorkAreaRuntime WorkArea = null;
 
 	internal BitStatus Status;
 	public int ID;
@@ -316,13 +317,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
 		}
 		Status = ~BitStatus.MASK_INITIAL;
-
-		/* Get Animation-Data-Referenced */
-		if(null != SpriteStudioDataReferenced)
-		{
-			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
-			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
-		}
 	}
 
 	void Start()
@@ -366,6 +360,13 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		MainLoopCount++;
 
+		/* Get Animation-Data-Referenced */
+		if((null != SpriteStudioDataReferenced) && (null == spriteStudioData))
+		{
+			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
+			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
 		/* Boot-Check */
 		if(null == InstanceCameraDraw)
 		{
@@ -391,6 +392,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			ListCallBackUserData.Clear();
 #endif
 		}
+		if(null == WorkArea)
+		{
+			WorkArea = new Library_SpriteStudio.AnimationData.WorkAreaRuntime();
+		}
 
 		/* Entry Object to Draw */
 		if((null != InstanceDrawManagerView) && (null == partsRootOrigin))
@@ -402,16 +407,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 
 		/* Animation Update */
-		if(null == SpriteStudioData)
-		{
-			return;
-		}
-
-		if(null == listInformationPlay)
-		{
-			return;
-		}
-
 		if(0 == (Status & BitStatus.PLAYING))
 		{
 			return;
@@ -698,10 +693,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		frameNoNow = FrameNoNew;
 		
 		/* Update User-CallBack */
-		SpriteStudioData.UpdateUserData(frameNoNow, gameObject, this);
+		spriteStudioData.UpdateUserData(frameNoNow, gameObject, this);
 		
 		/* Update GameObject */
-		SpriteStudioData.UpdateGameObject(gameObject, frameNoNow, false);
+		spriteStudioData.UpdateGameObject(gameObject, frameNoNow, CollisionComponent, WorkArea);
 	}
 
 	void LateUpdate()
