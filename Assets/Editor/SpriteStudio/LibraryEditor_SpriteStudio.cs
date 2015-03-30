@@ -26,31 +26,6 @@ public static partial class LibraryEditor_SpriteStudio
 		Shader.Find("Custom/SpriteStudio5/Mul")
 	};
 
-	private readonly static int[,] VertexCollectionOrderVertex = new int[4, (int)Library_SpriteStudio.VertexNo.TERMINATOR2]
-	{
-		{	/* Normal */
-			(int)Library_SpriteStudio.VertexNo.LU,
-			(int)Library_SpriteStudio.VertexNo.RU,
-			(int)Library_SpriteStudio.VertexNo.RD,
-			(int)Library_SpriteStudio.VertexNo.LD,
-		}, {	/* Flip-X */
-			(int)Library_SpriteStudio.VertexNo.RU,
-			(int)Library_SpriteStudio.VertexNo.LU,
-			(int)Library_SpriteStudio.VertexNo.LD,
-			(int)Library_SpriteStudio.VertexNo.RD,
-		}, {	/* Flip-Y */
-			(int)Library_SpriteStudio.VertexNo.LD,
-			(int)Library_SpriteStudio.VertexNo.RD,
-			(int)Library_SpriteStudio.VertexNo.RU,
-			(int)Library_SpriteStudio.VertexNo.LU,
-		}, {	/* FlipX&Y */
-			(int)Library_SpriteStudio.VertexNo.RD,
-			(int)Library_SpriteStudio.VertexNo.LD,
-			(int)Library_SpriteStudio.VertexNo.LU,
-			(int)Library_SpriteStudio.VertexNo.RU,
-		}
-	};
-
 	public static class Utility
 	{
 		public static void HideSetForce(GameObject InstanceGameObject, bool FlagSwitch, bool FlagSetChild, bool FlagSetInstance)
@@ -2603,24 +2578,23 @@ public static partial class LibraryEditor_SpriteStudio
 						RateScaleTexture.y = (true == DataMain.AnimationDataFlags[FrameNo].IsTextureFlipY) ? -1.0f : 1.0f;
 						if(true == DataMain.AnimationDataFlags[FrameNo].IsFlipX)
 						{
-							RateScaleMesh.x = -1.0f;
+							RateScaleMesh.x *= -1.0f;
 							VertexCollectionIndexTableNo += 1;
 						}
 						else
 						{
-							RateScaleMesh.x = 1.0f;
+							RateScaleMesh.x *= 1.0f;
 						}
 						if(true == DataMain.AnimationDataFlags[FrameNo].IsFlipY)
 						{
-							RateScaleMesh.y = -1.0f;
+							RateScaleMesh.y *= -1.0f;
 							VertexCollectionIndexTableNo += 2;
 						}
 						else
 						{
-							RateScaleMesh.y = 1.0f;
+							RateScaleMesh.y *= 1.0f;
 						}
 					}
-
 					if((null != DataPlain.AnimationDataTextureScale) && (0 < DataPlain.AnimationDataTextureScale.Length))
 					{
 						RateScaleTexture.x *= DataPlain.AnimationDataTextureScale[FrameNo].x;
@@ -2701,23 +2675,23 @@ public static partial class LibraryEditor_SpriteStudio
 						float Bottom = (RectCell.height - PivotMesh.y) * RateScaleMesh.y;
 
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.LU] =
-							new Vector3(	Left + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].x,
-											-Top + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].y,
+							new Vector3(	Left + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].x,
+											-Top + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].y,
 											0.0f
 										);
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.RU] =
-							new Vector3(	Right + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].x,
-											-Top + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].y,
+							new Vector3(	Right + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].x,
+											-Top + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].y,
 											0.0f
 										);
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.RD] =
-							new Vector3(	Right + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].x,
-											-Bottom + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].y,
+							new Vector3(	Right + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].x,
+											-Bottom + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].y,
 											0.0f
 										);
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.LD] =
-							new Vector3(	Left + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].x,
-											-Bottom + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].y,
+							new Vector3(	Left + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].x,
+											-Bottom + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].y,
 											0.0f
 										);
 						Vector3 CoordinateLURU = (DataCoordinate[(int)Library_SpriteStudio.VertexNo.LU] + DataCoordinate[(int)Library_SpriteStudio.VertexNo.RU]) * 0.5f;
@@ -3235,8 +3209,8 @@ public static partial class LibraryEditor_SpriteStudio
 						else
 						{
 							MaterialInformation = ListMaterial[IndexMaterial] as InformationMaterial;
-							NameAsset = String.Copy(Keys[i]);
-							if(false == FlagCreateMaterial[i])
+							NameAsset = String.Copy(Keys[IndexMaterial]);
+							if(false == FlagCreateMaterial[IndexMaterial])
 							{	/* Create-New */
 								if(null != MaterialInformation.SubstanceAsset)
 								{	/* Overwrite */
@@ -3257,7 +3231,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 								TableMaterial[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
 								MaterialInformation.SubstanceAsset = TableMaterial[i];
-								FlagCreateMaterial[i] = true;
+								FlagCreateMaterial[IndexMaterial] = true;
 							}
 							else
 							{	/* Already Created */
@@ -3589,8 +3563,12 @@ public static partial class LibraryEditor_SpriteStudio
 							Script_SpriteStudio_PartsRoot ScriptRootOld = GameObjectRootOld.GetComponent<Script_SpriteStudio_PartsRoot>();
 							if(null != ScriptRootOld)
 							{
-								NamePathDataReferenced = AssetDatabase.GetAssetPath(ScriptRootOld.SpriteStudioDataReferenced);
-								ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+								string NamePathDataReferencedOld = AssetDatabase.GetAssetPath(ScriptRootOld.SpriteStudioDataReferenced);
+								if(false == String.IsNullOrEmpty(NamePathDataReferencedOld))
+								{
+									NamePathDataReferenced = String.Copy(NamePathDataReferencedOld);
+									ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+								}
 							}
 						}
 					}
