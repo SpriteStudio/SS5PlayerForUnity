@@ -12,6 +12,8 @@ public static partial class Library_SpriteStudio
 {
 	public static class UtilityMaterial
 	{
+		public static readonly int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
+
 		/* ******************************************************** */
 		//! Create Material-Table
 		/*!
@@ -35,8 +37,6 @@ public static partial class Library_SpriteStudio
 		*/
 		public static Material[] TableCreateMaterial(Texture2D[] TableDataTexture)
 		{
-			int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
-
 			if(null == TableDataTexture)
 			{
 				return(null);
@@ -105,6 +105,31 @@ public static partial class Library_SpriteStudio
 		}
 
 		/* ******************************************************** */
+		//! Get Material-Table Index from Texture-Index.
+		/*!
+		@param	IndexTexture
+			Texture-Index (on Stored Material-Table)
+		@retval	Return-Value
+			Count of Texture<br>
+			0 == Failure
+
+		Calculate index of Material-Table from the Texture-Index.<br>
+		1 Texture is defined in 4 Material on the Material-Table, the result is "IndexTexture * 4".<br>
+		(4 Material : Shader is assigned to each Material ... "Mix", "Add", "Sub" and "Mul".)<br>
+		<br>
+		Ex.<br>
+		int IndexMaterial = Library_SpriteStudio.IndexGetMaterial(2);<br>
+		MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.MIX].mainTexture = Texture02;<br>
+		MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.ADD].mainTexture = Texture02;<br>
+		MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.SUB].mainTexture = Texture02;<br>
+		MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.MUL].mainTexture = Texture02;<br>
+		*/
+		public static int IndexGetMaterial(int IndexTexture)
+		{
+			return((0 > IndexTexture) ? -1 : (IndexTexture * CountTextureBlock));
+		}
+
+		/* ******************************************************** */
 		//! Get count of Textures
 		/*!
 		@param	TableDataMaterial
@@ -137,7 +162,7 @@ public static partial class Library_SpriteStudio
 				return(0);
 			}
 
-			return(CountTableMaterial / ((int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1));
+			return(CountTableMaterial / CountTextureBlock);
 		}
 
 		/* ******************************************************** */
@@ -158,8 +183,6 @@ public static partial class Library_SpriteStudio
 		*/
 		public static bool TextureChange(int Index, Texture2D DataTexture, Material[] TableDataMaterial)
 		{
-			int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
-
 			if(null == TableDataMaterial)
 			{
 				return(false);
@@ -199,8 +222,6 @@ public static partial class Library_SpriteStudio
 		*/
 		public static bool TextureChange(Texture2D[] TableDataTexture, Material[] TableDataMaterial)
 		{
-			int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
-
 			if(null == TableDataMaterial)
 			{
 				return(false);
