@@ -8,7 +8,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public static class Library_SpriteStudio
+public static partial class Library_SpriteStudio
 {
 	public delegate bool FunctionCallBackPlayEnd(GameObject ObjectControl);
 	public delegate void FunctionCallBackUserData(GameObject ObjectControl, string PartsName, Library_SpriteStudio.AnimationData AnimationDataParts, int AnimationNo, int FrameNoDecode, int FrameNoKeyData, Library_SpriteStudio.KeyFrame.ValueUser.Data Data, bool FlagWayBack);
@@ -80,6 +80,14 @@ public static class Library_SpriteStudio
 		CIRCLE_SCALEMAXIMUM,
 	};
 
+	public readonly static Shader[] Shader_SpriteStudioTriangleX = new Shader[(int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1]
+	{
+		Shader.Find("Custom/SpriteStudio5/Mix"),
+		Shader.Find("Custom/SpriteStudio5/Add"),
+		Shader.Find("Custom/SpriteStudio5/Sub"),
+		Shader.Find("Custom/SpriteStudio5/Mul")
+	};
+
 	public readonly static int[] ArrayVertexIndex_Triangle2 =
 	{
 		(int)VertexNo.LU, (int)VertexNo.RU, (int)VertexNo.RD,
@@ -124,7 +132,7 @@ public static class Library_SpriteStudio
 		new Vector3(0.0f, 0.0f, 1.0f)
 	};
 
-	private readonly static int[,] VertexCollrctionOrderVertex = new int[4, (int)VertexNo.TERMINATOR2]
+	public readonly static int[,] VertexCollectionOrderVertex = new int[4, (int)VertexNo.TERMINATOR2]
 	{
 		{	/* Normal */
 			(int)VertexNo.LU,
@@ -1872,21 +1880,21 @@ public static class Library_SpriteStudio
 					RateScaleTexture.y = (true == AnimationDataFlags[FrameNo].IsTextureFlipY) ? -1.0f : 1.0f;
 					if(true == AnimationDataFlags[FrameNo].IsFlipX)
 					{
-						RateScaleMesh.x = -1.0f;
+						RateScaleMesh.x *= -1.0f;
 						VertexCollectionIndexTableNo += 1;
 					}
 					else
 					{
-						RateScaleMesh.x = 1.0f;
+						RateScaleMesh.x *= 1.0f;
 					}
 					if(true == AnimationDataFlags[FrameNo].IsFlipY)
 					{
-						RateScaleMesh.y = -1.0f;
+						RateScaleMesh.y *= -1.0f;
 						VertexCollectionIndexTableNo += 2;
 					}
 					else
 					{
-						RateScaleMesh.y = 1.0f;
+						RateScaleMesh.y *= 1.0f;
 					}
 				}
 				if((null != AnimationDataTextureScale) && (0 < AnimationDataTextureScale.Length))
@@ -1926,7 +1934,33 @@ public static class Library_SpriteStudio
 
 				Vector2[] DataUV2 = new Vector2[CountVertexData];
 				Color32[] DataColor32 = new Color32[CountVertexData];
-				if((null != AnimationDataColorBlend) && (0 < AnimationDataColorBlend.Length))	/* Blending-Color & Opacity*/
+				bool FlagExistAnimationDataColorBlend = ((null != AnimationDataColorBlend) && (0 < AnimationDataColorBlend.Length)) ? true : false;
+				Script_SpriteStudio_PartsRoot.ColorBlendOverwrite DataColorBlendOverwrite = ScriptRoot.DataColorBlendOverwrite;
+				if(null == DataColorBlendOverwrite)
+				{	/* No-Overwrite */
+					goto UpdateMesh_ColorBlend_Animation;
+				}
+				else
+				{	/* Overwrite */
+					if(Library_SpriteStudio.KindColorBound.NON != DataColorBlendOverwrite.Bound)
+					{	/* Overwite */
+						for(int i=0; i<CountVertexData; i++)
+						{
+							DataUV2[i] = new Vector2(	RateOpacity,
+														(float)DataColorBlendOverwrite.Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
+													);
+							DataColor32[i] = DataColorBlendOverwrite.VertexColor[i];
+						}
+						goto UpdateMesh_ColorBlend_End;
+					}
+					else
+					{	/* Default (Same as "No-Overwrite" ) */
+						goto UpdateMesh_ColorBlend_Animation;
+					}
+				}
+
+			UpdateMesh_ColorBlend_Animation:;
+				if(true == FlagExistAnimationDataColorBlend)	/* Blending-Color & Opacity*/
 				{	/* Animation-Data */
 					if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlend[FrameNo].Bound)
 					{
@@ -1940,17 +1974,17 @@ public static class Library_SpriteStudio
 					}
 					else
 					{	/* Default (Same as "No Datas" ) */
-						Color32 ColorDefault = Color.white;
-						float OperationDefault = (float)KindColorOperation.NON + 0.01f;	/* "+0.01f" for Rounding-off-Error */
-						for(int i=0; i<CountVertexData; i++)
-						{
-							DataUV2[i] = new Vector2(RateOpacity, OperationDefault);
-							DataColor32[i] = ColorDefault;
-						}
+						goto UpdateMesh_ColorBlend_NoData;
 					}
 				}
 				else
 				{	/* Default (No Datas) */
+					goto UpdateMesh_ColorBlend_NoData;
+				}
+				goto UpdateMesh_ColorBlend_End;
+
+			UpdateMesh_ColorBlend_NoData:;
+				{
 					Color32 ColorDefault = Color.white;
 					float OperationDefault = (float)KindColorOperation.NON + 0.01f;	/* "+0.01f" for Rounding-off-Error */
 					for(int i=0; i<CountVertexData; i++)
@@ -1959,6 +1993,10 @@ public static class Library_SpriteStudio
 						DataColor32[i] = ColorDefault;
 					}
 				}
+/*				goto UpdateMesh_ColorBlend_End;	*/	/* Fall-Through */
+
+			UpdateMesh_ColorBlend_End:;
+
 				MeshNow.colors32 = DataColor32;
 				MeshNow.uv2 = DataUV2;
 
@@ -1975,20 +2013,20 @@ public static class Library_SpriteStudio
 					float Top = (-PivotMesh.y) * RateScaleMesh.y;
 					float Bottom = (RectCell.height - PivotMesh.y) * RateScaleMesh.y;
 
-					DataCoordinate[(int)VertexNo.LU] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].x,
-																	-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].y,
+					DataCoordinate[(int)VertexNo.LU] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].x,
+																	-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LU]].y,
 																	0.0f
 																);
-					DataCoordinate[(int)VertexNo.RU] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].x,
-																	-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].y,
+					DataCoordinate[(int)VertexNo.RU] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].x,
+																	-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RU]].y,
 																	0.0f
 																);
-					DataCoordinate[(int)VertexNo.RD] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].x,
-																	-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].y,
+					DataCoordinate[(int)VertexNo.RD] = new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].x,
+																	-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.RD]].y,
 																	0.0f
 																);
-					DataCoordinate[(int)VertexNo.LD] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].x,
-																	-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollrctionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].y,
+					DataCoordinate[(int)VertexNo.LD] = new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].x,
+																	-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)VertexNo.LD]].y,
 																	0.0f
 																);
 					Vector3 CoordinateLURU = (DataCoordinate[(int)VertexNo.LU] + DataCoordinate[(int)VertexNo.RU]) * 0.5f;
@@ -2172,16 +2210,46 @@ public static class Library_SpriteStudio
 			public void UpdateMesh(Mesh MeshNow, KeyFrame.ValueBools[] AnimationDataFlags, float[] AnimationDataOpacityRate, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 			{
 				float RateOpacity = (null != ScriptRoot) ? ScriptRoot.RateOpacity : 1.0f;
-
 				MeshAlies DataMeshAlies = AnimationDataMesh[FrameNo];
 				Vector2[] DataUV2 = new Vector2[DataMeshAlies.UV2.Length];
+				Script_SpriteStudio_PartsRoot.ColorBlendOverwrite DataColorBlendOverwrite = ScriptRoot.DataColorBlendOverwrite;
+				if(null == DataColorBlendOverwrite)
+				{	/* No-Overwrite */
+					goto UpdateMesh_ColorBlend_Animation;
+				}
+				else
+				{	/* Overwrite */
+					int CountVertexData = DataMeshAlies.ColorOverlay.Length;
+					Color32[] DataColor32 = new Color32[CountVertexData];
+					if(Library_SpriteStudio.KindColorBound.NON != DataColorBlendOverwrite.Bound)
+					{	/* Overwite */
+						for(int i=0; i<CountVertexData; i++)
+						{
+							DataUV2[i] = new Vector2(	RateOpacity,
+														(float)DataColorBlendOverwrite.Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
+													);
+							DataColor32[i] = DataColorBlendOverwrite.VertexColor[i];
+						}
+						MeshNow.colors32 = DataColor32;
+					}
+					else
+					{	/* Default (Same as "No-Overwrite" ) */
+						goto UpdateMesh_ColorBlend_Animation;
+					}
+				}
+				goto UpdateMesh_ColorBlend_End;
+
+			UpdateMesh_ColorBlend_Animation:;
 				for(int i=0; i<DataUV2.Length; i++)
 				{
 					DataUV2[i] = DataMeshAlies.UV2[i];
 					DataUV2[i].x *= RateOpacity;
 				}
-				MeshNow.vertices = DataMeshAlies.Coordinate;
 				MeshNow.colors32 = DataMeshAlies.ColorOverlay;
+/*				goto UpdateMesh_ColorBlend_End;	*/	/* Fall-Through */
+
+			UpdateMesh_ColorBlend_End:;
+				MeshNow.vertices = DataMeshAlies.Coordinate;
 				MeshNow.uv = DataMeshAlies.UV;
 				MeshNow.uv2 = DataUV2;
 			}

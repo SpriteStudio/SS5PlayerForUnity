@@ -18,13 +18,6 @@ public static partial class LibraryEditor_SpriteStudio
 {
 	/* Default Shaders' Data */
 	private readonly static int ShaderOperationMax = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
-	private readonly static Shader[] Shader_SpriteStudioTriangleX = new Shader[(int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1]
-	{
-		Shader.Find("Custom/SpriteStudio5/Mix"),
-		Shader.Find("Custom/SpriteStudio5/Add"),
-		Shader.Find("Custom/SpriteStudio5/Sub"),
-		Shader.Find("Custom/SpriteStudio5/Mul")
-	};
 
 	public static class Utility
 	{
@@ -3222,7 +3215,7 @@ public static partial class LibraryEditor_SpriteStudio
 									AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePathBase);
 
 									/* Create new Material */
-									MaterialNew = new Material(Shader_SpriteStudioTriangleX[OperationNo]);
+									MaterialNew = new Material(Library_SpriteStudio.Shader_SpriteStudioTriangleX[OperationNo]);
 									AssetDatabase.CreateAsset(MaterialNew, NameAsset);
 								}
 								TextureInformation = ListTexture[MaterialInformation.IndexTextureInformation] as InformationTexture;
