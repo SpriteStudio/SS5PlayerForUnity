@@ -71,7 +71,8 @@ public class player : MonoBehaviour {
 	private int timer = 0;										//生存時間
 	private bool sit = false;									//しゃがみ
 	private bool defense = false;								//防御
-	private int defense_knockback = 0;								//防御
+	private int defense_knockback = 0;							//防御吹き飛び値
+	private Script_SpriteStudio_PartsRoot.ColorBlendOverwrite DataColorBlendOverwrite;	//カラー操作
 
 	//コマンド入力
 	private bool dash = false;				//ダッシュ中か？
@@ -116,7 +117,10 @@ public class player : MonoBehaviour {
 			for(int i=0; i<Count; i++)
 			{
 				InstanceTransformChild = transform.GetChild(i);
+				//パーツルートの取得
 				spriteStudioRoot = InstanceTransformChild.gameObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+				//パーツルートからカラー操作バッファを取得
+				DataColorBlendOverwrite = spriteStudioRoot.DataGetColorBlendOverwrite();
 				if(null != spriteStudioRoot)
 				{
 					//初期化
@@ -422,6 +426,35 @@ public class player : MonoBehaviour {
 		else
 		{
 			//キャラクターの色を変更
+			/* Overay-Color Buffer Get */
+			Color OVColor = Color.white;
+			OVColor.a = 0.0f;
+			if ( damege_flash == 0 )
+			{
+				//色をもとに戻す
+				DataColorBlendOverwrite.SetVertex(Library_SpriteStudio.KindColorOperation.NON,
+				                                  ref OVColor,
+				                                  ref OVColor,
+				                                  ref OVColor,
+				                                  ref OVColor
+				                                  );
+			}
+			else
+			{
+				//色を赤に変更
+				OVColor = Color.red;
+				OVColor.a = damege_flash * 0.1f;
+				if ( OVColor.a > 1.0f )
+				{
+					OVColor.a = 1.0f;
+				}
+				DataColorBlendOverwrite.SetVertex(Library_SpriteStudio.KindColorOperation.MUL,
+				                                  ref OVColor,
+				                                  ref OVColor,
+				                                  ref OVColor,
+				                                  ref OVColor
+				                                  );
+			}
 		}
 
 
@@ -510,7 +543,7 @@ public class player : MonoBehaviour {
 
 		if ( (motion != now_motion) || ( flg == true ) )
 		{
-			//anime kousin
+			//anime 更新 
 			motion = now_motion;
 			spriteStudioRoot.AnimationPlay((int)now_motion, 1, 0, 1.0f);	
 		}
@@ -669,6 +702,12 @@ public class player : MonoBehaviour {
 	{
 		hit_muteki = 0;
 	}
+	//ダメージカラーを設定
+	public void Set_damege_flash( int time )
+	{
+		damege_flash = time;
+	}
+	//ダメージ吹き飛びを設定
 	public void Set_knockback( int time, int dir )
 	{
 		if ( knockback < time )
@@ -684,6 +723,7 @@ public class player : MonoBehaviour {
 			direction = 0;								//向き
 		}
 	}
+	//ガード吹き飛びを設定
 	public void Set_defense_knockback( int time, int dir )
 	{
 		if ( defense_knockback < time )
@@ -783,6 +823,7 @@ public class player : MonoBehaviour {
 						//ノックバック設定
 						playerclass.Set_knockback( 30, enemyclass.direction );
 						playerclass.setjump(1000);
+						Set_damege_flash( 20 );
 						//エフェクトの作成
 						effectcontrol.CreateEffect(0, you.x, you.y);
 						effectcontrol.CreateEffect(6, you.x, you.y);
