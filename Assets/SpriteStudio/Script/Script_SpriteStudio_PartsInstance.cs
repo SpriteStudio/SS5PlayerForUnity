@@ -29,6 +29,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 	}
 
 	public Collider CollisionComponent;
+	private Library_SpriteStudio.AnimationData.WorkAreaRuntime WorkArea = null;
 
 	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
@@ -84,6 +85,12 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
 		}
 
+		/* Boot-Check */
+		if(null == WorkArea)
+		{
+			WorkArea = new Library_SpriteStudio.AnimationData.WorkAreaRuntime();
+		}
+
 		/* Clear Instance-Part's Draw-List */
 		DrawListClearInstance();
 
@@ -125,7 +132,7 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 			bool FlagValidInstanceData = spriteStudioData.UpdateInstanceData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot, this);
 
 			/* Set Matrix for Transform (to the GameObject) */
-			if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
+			if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, CollisionComponent, WorkArea)) && (null != scriptPartsRootSub) && (true == FlagValidInstanceData) && (false == FlagHideForce))
 			{	/* Show Instance */
 				/* MEMO: "Instance"-Parts has no mesh */
 				DataMeshInformation.DataMesh = null;

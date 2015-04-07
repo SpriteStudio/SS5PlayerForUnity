@@ -18,6 +18,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	static private bool FlagGetAnimationReferencedPartsRoot = true;
 	static private bool FlagGetMaterialPartsRoot = true;
 	static private bool FlagGetTextureMaterial = true;
+	static private bool FlagDataCalculateInAdvance = true;
 
 	[MenuItem("Tools/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
@@ -29,6 +30,12 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	{
 		GUILayout.Box("", GUILayout.Width(this.position.width), GUILayout.Height(1));
 		EditorGUILayout.LabelField("- Options for basic");
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		FlagDataCalculateInAdvance = EditorGUILayout.Toggle("Calculate in advance", FlagDataCalculateInAdvance);
+		EditorGUILayout.LabelField(" Deformations of \"Mesh\" and \"Collider\" are calculated at importing.");
+		EditorGUILayout.LabelField(" Checked: Improving execution speed of the runtime.");
+		EditorGUILayout.LabelField(" Unchecked: The data size is reduced.");
 		EditorGUILayout.Space();
 		EditorGUILayout.Space();
 		FlagAttachControlGameObject = EditorGUILayout.Toggle("Create Control-Prefab", FlagAttachControlGameObject);
@@ -78,6 +85,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			SettingImport.FlagGetAnimationReferencedPartsRoot = FlagGetAnimationReferencedPartsRoot;
 			SettingImport.FlagGetMaterialPartsRoot = FlagGetMaterialPartsRoot;
 			SettingImport.FlagGetTextureMaterial = FlagGetTextureMaterial;
+			SettingImport.FlagDataCalculateInAdvance = FlagDataCalculateInAdvance;
 			LibraryEditor_SpriteStudio.Menu.ImportSSPJ(SettingImport);
 
 			Close();
@@ -103,12 +111,13 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		FlagGetAnimationReferencedPartsRoot = SettingImport.FlagGetAnimationReferencedPartsRoot;
 		FlagGetMaterialPartsRoot = SettingImport.FlagGetMaterialPartsRoot;
 		FlagGetTextureMaterial = SettingImport.FlagGetTextureMaterial;
+		FlagDataCalculateInAdvance = SettingImport.FlagDataCalculateInAdvance;
 	}
 
 	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.2.1";
+		string VersionText = "1.2.3 (RC)";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"

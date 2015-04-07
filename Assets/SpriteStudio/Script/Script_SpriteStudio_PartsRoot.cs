@@ -47,6 +47,114 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		public bool FlagWayBack = false;
 	}
 
+	public class ColorBlendOverwrite
+	{
+		public Library_SpriteStudio.KindColorBound Bound;
+		public Library_SpriteStudio.KindColorOperation Operation;
+		public Color[] VertexColor;
+
+		public	ColorBlendOverwrite() : base()
+		{
+			Bound = Library_SpriteStudio.KindColorBound.NON;
+			Operation = Library_SpriteStudio.KindColorOperation.MIX;
+			VertexColor = new Color[(int)Library_SpriteStudio.VertexNo.TERMINATOR4];
+			for(int i=0; i<VertexColor.Length; i++)
+			{
+				VertexColor[i] = Color.white;
+			}
+		}
+
+		/* ******************************************************** */
+		//! Set single Overlay-Color
+		/*!
+		@param	KindOperation
+			kind of Color-Blending Operation
+			Library_SpriteStudio.KindColorOperation.NON: Not Overwrite
+		@param	DataColor
+			Blending Color
+		@retval	Return-Value
+			(none)
+
+		Set single Overlay-Color.<br>
+		This setting affects individually to all of Sprite-Parts (managed in the instance of "Script_SpriteStudio_PartsRoot").<br>
+		<br>
+		If you specify a "Library_SpriteStudio.KindColorOperation.NON" to "KindOperation", the result will follow the setting of the original animation data.<br>
+		<br>
+		Members of the "DataColor", correspond to the Color's-Parameter of "Color-Blend" of "OPTPiX SpriteStudio (SpriteStudio5)".<br>
+		DataColor.r (0.0f to 1.0f) : "R" (0 to 255)<br>
+		DataColor.g (0.0f to 1.0f) : "G" (0 to 255)<br>
+		DataColor.b (0.0f to 1.0f) : "B" (0 to 255)<br>
+		DataColor.a (0.0f to 1.0f) : "%" (0 to 255)<br>
+		*/
+		public void SetOverall(Library_SpriteStudio.KindColorOperation KindOperation, ref Color DataColor)
+		{
+			if(Library_SpriteStudio.KindColorOperation.NON == KindOperation)
+			{	/* Error */
+				Bound = Library_SpriteStudio.KindColorBound.NON;
+				Operation = KindOperation;
+				return;
+			}
+
+			Bound = Library_SpriteStudio.KindColorBound.OVERALL;
+			Operation = KindOperation;
+			for(int i=0; i<(int)Library_SpriteStudio.VertexNo.TERMINATOR4; i++)
+			{
+				VertexColor[i] = DataColor;
+			}
+		}
+
+		/* ******************************************************** */
+		//! Set separately the Overlay-Color of the 4-vertices
+		/*!
+		@param	KindOperation
+			kind of Color-Blending Operation
+			Library_SpriteStudio.KindColorOperation.NON: Not Overwrite
+		@param	DataColor
+			Blending Color
+		@retval	Return-Value
+			(none)
+
+		Set separately the value of the 4-vertices.<br>
+		This setting affects individually to all of Sprite-Parts (managed in the instance of "Script_SpriteStudio_PartsRoot").<br>
+		<br>
+		If you specify a "Library_SpriteStudio.KindColorOperation.NON" to "KindOperation", the result will follow the setting of the original animation data.<br>
+		<br>
+		Part of the "XX" in the "DataColorXX", mean each vertex.<br>
+		(LU: Upper-Left / RU: Upper-Right / LD: Lower-Left / RD: Lower-Right)<br>
+		<br>
+		Members of the "DataColorXX", correspond to the Color's-Parameter of "Color-Blend" of "OPTPiX SpriteStudio (SpriteStudio5)".<br>
+		DataColorXX.r (0.0f to 1.0f) : "R" (0 to 255)<br>
+		DataColorXX.g (0.0f to 1.0f) : "G" (0 to 255)<br>
+		DataColorXX.b (0.0f to 1.0f) : "B" (0 to 255)<br>
+		DataColorXX.a (0.0f to 1.0f) : "%" (0 to 255)<br>
+		<br>
+		You can set a value between 0.0f and 1.0f in "RateOpacityPixelXX".<br>
+		Caution: When you operate this value, all sprite-parts are transparent individually.<br>
+		*/
+		public void SetVertex(	Library_SpriteStudio.KindColorOperation KindOperation,
+								ref Color DataColorLU,
+								ref Color DataColorRU,
+								ref Color DataColorRD,
+								ref Color DataColorLD
+							)
+		{
+			if(Library_SpriteStudio.KindColorOperation.NON == KindOperation)
+			{	/* Error */
+				Bound = Library_SpriteStudio.KindColorBound.NON;
+				Operation = KindOperation;
+				return;
+			}
+
+			Bound = Library_SpriteStudio.KindColorBound.OVERALL;
+			Operation = KindOperation;
+			VertexColor[(int)Library_SpriteStudio.VertexNo.LU] = DataColorLU;
+			VertexColor[(int)Library_SpriteStudio.VertexNo.RU] = DataColorRU;
+			VertexColor[(int)Library_SpriteStudio.VertexNo.RD] = DataColorRD;
+			VertexColor[(int)Library_SpriteStudio.VertexNo.LD] = DataColorLD;
+			VertexColor[(int)Library_SpriteStudio.VertexNo.C] =  ((DataColorLU + DataColorRU + DataColorRD + DataColorLD) * 0.25f);
+		}
+	}
+
 	/* Variables & Propaties */
 	private Library_SpriteStudio.AnimationInformationPlay[] listInformationPlay;
 	public Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay
@@ -74,7 +182,18 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 
+	/* CAUTION!: Don't use "ColorBlendOverwrite"-Property (for Player's Internal-Processing */
+	private ColorBlendOverwrite dataColorBlendOverwrite = null;
+	internal ColorBlendOverwrite DataColorBlendOverwrite
+	{
+		get
+		{
+			return(dataColorBlendOverwrite);
+		}
+	}
+
 	public Collider CollisionComponent;
+	private Library_SpriteStudio.AnimationData.WorkAreaRuntime WorkArea = null;
 
 	internal BitStatus Status;
 	public int ID;
@@ -295,7 +414,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	private GameObject InstanceGameObjectControl = null;
 	private Script_SpriteStudio_PartsRoot partsRootOrigin = null;
 	public Script_SpriteStudio_PartsRoot PartsRootOrigin
-	{	/* Caution!: Public-Scope for Editor & Inspector */
+	{	/* CAUTION!: Public-Scope for Editor & Inspector */
 		get
 		{
 			return(partsRootOrigin);
@@ -316,13 +435,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
 		}
 		Status = ~BitStatus.MASK_INITIAL;
-
-		/* Get Animation-Data-Referenced */
-		if(null != SpriteStudioDataReferenced)
-		{
-			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
-			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
-		}
 	}
 
 	void Start()
@@ -366,6 +478,13 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	{
 		MainLoopCount++;
 
+		/* Get Animation-Data-Referenced */
+		if((null != SpriteStudioDataReferenced) && (null == spriteStudioData))
+		{
+			listInformationPlay = SpriteStudioDataReferenced.ListInformationAnimation;
+			spriteStudioData = SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
 		/* Boot-Check */
 		if(null == InstanceCameraDraw)
 		{
@@ -391,6 +510,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			ListCallBackUserData.Clear();
 #endif
 		}
+		if(null == WorkArea)
+		{
+			WorkArea = new Library_SpriteStudio.AnimationData.WorkAreaRuntime();
+		}
 
 		/* Entry Object to Draw */
 		if((null != InstanceDrawManagerView) && (null == partsRootOrigin))
@@ -402,16 +525,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 
 		/* Animation Update */
-		if(null == SpriteStudioData)
-		{
-			return;
-		}
-
-		if(null == listInformationPlay)
-		{
-			return;
-		}
-
 		if(0 == (Status & BitStatus.PLAYING))
 		{
 			return;
@@ -698,10 +811,10 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		frameNoNow = FrameNoNew;
 		
 		/* Update User-CallBack */
-		SpriteStudioData.UpdateUserData(frameNoNow, gameObject, this);
+		spriteStudioData.UpdateUserData(frameNoNow, gameObject, this);
 		
 		/* Update GameObject */
-		SpriteStudioData.UpdateGameObject(gameObject, frameNoNow, false);
+		spriteStudioData.UpdateGameObject(gameObject, frameNoNow, CollisionComponent, WorkArea);
 	}
 
 	void LateUpdate()
@@ -1092,6 +1205,82 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	}
 
 	/* ******************************************************** */
+	//! Copy (Dupicate) Material-Table
+	/*!
+	@param
+		(none)
+	@retval	Return-Value
+		Created Copy Material-Table<br>
+		null == Failure
+
+	Generate a duplicate of "TableMaterial".<br>
+	Caution: The result is another instance the "TableMaterial".<br>
+	*/
+	public Material[] TableCopyMaterial()
+	{
+		return(Library_SpriteStudio.UtilityMaterial.TableCopyMaterial(TableMaterial));
+	}
+
+	/* ******************************************************** */
+	//! Get count of Textures
+	/*!
+	@param
+		(none)
+	@retval	Return-Value
+		Count of Texture<br>
+		0 == Failure
+
+	Get count of textures that can be set to "TableMaterial".
+	*/
+	public int TextureGetCount(Material[] TableDataMaterial)
+	{
+		return(Library_SpriteStudio.UtilityMaterial.TextureGetCount(TableMaterial));
+	}
+
+	/* ******************************************************** */
+	//! Change 1-Texture in Material-Table
+	/*!
+	@param	Index
+		Texture No.
+	@param	DataTexture
+		Texture
+	@retval	Return-Value
+		true == Success<br>
+		false == Failure
+
+	Change 1-Texture is set in "TableMaterial".
+	Texture is set to "TableMaterial[Index * 4] to TableMaterial[Index * 4 + 3]".<br>
+	<br>
+	Appropriate range of "Material"-instance of the texture you want to change will be created in the new.<br>
+	*/
+	public bool TextureChange(int Index, Texture2D DataTexture)
+	{
+		int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
+
+		if(null == TableMaterial)
+		{
+			return(false);
+		}
+		int CountTableMaterial = TableMaterial.Length;
+		if(0 >= CountTableMaterial)
+		{
+			return(false);
+		}
+
+		int IndexMaterial = Index * CountTextureBlock;
+		if((0 > IndexMaterial) || (CountTableMaterial <= IndexMaterial))
+		{
+			return(false);
+		}
+		for(int i=0; i<CountTextureBlock; i++)
+		{
+			TableMaterial[IndexMaterial + i] = new Material(Library_SpriteStudio.Shader_SpriteStudioTriangleX[i]);
+			TableMaterial[IndexMaterial + i].mainTexture = DataTexture;
+		}
+		return(true);
+	}
+
+	/* ******************************************************** */
 	//! Registration of calling-back of "User-Data"
 	/*!
 	@param	PartsName
@@ -1198,5 +1387,42 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		SpriteStudioData = new Library_SpriteStudio.AnimationData();
 		RateTimeAnimation = 1.0f;
 		Status = BitStatus.CLEAR;
+	}
+
+	/* ******************************************************** */
+	//! Get "Overlay-Color" Parameter
+	/*!
+	@param
+		(None)
+	@retval	Return-Value
+		"Overlay-Color" Setting Buffer
+
+	Get the Parameter-Buffer of "Overlay-Color("Color-Blend" Attribute)" for instances of this class.<br>
+	Set the contents of this buffer, it is possible to overwrite the state of the Overlay-Color from the script.<br>
+	<br>
+	The detail of how to set, please refer to the commentary of "Script_SpriteStudio_PartsRoot::ColorBlendOverwrite".
+	*/
+	public ColorBlendOverwrite DataGetColorBlendOverwrite()
+	{
+		if(null == dataColorBlendOverwrite)
+		{
+			dataColorBlendOverwrite = new ColorBlendOverwrite();
+		}
+		return(dataColorBlendOverwrite);
+	}
+
+	/* ******************************************************** */
+	//! Delete "Overlay-Color" Parameter
+	/*!
+	@param
+		(None)
+	@retval	Return-Value
+		(None)
+
+	Delete the Parameter-Buffer of "Overlay-Color".
+	*/
+	public void DataReleaseColorBlendOverwrite()
+	{
+		dataColorBlendOverwrite = null;
 	}
 }

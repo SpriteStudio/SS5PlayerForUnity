@@ -105,6 +105,7 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 
 		/* Command-Names for Setting-Changing */
 		private const string CommandTextureSizePixelMaximum = "TextureSizePixelMaximum";
+
 		private const string CommandCollisionThicknessZ = "CollisionThicknessZ";
 		private const string CommandFlagAttachRigidBody = "FlagAttachRigidBody";
 		private const string CommandFlagAttachControlGameObject = "FlagAttachControlGameObject";
@@ -117,6 +118,8 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 
 		private const string CommandNameBaseFolderSS5Data = "NameBaseFolderSS5Data";
 		private const string CommandNameBaseFolderAsset = "NameBaseFolderAsset";
+
+		private const string CommandFlagDataCalculateInAdvance = "FlagDataCalculateInAdvance";
 
 		private const string TextTrue = "true";
 		private const string TextFalse = "false";
@@ -186,6 +189,11 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 				case CommandFlagGetTextureMaterial:	/* FlagGetTextureMaterial */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.FlagGetTextureMaterial = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagDataCalculateInAdvance:	/* FlagDataCalculateInAdvance */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagDataCalculateInAdvance = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandNameBaseFolderSS5Data:	/* NameBaseFolderSS5Data */
