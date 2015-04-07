@@ -36,9 +36,10 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 			DataSettingImport.FlagAttachControlGameObject = true;
 			DataSettingImport.FlagConfirmOverWrite = false;		/* Caution!: This item is different */
 			DataSettingImport.FlagCreateProjectFolder = true;
-			DataSettingImport.FlagGetAnimationReferencedPartsRoot = false;
-			DataSettingImport.FlagGetMaterialPartsRoot = false;
-			DataSettingImport.FlagGetTextureMaterial = false;
+			DataSettingImport.FlagGetAnimationReferencedPartsRoot = true;
+			DataSettingImport.FlagGetMaterialPartsRoot = true;
+			DataSettingImport.FlagGetTextureMaterial = true;
+			DataSettingImport.FlagDataCalculateInAdvance = true;
 
 			UnityEngine.Object ObjectSelected = Selection.activeObject;
 			if(null == ObjectSelected)
