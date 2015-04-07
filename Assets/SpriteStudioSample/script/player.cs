@@ -65,6 +65,7 @@ public class player : MonoBehaviour {
 	private int attack_wait = 0;								//攻撃の硬直時間
 	private int ren_attack_count = 0;							//連続攻撃の回数
 	private int knockback = 0;									//ノックバック
+	private int damege_flash = 0;								//ダメージフラッシュ
 	private int attack_time = 0;								//攻撃開始からの時間
 	private int hit_muteki = 0;									//連続ヒットしないようにヒットフラグ
 	private int timer = 0;										//生存時間
@@ -411,7 +412,21 @@ public class player : MonoBehaviour {
 		if (Position.x > 3000.0f) {
 			Position.x = 3000.0f;
 		}
-		
+
+		//ダメージフラッシュ
+		damege_flash--;
+		if ( damege_flash < 0 )
+		{
+			damege_flash = 0;
+		}
+		else
+		{
+			//キャラクターの色を変更
+		}
+
+
+
+
 
 		//向きを反映
 		if (direction == 0) {
