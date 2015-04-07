@@ -18,38 +18,6 @@ public static partial class LibraryEditor_SpriteStudio
 {
 	/* Default Shaders' Data */
 	private readonly static int ShaderOperationMax = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
-	private readonly static Shader[] Shader_SpriteStudioTriangleX = new Shader[(int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1]
-	{
-		Shader.Find("Custom/SpriteStudio5/Mix"),
-		Shader.Find("Custom/SpriteStudio5/Add"),
-		Shader.Find("Custom/SpriteStudio5/Sub"),
-		Shader.Find("Custom/SpriteStudio5/Mul")
-	};
-
-	private readonly static int[,] VertexCollectionOrderVertex = new int[4, (int)Library_SpriteStudio.VertexNo.TERMINATOR2]
-	{
-		{	/* Normal */
-			(int)Library_SpriteStudio.VertexNo.LU,
-			(int)Library_SpriteStudio.VertexNo.RU,
-			(int)Library_SpriteStudio.VertexNo.RD,
-			(int)Library_SpriteStudio.VertexNo.LD,
-		}, {	/* Flip-X */
-			(int)Library_SpriteStudio.VertexNo.RU,
-			(int)Library_SpriteStudio.VertexNo.LU,
-			(int)Library_SpriteStudio.VertexNo.LD,
-			(int)Library_SpriteStudio.VertexNo.RD,
-		}, {	/* Flip-Y */
-			(int)Library_SpriteStudio.VertexNo.LD,
-			(int)Library_SpriteStudio.VertexNo.RD,
-			(int)Library_SpriteStudio.VertexNo.RU,
-			(int)Library_SpriteStudio.VertexNo.LU,
-		}, {	/* FlipX&Y */
-			(int)Library_SpriteStudio.VertexNo.RD,
-			(int)Library_SpriteStudio.VertexNo.LD,
-			(int)Library_SpriteStudio.VertexNo.LU,
-			(int)Library_SpriteStudio.VertexNo.RU,
-		}
-	};
 
 	public static class Utility
 	{
@@ -130,6 +98,7 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagGetAnimationReferencedPartsRoot;
 		public bool FlagGetMaterialPartsRoot;
 		public bool FlagGetTextureMaterial;
+		public bool FlagDataCalculateInAdvance;
 	}
 	internal readonly static string PrefsKeyTextureSizePixelMaximum = "SS5PU_Importer_TextureSizePixelMaximum";
 	internal readonly static string PrefsKeyCollisionThicknessZ = "SS5PU_Importer_CollisionThicknessZ";
@@ -140,6 +109,7 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static string PrefsKeyFlagGetAnimationReferencedPartsRoot = "SS5PU_Importer_FlagGetAnimationReferencedPartsRoot";
 	internal readonly static string PrefsKeyFlagGetMaterialPartsRoot = "SS5PU_Importer_FlagGetMaterialPartsRoot";
 	internal readonly static string PrefsKeyFlagGetTextureMaterial = "SS5PU_Importer_FlagGetTextureMaterial";
+	internal readonly static string PrefsKeyFlagDataCalculateInAdvance = "SS5PU_Importer_FlagDataCalculateInAdvance";
 	internal readonly static string PrefsKeyFolderNameImpoertLast = "SS5PU_Importer_FolderNameImpoertLast";
 
 	public static partial class Menu
@@ -170,6 +140,7 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, true);
 			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
 			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, true);
+			EditorPrefs.SetBool(PrefsKeyFlagDataCalculateInAdvance, true);
 			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, "");
 		}
 
@@ -184,6 +155,7 @@ public static partial class LibraryEditor_SpriteStudio
 			DataSettingImport.FlagGetAnimationReferencedPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, true);
 			DataSettingImport.FlagGetMaterialPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
 			DataSettingImport.FlagGetTextureMaterial = EditorPrefs.GetBool(PrefsKeyFlagGetTextureMaterial, true);
+			DataSettingImport.FlagDataCalculateInAdvance = EditorPrefs.GetBool(PrefsKeyFlagDataCalculateInAdvance, true);
 		}
 		internal static void SettingSetImport(ref SettingImport DataSettingImport)
 		{
@@ -196,6 +168,7 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagGetAnimationReferencedPartsRoot, DataSettingImport.FlagGetAnimationReferencedPartsRoot);
 			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, DataSettingImport.FlagGetMaterialPartsRoot);
 			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, DataSettingImport.FlagGetTextureMaterial);
+			EditorPrefs.SetBool(PrefsKeyFlagDataCalculateInAdvance, DataSettingImport.FlagDataCalculateInAdvance);
 		}
 		internal static void SettingGetFolderImport(out string NameFolder)
 		{
@@ -2424,182 +2397,80 @@ public static partial class LibraryEditor_SpriteStudio
 			/* Animation Data (Pass-1: Unbaked Runtime-Parameters) */
 			/* MEMO: This storage format had been used for Runtime until "Ver.1.1.18". */
 			/*       From " Ver.1.2.0(Alpha-3)", in order of execution speed improvement, storage format has changed. */
-			internal class AnimationDataRuntime_Pass1
+			internal class AnimationDataRuntime
 			{
-				public int ID;
 				public Library_SpriteStudio.KindSprite SpriteKind;
-				public Library_SpriteStudio.KindCollision CollisionKind;
 				public Collider CollisionComponent;
 
-				public Library_SpriteStudio.KindColorOperation KindBlendTarget;
+				public Library_SpriteStudio.AnimationData DataMain;
+				public Library_SpriteStudio.AnimationData.Plain DataPlain;	/* Pass-1 (or Plain Data) */
+				public Library_SpriteStudio.AnimationData.Fix DataFix;	/* Pass-2 (Mesh/Collider Fixed-Data) */
 
-				public Library_SpriteStudio.KeyFrame.ValueBools[] AnimationDataFlags;	/* Bake: Mesh(FlipX/FlipY) */
-
-				public Vector3[] AnimationDataPosition;
-				public Vector3[] AnimationDataRotation;
-				public Vector2[] AnimationDataScaling;
-
-				public float[] AnimationDataOpacityRate;
-				public float[] AnimationDataPriority;
-
-				public Library_SpriteStudio.KeyFrame.ValueColor[] AnimationDataColorBlend;					/* Bake: Mesh */
-				public Library_SpriteStudio.KeyFrame.ValueQuadrilateral[] AnimationDataVertexCorrection;	/* Bake: Mesh */
-				public Vector2[] AnimationDataOriginOffset;
-
-				public Vector2[] AnimationDataAnchorPosition;												/* Bake: Mesh */
-				public Vector2[] AnimationDataAnchorSize;													/* Bake: Mesh */
-
-				public Vector2[] AnimationDataTextureTranslate;	/* Bake: Texture-Matrix */
-				public float[] AnimationDataTextureRotate;		/* Bake: Texture-Matrix */
-				public Vector2[] AnimationDataTextureScale;		/* Bake: Texture-Matrix */
-				public Vector2[] AnimationDataTextureExpand;	/* Bake: Texture-Matrix */
-
-				public float[] AnimationDataCollisionRadius;
-
-				public int[] AnimationDataCell;
-				public int[] AnimationDataUser;
-				public int[] AnimationDataInstance;
-
-				public Library_SpriteStudio.KeyFrame.ValueCell.Data[] ArrayDataBodyCell;
-				public Library_SpriteStudio.KeyFrame.ValueUser.Data[] ArrayDataBodyUser;
-				public Library_SpriteStudio.KeyFrame.ValueInstance.Data[] ArrayDataBodyInstance;
-
-				public AnimationDataRuntime_Pass1()
+				public AnimationDataRuntime()
 				{
-					ID = -1;
 					SpriteKind = Library_SpriteStudio.KindSprite.NON;
-					CollisionKind = Library_SpriteStudio.KindCollision.NON;
 					CollisionComponent = null;
-
-					KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
-
-					AnimationDataFlags = null;
-
-					AnimationDataPosition = null;
-					AnimationDataRotation = null;
-					AnimationDataScaling = null;
-
-					AnimationDataOpacityRate = null;
-					AnimationDataPriority = null;
-
-					AnimationDataColorBlend = null;
-					AnimationDataVertexCorrection = null;
-					AnimationDataOriginOffset = null;
-
-					AnimationDataAnchorPosition = null;
-					AnimationDataAnchorSize = null;
-
-					AnimationDataTextureTranslate = null;
-					AnimationDataTextureRotate = null;
-					AnimationDataTextureScale = null;
-					AnimationDataTextureExpand = null;
-
-					AnimationDataCollisionRadius = null;
-
-					AnimationDataCell = null;
-					AnimationDataUser = null;
-					AnimationDataInstance = null;
+					DataMain = new Library_SpriteStudio.AnimationData();
+					DataPlain = new Library_SpriteStudio.AnimationData.Plain();
+					DataMain.DataPlain = DataPlain;	/* Pass-1 */
+					DataMain.KindDataFormat = Library_SpriteStudio.KindAnimationData.PLAIN;
+					DataFix = null;
 				}
 
-				private void SpriteRecalcSizeAndPivot(ref Vector2 PivotMesh, ref Rect RectCell, ref Vector2 RateScaleMesh, int FrameNo)
+				public bool ConvertPass1to2(ref SettingImport DataSettingImport)
 				{
-					Vector2 PivotOffset = Vector2.zero;
-					if(null != AnimationDataOriginOffset)
-					{
-						if(0 < AnimationDataOriginOffset.Length)
-						{
-							PivotOffset = AnimationDataOriginOffset[FrameNo];
-						}
+					if(false == DataSettingImport.FlagDataCalculateInAdvance)
+					{	/* Not Convert (Plain-Data) */
+						return(true);
 					}
-					PivotMesh.x += (RectCell.width * PivotOffset.x) * RateScaleMesh.x;
-					PivotMesh.y -= (RectCell.height * PivotOffset.y) * RateScaleMesh.y;
 
-					/* Arbitrate Anchor-Size */
-					if(null != AnimationDataAnchorSize)
-					{
-						if(0 < AnimationDataAnchorSize.Length)
-						{
-							float RatePivot;
-							Vector2 AnchorSize = AnimationDataAnchorSize[FrameNo];
-							if(0.0f <= AnchorSize.x)
-							{
-								RatePivot = PivotMesh.x / RectCell.width;
-								RectCell.x = 0.0f;
-								RectCell.width = AnchorSize.x;
-								PivotMesh.x = AnchorSize.x * RatePivot;
-							}
-							if(0.0f <= AnchorSize.y)
-							{
-								RatePivot = PivotMesh.y / RectCell.height;
-								RectCell.y = 0.0f;
-								RectCell.height = AnchorSize.y;
-								PivotMesh.y = AnchorSize.y * RatePivot;
-							}
-						}
-					}
-				}
-				public bool ConvertPass1to2(Library_SpriteStudio.AnimationData DataRuntimePass2, ref SettingImport DataSettingImport)
-				{
-					int CountFrame = AnimationDataFlags.Length;
+					/* Switch Pass-2 Data */
+					DataFix = new Library_SpriteStudio.AnimationData.Fix();
+					DataMain.DataFix = DataFix;
+					DataMain.KindDataFormat = Library_SpriteStudio.KindAnimationData.FIX;
+
+					/* Data-Array Create */
+					int CountFrame = DataMain.AnimationDataFlags.Length;
 					int CountVertexData;
-
-					/* Data Copy */
-					DataRuntimePass2.ID = ID;
-					DataRuntimePass2.SpriteKind = SpriteKind;
-					DataRuntimePass2.CollisionKind = CollisionKind;
-					DataRuntimePass2.KindBlendTarget = KindBlendTarget;
-
-					DataRuntimePass2.AnimationDataFlags = AnimationDataFlags;
-					for(int i=0; i<CountFrame; i++)
-					{
-						DataRuntimePass2.AnimationDataFlags[i].Flag |= Library_SpriteStudio.KeyFrame.ValueBools.FlagData.TEXTURENO;
-					}
-					DataRuntimePass2.AnimationDataPosition = AnimationDataPosition;
-					DataRuntimePass2.AnimationDataRotation = AnimationDataRotation;
-					DataRuntimePass2.AnimationDataScaling = AnimationDataScaling;
-
-					DataRuntimePass2.AnimationDataOpacityRate = AnimationDataOpacityRate;
-					DataRuntimePass2.AnimationDataPriority = AnimationDataPriority;
-
 					switch(SpriteKind)
 					{
 						case Library_SpriteStudio.KindSprite.TRIANGLE2:
-							DataRuntimePass2.AnimationDataMesh = new Library_SpriteStudio.AnimationData.MeshAlies[CountFrame];
+							DataFix.AnimationDataMesh = new Library_SpriteStudio.AnimationData.Fix.MeshAlies[CountFrame];
 							CountVertexData = (int)Library_SpriteStudio.VertexNo.TERMINATOR2;
 							for(int i=0; i<CountFrame; i++)
 							{
-								DataRuntimePass2.AnimationDataMesh[i] = new Library_SpriteStudio.AnimationData.MeshAlies(CountVertexData);
+								DataFix.AnimationDataMesh[i] = new Library_SpriteStudio.AnimationData.Fix.MeshAlies(CountVertexData);
 							}
 							break;
 
 						case Library_SpriteStudio.KindSprite.TRIANGLE4:
-							DataRuntimePass2.AnimationDataMesh = new Library_SpriteStudio.AnimationData.MeshAlies[CountFrame];
+							DataFix.AnimationDataMesh = new Library_SpriteStudio.AnimationData.Fix.MeshAlies[CountFrame];
 							CountVertexData = (int)Library_SpriteStudio.VertexNo.TERMINATOR4;
 							for(int i=0; i<CountFrame; i++)
 							{
-								DataRuntimePass2.AnimationDataMesh[i] = new Library_SpriteStudio.AnimationData.MeshAlies(CountVertexData);
+								DataFix.AnimationDataMesh[i] = new Library_SpriteStudio.AnimationData.Fix.MeshAlies(CountVertexData);
 							}
 							break;
 
 						case Library_SpriteStudio.KindSprite.NON:
 						default:
-							DataRuntimePass2.AnimationDataMesh = null;
+							DataFix.AnimationDataMesh = null;
 							CountVertexData = 0;
 							break;
 					}
 
-					switch(CollisionKind)
+					switch(DataMain.CollisionKind)
 					{
 						case Library_SpriteStudio.KindCollision.CIRCLE:
-							DataRuntimePass2.AnimationDataCollisionSize = null;
-							DataRuntimePass2.AnimationDataCollisionPivot = null;
-							DataRuntimePass2.AnimationDataCollisionRadius = AnimationDataCollisionRadius;
+							DataFix.AnimationDataCollisionSize = null;
+							DataFix.AnimationDataCollisionPivot = null;
+							DataFix.AnimationDataCollisionRadius = DataPlain.AnimationDataCollisionRadius;
 							break;
 
 						case Library_SpriteStudio.KindCollision.SQUARE:
-							DataRuntimePass2.AnimationDataCollisionSize = new Vector3[CountFrame];
-							DataRuntimePass2.AnimationDataCollisionPivot = new Vector3[CountFrame];
-							DataRuntimePass2.AnimationDataCollisionRadius = null;
+							DataFix.AnimationDataCollisionSize = new Vector2[CountFrame];
+							DataFix.AnimationDataCollisionPivot = new Vector2[CountFrame];
+							DataFix.AnimationDataCollisionRadius = null;
 							break;
 
 						case Library_SpriteStudio.KindCollision.NON:
@@ -2607,45 +2478,40 @@ public static partial class LibraryEditor_SpriteStudio
 						case Library_SpriteStudio.KindCollision.CIRCLE_SCALEMINIMUM:
 						case Library_SpriteStudio.KindCollision.AABB:
 						default:
-							DataRuntimePass2.AnimationDataCollisionSize = null;
-							DataRuntimePass2.AnimationDataCollisionPivot = null;
-							DataRuntimePass2.AnimationDataCollisionRadius = null;
+							DataFix.AnimationDataCollisionSize = null;
+							DataFix.AnimationDataCollisionPivot = null;
+							DataFix.AnimationDataCollisionRadius = null;
 							break;
 					}
 
-					DataRuntimePass2.AnimationDataUser = AnimationDataUser;
-					DataRuntimePass2.AnimationDataInstance = AnimationDataInstance;
-
-					DataRuntimePass2.ArrayDataBodyUser = ArrayDataBodyUser;
-					DataRuntimePass2.ArrayDataBodyInstance = ArrayDataBodyInstance;
-
 					/* Baking Data (Mesh) */
-					if(null != DataRuntimePass2.AnimationDataMesh)
+					if(null != DataFix.AnimationDataMesh)
 					{
 						int TextureNo = -1;
 						for(int i=0; i<CountFrame; i++)
 						{
-							if(true == DataRuntimePass2.AnimationDataFlags[i].IsValid)
+							if(true == DataMain.AnimationDataFlags[i].IsValid)
 							{
-								TextureNo = ConvertMeshData(DataRuntimePass2, i, CountVertexData);
+								TextureNo = ConvertMeshPass2(i, CountVertexData);
 								if(0 <= TextureNo)
 								{
-									DataRuntimePass2.AnimationDataFlags[i].Flag &= ~Library_SpriteStudio.KeyFrame.ValueBools.FlagData.TEXTURENO;
-									DataRuntimePass2.AnimationDataFlags[i].Flag |= (Library_SpriteStudio.KeyFrame.ValueBools.FlagData)TextureNo & Library_SpriteStudio.KeyFrame.ValueBools.FlagData.TEXTURENO;
+									DataMain.AnimationDataFlags[i].Flag &= ~Library_SpriteStudio.KeyFrame.ValueBools.FlagData.TEXTURENO;
+									DataMain.AnimationDataFlags[i].Flag |= (Library_SpriteStudio.KeyFrame.ValueBools.FlagData)TextureNo & Library_SpriteStudio.KeyFrame.ValueBools.FlagData.TEXTURENO;
 								}
 							}
 						}
 					}
 
 					/* Baking Data (Collider) */
-					switch(CollisionKind)
+					switch(DataMain.CollisionKind)
 					{
 						case Library_SpriteStudio.KindCollision.SQUARE:
 							for(int i=0; i<CountFrame; i++)
 							{
-								if(true == DataRuntimePass2.AnimationDataFlags[i].IsValid)
+								if(true == DataMain.AnimationDataFlags[i].IsValid)
 								{
-									ConvertCollisionData(DataRuntimePass2, i, DataSettingImport.CollisionThicknessZ);
+									DataMain.CollisionSizeZ = DataSettingImport.CollisionThicknessZ;
+									ConvertCollisionPass2(i);
 								}
 							}
 							break;
@@ -2661,7 +2527,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 					return(true);
 				}
-				private int ConvertMeshData(Library_SpriteStudio.AnimationData DataRuntimePass2, int FrameNo, int CountVertexData)
+				private int ConvertMeshPass2(int FrameNo, int CountVertexData)
 				{
 					Matrix4x4 MatrixTexture = Matrix4x4.identity;
 					Vector2 SizeTexture = Vector2.one;
@@ -2675,24 +2541,18 @@ public static partial class LibraryEditor_SpriteStudio
 					int IndexCell = -1;
 					int IndexTexture = -1;
 					Library_SpriteStudio.KeyFrame.ValueCell.Data DataBodyCell = Library_SpriteStudio.KeyFrame.DummyDataCell;
-					Library_SpriteStudio.AnimationData.MeshAlies MeshAlies = DataRuntimePass2.AnimationDataMesh[FrameNo];
+					Library_SpriteStudio.AnimationData.Fix.MeshAlies MeshAlies = DataFix.AnimationDataMesh[FrameNo];
 
 					/* Cell-Data Get */
-					if(null != AnimationDataCell)
+					if((null != DataPlain.AnimationDataCell) && (0 < DataPlain.AnimationDataCell.Length))
 					{
-						if(0 < AnimationDataCell.Length)
-						{
-							IndexCell = AnimationDataCell[FrameNo];
-						}
+						IndexCell = DataPlain.AnimationDataCell[FrameNo];
 					}
-					if(null != ArrayDataBodyCell)
+					if((null != DataPlain.ArrayDataBodyCell) && (0 < DataPlain.ArrayDataBodyCell.Length) && (0 <= IndexCell))
 					{
-						if((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length))
-						{
-							DataBodyCell = ArrayDataBodyCell[IndexCell];
-							SizeTexture.x = DataBodyCell.SizeOriginal.x;
-							SizeTexture.y = DataBodyCell.SizeOriginal.y;
-						}
+						DataBodyCell = DataPlain.ArrayDataBodyCell[IndexCell];
+						SizeTexture.x = DataBodyCell.SizeOriginal.x;
+						SizeTexture.y = DataBodyCell.SizeOriginal.y;
 					}
 					if((0 <= IndexCell) && (null != DataBodyCell))
 					{
@@ -2705,58 +2565,45 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 
 					/* Disolve Flipping & Texture-Scaling */
-					if(null != AnimationDataFlags)
+					if((null != DataMain.AnimationDataFlags) && (0 < DataMain.AnimationDataFlags.Length))
 					{
-						if(0 < AnimationDataFlags.Length)
+						RateScaleTexture.x = (true == DataMain.AnimationDataFlags[FrameNo].IsTextureFlipX) ? -1.0f : 1.0f;
+						RateScaleTexture.y = (true == DataMain.AnimationDataFlags[FrameNo].IsTextureFlipY) ? -1.0f : 1.0f;
+						if(true == DataMain.AnimationDataFlags[FrameNo].IsFlipX)
 						{
-							RateScaleTexture.x = (true == AnimationDataFlags[FrameNo].IsTextureFlipX) ? -1.0f : 1.0f;
-							RateScaleTexture.y = (true == AnimationDataFlags[FrameNo].IsTextureFlipY) ? -1.0f : 1.0f;
-							if(true == AnimationDataFlags[FrameNo].IsFlipX)
-							{
-								RateScaleMesh.x = -1.0f;
-								VertexCollectionIndexTableNo += 1;
-							}
-							else
-							{
-								RateScaleMesh.x = 1.0f;
-							}
-							if(true == AnimationDataFlags[FrameNo].IsFlipY)
-							{
-								RateScaleMesh.y = -1.0f;
-								VertexCollectionIndexTableNo += 2;
-							}
-							else
-							{
-								RateScaleMesh.y = 1.0f;
-							}
+							RateScaleMesh.x *= -1.0f;
+							VertexCollectionIndexTableNo += 1;
+						}
+						else
+						{
+							RateScaleMesh.x *= 1.0f;
+						}
+						if(true == DataMain.AnimationDataFlags[FrameNo].IsFlipY)
+						{
+							RateScaleMesh.y *= -1.0f;
+							VertexCollectionIndexTableNo += 2;
+						}
+						else
+						{
+							RateScaleMesh.y *= 1.0f;
 						}
 					}
-
-					if(null != AnimationDataTextureScale)
+					if((null != DataPlain.AnimationDataTextureScale) && (0 < DataPlain.AnimationDataTextureScale.Length))
 					{
-						if(0 < AnimationDataTextureScale.Length)
-						{
-							RateScaleTexture.x *= AnimationDataTextureScale[FrameNo].x;
-							RateScaleTexture.y *= AnimationDataTextureScale[FrameNo].y;
-						}
+						RateScaleTexture.x *= DataPlain.AnimationDataTextureScale[FrameNo].x;
+						RateScaleTexture.y *= DataPlain.AnimationDataTextureScale[FrameNo].y;
 					}
 
 					/* Calculate Matrix-Texture */
 					float Rotate = 0.0f;
-					if(null != AnimationDataTextureRotate)
+					if((null != DataPlain.AnimationDataTextureRotate) && (0 < DataPlain.AnimationDataTextureRotate.Length))
 					{
-						if(0 < AnimationDataTextureRotate.Length)
-						{
-							Rotate = AnimationDataTextureRotate[FrameNo];
-						}
+						Rotate = DataPlain.AnimationDataTextureRotate[FrameNo];
 					}
 					Vector2 TextureOffset = Vector2.zero;
-					if(null != AnimationDataTextureTranslate)
+					if((null != DataPlain.AnimationDataTextureTranslate) && (0 < DataPlain.AnimationDataTextureTranslate.Length))
 					{
-						if(0 < AnimationDataTextureTranslate.Length)
-						{
-							TextureOffset = AnimationDataTextureTranslate[FrameNo];
-						}
+						TextureOffset = DataPlain.AnimationDataTextureTranslate[FrameNo];
 					}
 
 					Vector3 Translation = new Vector3(	((RectCell.xMin + PivotTexture.x) / SizeTexture.x) + TextureOffset.x,
@@ -2780,14 +2627,10 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 
 					float RateOpacity = 1.0f;
-					if(null != AnimationDataOpacityRate)
+					if((null != DataMain.AnimationDataOpacityRate) && (0 < DataMain.AnimationDataOpacityRate.Length))
 					{
-						if(0 < AnimationDataOpacityRate.Length)
-						{
-							RateOpacity = AnimationDataOpacityRate[FrameNo];
-						}
+						RateOpacity = DataMain.AnimationDataOpacityRate[FrameNo];
 					}
-/*					RateOpacity *= ScriptRoot.RateOpacity;	*/
 
 					Vector2[] DataUV2 = new Vector2[CountVertexData];
 					Color32[] DataColor32 = new Color32[CountVertexData];
@@ -2797,19 +2640,16 @@ public static partial class LibraryEditor_SpriteStudio
 						DataUV2[i] = new Vector2(RateOpacity, OperationDefault);
 						DataColor32[i] = Color.white;
 					}
-					if(null != AnimationDataColorBlend)	/* Blending-Color & Opacity */
-					{	/* Animation-Data */
-						if(0 < AnimationDataColorBlend.Length)
+					if((null != DataPlain.AnimationDataColorBlend) && (0 < DataPlain.AnimationDataColorBlend.Length))	/* Blending-Color & Opacity */
+					{
+						if(Library_SpriteStudio.KindColorBound.NON != DataPlain.AnimationDataColorBlend[FrameNo].Bound)
 						{
-							if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlend[FrameNo].Bound)
+							for(int i=0; i<CountVertexData; i++)
 							{
-								for(int i=0; i<CountVertexData; i++)
-								{
-									DataUV2[i] = new Vector2(	AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
-																(float)AnimationDataColorBlend[FrameNo].Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
-															);
-									DataColor32[i] = AnimationDataColorBlend[FrameNo].VertexColor[i];
-								}
+								DataUV2[i] = new Vector2(	DataPlain.AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
+															(float)DataPlain.AnimationDataColorBlend[FrameNo].Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
+														);
+								DataColor32[i] = DataPlain.AnimationDataColorBlend[FrameNo].VertexColor[i];
 							}
 						}
 					}
@@ -2818,7 +2658,7 @@ public static partial class LibraryEditor_SpriteStudio
 					if((int)Library_SpriteStudio.VertexNo.TERMINATOR4 == CountVertexData)	/* Vertex-Coordinate */
 					{	/* 4-Triangles Mesh */
 						/* Get SpriteSize & Pivot */
-						SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
+						DataPlain.SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
 
 						/* Get Coordinates */
 						/* MEMO: No Check "AnimationDataVertexCorrection.Length", 'cause 4-Triangles-Mesh necessarily has "AnimationDataVertexCorrection" */
@@ -2828,40 +2668,41 @@ public static partial class LibraryEditor_SpriteStudio
 						float Bottom = (RectCell.height - PivotMesh.y) * RateScaleMesh.y;
 
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.LU] =
-							new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].x,
-											-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].y,
+							new Vector3(	Left + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].x,
+											-Top + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LU]].y,
 											0.0f
 										);
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.RU] =
-							new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].x,
-											-Top + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].y,
+							new Vector3(	Right + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].x,
+											-Top + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RU]].y,
 											0.0f
 										);
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.RD] =
-							new Vector3(	Right + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].x,
-											-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].y,
+							new Vector3(	Right + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].x,
+											-Bottom + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.RD]].y,
 											0.0f
 										);
 						DataCoordinate[(int)Library_SpriteStudio.VertexNo.LD] =
-							new Vector3(	Left + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].x,
-											-Bottom + AnimationDataVertexCorrection[FrameNo].Coordinate[VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].y,
+							new Vector3(	Left + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].x,
+											-Bottom + DataPlain.AnimationDataVertexCorrection[FrameNo].Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[VertexCollectionIndexTableNo, (int)Library_SpriteStudio.VertexNo.LD]].y,
 											0.0f
 										);
 						Vector3 CoordinateLURU = (DataCoordinate[(int)Library_SpriteStudio.VertexNo.LU] + DataCoordinate[(int)Library_SpriteStudio.VertexNo.RU]) * 0.5f;
 						Vector3 CoordinateLULD = (DataCoordinate[(int)Library_SpriteStudio.VertexNo.LU] + DataCoordinate[(int)Library_SpriteStudio.VertexNo.LD]) * 0.5f;
 						Vector3 CoordinateLDRD = (DataCoordinate[(int)Library_SpriteStudio.VertexNo.LD] + DataCoordinate[(int)Library_SpriteStudio.VertexNo.RD]) * 0.5f;
 						Vector3 CoordinateRURD = (DataCoordinate[(int)Library_SpriteStudio.VertexNo.RU] + DataCoordinate[(int)Library_SpriteStudio.VertexNo.RD]) * 0.5f;
-						CoordinateGetDiagonalIntersection(	out DataCoordinate[(int)Library_SpriteStudio.VertexNo.C],
-															ref CoordinateLURU,
-															ref CoordinateRURD,
-															ref CoordinateLULD,
-															ref CoordinateLDRD
-														);
+						Library_SpriteStudio.AnimationData.Plain.CoordinateGetDiagonalIntersection(
+																		out DataCoordinate[(int)Library_SpriteStudio.VertexNo.C],
+																		ref CoordinateLURU,
+																		ref CoordinateRURD,
+																		ref CoordinateLULD,
+																		ref CoordinateLDRD
+																	);
 					}
 					else
 					{	/* 2-Triangles Mesh */
 						/* Get SpriteSize & Pivot */
-						SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
+						DataPlain.SpriteRecalcSizeAndPivot(ref PivotMesh, ref RectCell, ref RateScaleMesh, FrameNo);
 
 						/* Get Coordinates */
 						float Left = (-PivotMesh.x) * RateScaleMesh.x;
@@ -2899,7 +2740,7 @@ public static partial class LibraryEditor_SpriteStudio
 						Output.y = LU.y + ca * (RD.y - LU.y);
 					}
 				}
-				private void ConvertCollisionData(Library_SpriteStudio.AnimationData DataRuntimePass2, int FrameNo, float ColliderZ)
+				private void ConvertCollisionPass2(int FrameNo)
 				{
 					/* Calculate Sprite-Parts size */
 					Vector2 PivotCell = Vector2.zero;
@@ -2909,38 +2750,32 @@ public static partial class LibraryEditor_SpriteStudio
 					Library_SpriteStudio.KeyFrame.ValueCell.Data DataBodyCell = Library_SpriteStudio.KeyFrame.DummyDataCell;
 
 					/* Cell-Data Get */
-					if(null != AnimationDataCell)
+					if(null != DataPlain.AnimationDataCell)
 					{
-						if(0 < AnimationDataCell.Length)
+						if(0 < DataPlain.AnimationDataCell.Length)
 						{
-							IndexCell = AnimationDataCell[FrameNo];
+							IndexCell = DataPlain.AnimationDataCell[FrameNo];
 						}
 					}
-					if(null != ArrayDataBodyCell)
+					if((null != DataPlain.ArrayDataBodyCell) && (0 < DataPlain.ArrayDataBodyCell.Length) && (0 <= IndexCell))
 					{
-						if((0 <= IndexCell) && (0 < ArrayDataBodyCell.Length))
-						{
-							DataBodyCell = ArrayDataBodyCell[IndexCell];
-							RectCell.width = DataBodyCell.Rectangle.width;
-							RectCell.height = DataBodyCell.Rectangle.height;
+						DataBodyCell = DataPlain.ArrayDataBodyCell[IndexCell];
+						RectCell.width = DataBodyCell.Rectangle.width;
+						RectCell.height = DataBodyCell.Rectangle.height;
 
-							PivotCell = DataBodyCell.Pivot;
-							PivotCell.x -= (RectCell.width * 0.5f);
-							PivotCell.y -= (RectCell.height * 0.5f);
-						}
+						PivotCell = DataBodyCell.Pivot;
+						PivotCell.x -= (RectCell.width * 0.5f);
+						PivotCell.y -= (RectCell.height * 0.5f);
 					}
-					if(null != AnimationDataFlags)
+					if((null != DataMain.AnimationDataFlags) && (0 < DataMain.AnimationDataFlags.Length))
 					{
-						if(0 < AnimationDataFlags.Length)
-						{
-							RateScaleMesh.x = (true == AnimationDataFlags[FrameNo].IsFlipX) ? -1.0f : 1.0f;
-							RateScaleMesh.y = (true == AnimationDataFlags[FrameNo].IsFlipY) ? -1.0f : 1.0f;
-						}
+						RateScaleMesh.x = (true == DataMain.AnimationDataFlags[FrameNo].IsFlipX) ? -1.0f : 1.0f;
+						RateScaleMesh.y = (true == DataMain.AnimationDataFlags[FrameNo].IsFlipY) ? -1.0f : 1.0f;
 					}
 
 					/* Accommodate Pivot's-Offset */
 					Vector2 PivotCollide = Vector2.zero;
-					SpriteRecalcSizeAndPivot(ref PivotCollide, ref RectCell, ref RateScaleMesh, FrameNo);
+					DataPlain.SpriteRecalcSizeAndPivot(ref PivotCollide, ref RectCell, ref RateScaleMesh, FrameNo);
 
 					Vector3 PivotNew = Vector3.zero;
 					PivotNew.x = -(PivotCollide.x + PivotCell.x) * RateScaleMesh.x;
@@ -2951,11 +2786,11 @@ public static partial class LibraryEditor_SpriteStudio
 					Vector3 SizeNew = Vector3.zero;
 					SizeNew.x = RectCell.width;
 					SizeNew.y = RectCell.height;
-					SizeNew.z = ColliderZ;
+					SizeNew.z = DataMain.CollisionSizeZ;
 
 					/* Set Frame-Data */
-					DataRuntimePass2.AnimationDataCollisionPivot[FrameNo] = PivotNew;
-					DataRuntimePass2.AnimationDataCollisionSize[FrameNo] = SizeNew;
+					DataFix.AnimationDataCollisionPivot[FrameNo] = PivotNew;
+					DataFix.AnimationDataCollisionSize[FrameNo] = SizeNew;
 				}
 			}
 
@@ -2964,8 +2799,7 @@ public static partial class LibraryEditor_SpriteStudio
 			internal Library_SpriteStudio.AnimationInformationPlay[] ListInformationPlay = null;
 			internal ArrayList ListPartsInstance = null;
 
-			internal Library_SpriteStudio.AnimationData[] ListDataRuntime = null;
-			internal AnimationDataRuntime_Pass1[] ListDataRuntimePass1 = null;
+			internal AnimationDataRuntime[] ListDataRuntime = null;
 
 			internal ParseOPSS.KindVersionSSAE VersionCodeSSAE;
 
@@ -2985,7 +2819,6 @@ public static partial class LibraryEditor_SpriteStudio
 				ListPartsInstance = new ArrayList();
 				ListPartsInstance.Clear();
 				ListDataRuntime = null;
-				ListDataRuntimePass1 = null;
 
 				GameObjectRoot = null;
 				PrefabData = null;
@@ -3369,8 +3202,8 @@ public static partial class LibraryEditor_SpriteStudio
 						else
 						{
 							MaterialInformation = ListMaterial[IndexMaterial] as InformationMaterial;
-							NameAsset = String.Copy(Keys[i]);
-							if(false == FlagCreateMaterial[i])
+							NameAsset = String.Copy(Keys[IndexMaterial]);
+							if(false == FlagCreateMaterial[IndexMaterial])
 							{	/* Create-New */
 								if(null != MaterialInformation.SubstanceAsset)
 								{	/* Overwrite */
@@ -3382,7 +3215,7 @@ public static partial class LibraryEditor_SpriteStudio
 									AssetUtility.Create.Folder(NamePathSubImportMaterial, NamePathBase);
 
 									/* Create new Material */
-									MaterialNew = new Material(Shader_SpriteStudioTriangleX[OperationNo]);
+									MaterialNew = new Material(Library_SpriteStudio.Shader_SpriteStudioTriangleX[OperationNo]);
 									AssetDatabase.CreateAsset(MaterialNew, NameAsset);
 								}
 								TextureInformation = ListTexture[MaterialInformation.IndexTextureInformation] as InformationTexture;
@@ -3391,7 +3224,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 								TableMaterial[i] = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Material)) as Material;
 								MaterialInformation.SubstanceAsset = TableMaterial[i];
-								FlagCreateMaterial[i] = true;
+								FlagCreateMaterial[IndexMaterial] = true;
 							}
 							else
 							{	/* Already Created */
@@ -3470,26 +3303,19 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Animation Converting "Pass-1" (Intermediate to Runtime) & Attaching Collider */
-				ListDataRuntime = new Library_SpriteStudio.AnimationData[ListParts.Length];
-				ListDataRuntimePass1 = new AnimationDataRuntime_Pass1[ListParts.Length];
+				ListDataRuntime = new AnimationDataRuntime[ListParts.Length];
 				{
-					Library_SpriteStudio.AnimationData DataSpriteStudio = null;
 					for(int i=0; i<ListParts.Length; i++)
 					{
 						/* Create Animation-Data for Converting-Temporary */
-						ListDataRuntimePass1[i] = new AnimationDataRuntime_Pass1();
+						ListDataRuntime[i] = new AnimationDataRuntime();
 
 						/* Create Animation-Data for Runtime */
 						CurrentProcessingPartsName = ListParts[i].Name;
-						DataSpriteStudio = NodeSetAnimation(GameObjectParts[i], i, ScriptRoot, TableMaterial);
-						if(null == DataSpriteStudio)
-						{
-							return(false);
-						}
-						ListDataRuntime[i] = DataSpriteStudio;
+						NodeSetAnimation(GameObjectParts[i], i, ScriptRoot, TableMaterial);
 
 						/* Attach Collider (to GameObject) */
-						NodeSetCollider(GameObjectParts[i], i, DataSpriteStudio, ref DataSettingImport);
+						NodeSetCollider(GameObjectParts[i], i, ref DataSettingImport);
 					}
 					CurrentProcessingPartsName = "";
 
@@ -3506,7 +3332,7 @@ public static partial class LibraryEditor_SpriteStudio
 				/* Animation Converting "Pass-2" (Baking Mesh-Data) */
 				for(int i=0; i<ListParts.Length; i++)
 				{
-					ListDataRuntimePass1[i].ConvertPass1to2(ListDataRuntime[i], ref DataSettingImport);
+					ListDataRuntime[i].ConvertPass1to2(ref DataSettingImport);
 				}
 				return(true);
 			}
@@ -3587,7 +3413,7 @@ public static partial class LibraryEditor_SpriteStudio
 					DataAnimationReferenced.ListNodeAnimationData = new Library_SpriteStudio.AnimationData[Count];
 					for(int i=0; i<Count; i++)
 					{
-						DataAnimationReferenced.ListNodeAnimationData[i] = ListDataRuntime[i];
+						DataAnimationReferenced.ListNodeAnimationData[i] = ListDataRuntime[i].DataMain;
 					}
 
 					EditorUtility.SetDirty(DataAnimationReferenced);
@@ -3730,8 +3556,12 @@ public static partial class LibraryEditor_SpriteStudio
 							Script_SpriteStudio_PartsRoot ScriptRootOld = GameObjectRootOld.GetComponent<Script_SpriteStudio_PartsRoot>();
 							if(null != ScriptRootOld)
 							{
-								NamePathDataReferenced = AssetDatabase.GetAssetPath(ScriptRootOld.SpriteStudioDataReferenced);
-								ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+								string NamePathDataReferencedOld = AssetDatabase.GetAssetPath(ScriptRootOld.SpriteStudioDataReferenced);
+								if(false == String.IsNullOrEmpty(NamePathDataReferencedOld))
+								{
+									NamePathDataReferenced = String.Copy(NamePathDataReferencedOld);
+									ObjectDataAnimationReferenced = AssetDatabase.LoadAssetAtPath(NamePathDataReferenced, typeof(ScriptableObject)) as ScriptableObject;
+								}
 							}
 						}
 					}
@@ -3749,9 +3579,8 @@ public static partial class LibraryEditor_SpriteStudio
 				DataAnimationReferenced = ObjectDataAnimationReferenced as Script_SpriteStudio_AnimationReferenced;
 				return(true);
 			}
-			private Library_SpriteStudio.AnimationData NodeSetAnimation(GameObject GameObjectParts, int IndexParts, Script_SpriteStudio_PartsRoot ScriptRoot, Material[] TableMaterial)
+			private bool NodeSetAnimation(GameObject GameObjectParts, int IndexParts, Script_SpriteStudio_PartsRoot ScriptRoot, Material[] TableMaterial)
 			{
-				Library_SpriteStudio.AnimationData DataSpriteStudio = null;
 				DataIntermediate.KindAttributeKey[] MaskKeyAttribute = null;
 				bool FlagRoot = false;
 
@@ -3759,11 +3588,10 @@ public static partial class LibraryEditor_SpriteStudio
 				if(null != ComponentScript_Triangle2)
 				{	/* Normal (Triangle-2) */
 					ComponentScript_Triangle2.BootUpForce();
-					DataSpriteStudio = ComponentScript_Triangle2.SpriteStudioData;
 
-					ListDataRuntimePass1[IndexParts].ID = ComponentScript_Triangle2.ID = ListParts[IndexParts].ID;
-					ListDataRuntimePass1[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.TRIANGLE2;
-					ListDataRuntimePass1[IndexParts].KindBlendTarget = ListParts[IndexParts].KindBlendTarget;
+					ListDataRuntime[IndexParts].DataMain.ID = ComponentScript_Triangle2.ID = ListParts[IndexParts].ID;
+					ListDataRuntime[IndexParts].DataMain.KindBlendTarget = ListParts[IndexParts].KindBlendTarget;
+					ListDataRuntime[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.TRIANGLE2;
 
 					ComponentScript_Triangle2.SpriteStudioData.KindBlendTarget = ListParts[IndexParts].KindBlendTarget;
 					ComponentScript_Triangle2.ScriptRoot = ScriptRoot;
@@ -3778,10 +3606,10 @@ public static partial class LibraryEditor_SpriteStudio
 					if(null != ComponentScript_Triangle4)
 					{	/* Normal (Triangle-4) */
 						ComponentScript_Triangle4.BootUpForce();
-						DataSpriteStudio = ComponentScript_Triangle4.SpriteStudioData;
-						ListDataRuntimePass1[IndexParts].ID = ComponentScript_Triangle4.ID = ListParts[IndexParts].ID;
-						ListDataRuntimePass1[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.TRIANGLE4;
-						ListDataRuntimePass1[IndexParts].KindBlendTarget = ListParts[IndexParts].KindBlendTarget;
+
+						ListDataRuntime[IndexParts].DataMain.ID = ComponentScript_Triangle4.ID = ListParts[IndexParts].ID;
+						ListDataRuntime[IndexParts].DataMain.KindBlendTarget = ListParts[IndexParts].KindBlendTarget;
+						ListDataRuntime[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.TRIANGLE4;
 
 						ComponentScript_Triangle4.SpriteStudioData.KindBlendTarget = ListParts[IndexParts].KindBlendTarget;
 						ComponentScript_Triangle4.ScriptRoot = ScriptRoot;
@@ -3796,9 +3624,10 @@ public static partial class LibraryEditor_SpriteStudio
 						if(null != ComponentScript_PartsNULL)
 						{	/* NULL */
 							ComponentScript_PartsNULL.BootUpForce();
-							DataSpriteStudio = ComponentScript_PartsNULL.SpriteStudioData;
-							ListDataRuntimePass1[IndexParts].ID = ComponentScript_PartsNULL.ID = ListParts[IndexParts].ID;
-							ListDataRuntimePass1[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.NON;
+
+							ListDataRuntime[IndexParts].DataMain.ID = ComponentScript_PartsNULL.ID = ListParts[IndexParts].ID;
+							ListDataRuntime[IndexParts].DataMain.KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
+							ListDataRuntime[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.NON;
 
 							ComponentScript_PartsNULL.ScriptRoot = ScriptRoot;
 
@@ -3811,9 +3640,10 @@ public static partial class LibraryEditor_SpriteStudio
 							if(null != ComponentScript_PartsInstance)
 							{	/* Instance */
 								ComponentScript_PartsInstance.BootUpForce();
-								DataSpriteStudio = ComponentScript_PartsInstance.SpriteStudioData;
-								ListDataRuntimePass1[IndexParts].ID = ComponentScript_PartsInstance.ID = ListParts[IndexParts].ID;
-								ListDataRuntimePass1[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.NON;
+
+								ListDataRuntime[IndexParts].DataMain.ID = ComponentScript_PartsInstance.ID = ListParts[IndexParts].ID;
+								ListDataRuntime[IndexParts].DataMain.KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
+								ListDataRuntime[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.NON;
 
 								ComponentScript_PartsInstance.ScriptRoot = ScriptRoot;
 								ComponentScript_PartsInstance.FlagHideForce = false;
@@ -3834,9 +3664,10 @@ public static partial class LibraryEditor_SpriteStudio
 								if(null != ComponentScript_PartsRoot)
 								{	/* Root */
 									ComponentScript_PartsRoot.BootUpForce();
-									DataSpriteStudio = ComponentScript_PartsRoot.SpriteStudioData;
-									ListDataRuntimePass1[IndexParts].ID = ComponentScript_PartsRoot.ID = ListParts[IndexParts].ID;
-									ListDataRuntimePass1[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.NON;
+
+									ListDataRuntime[IndexParts].DataMain.ID = ComponentScript_PartsRoot.ID = ListParts[IndexParts].ID;
+									ListDataRuntime[IndexParts].DataMain.KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
+									ListDataRuntime[IndexParts].SpriteKind = Library_SpriteStudio.KindSprite.NON;
 
 									MaskKeyAttribute = DataIntermediate.MaskKeyAttribute_OPSS[(int)Library_SpriteStudio.KindParts.ROOT];
 									FlagRoot = true;
@@ -3844,7 +3675,7 @@ public static partial class LibraryEditor_SpriteStudio
 								else
 								{	/* Node is Invalid */
 									Debug.LogError("SSAE-Create-Animation-Data Error: Animation[" + ListParts[IndexParts].Name + "] Invalid Node-Kind.");
-									return(null);
+									return(false);
 								}
 							}
 						}
@@ -3852,16 +3683,16 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				bool FlagInstanceParts = (Library_SpriteStudio.KindParts.INSTANCE == ListParts[IndexParts].PartsKind) ? true : false;
-				if(false == AnimationDataConvertRuntime(ListDataRuntimePass1[IndexParts], ListParts[IndexParts].DataAnimation, MaskKeyAttribute, FlagRoot, TableMaterial, FlagInstanceParts))
+				if(false == AnimationDataConvertRuntime(ListDataRuntime[IndexParts], ListParts[IndexParts].DataAnimation, MaskKeyAttribute, FlagRoot, TableMaterial, FlagInstanceParts))
 				{	/* No-Data */
 					GameObjectParts.transform.localPosition = Vector3.zero;
 					GameObjectParts.transform.localEulerAngles = Vector3.zero;
 					GameObjectParts.transform.localScale = Vector3.one;
 				}
 
-				return(DataSpriteStudio);
+				return(true);
 			}
-			private bool AnimationDataConvertRuntime(	AnimationDataRuntime_Pass1 DataRuntime,
+			private bool AnimationDataConvertRuntime(	AnimationDataRuntime DataRuntime,
 														DataIntermediate.AnimationDataEditor DataEditor,
 														DataIntermediate.KindAttributeKey[] ListMaskAttribute,
 														bool FlagRoot,
@@ -3895,76 +3726,76 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 				}
 
-				DataRuntime.AnimationDataFlags = AnimationDataConvertRuntimeBools(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SHOW_HIDE],
-																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.FLIP_X],
-																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.FLIP_Y],
-																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_FLIP_X],
-																					DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_FLIP_Y]
-																				);
-
-				DataRuntime.AnimationDataPosition = AnimationDataConvertRuntimeVector3(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_X],
-																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_Y],
-																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_Z],
-																						Vector3.zero
-																					);
-				DataRuntime.AnimationDataRotation = AnimationDataConvertRuntimeVector3(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_X],
-																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_Y],
-																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_Z],
-																						Vector3.zero
-																					);
-				DataRuntime.AnimationDataScaling = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SCALE_X],
-																						DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SCALE_Y],
-																						Vector2.one
-																					);
-
-				DataRuntime.AnimationDataOpacityRate = AnimationDataConvertRuntimeFloat(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.OPACITY_RATE], 1.0f);
-				DataRuntime.AnimationDataPriority = AnimationDataConvertRuntimeFloat(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.PRIORITY], 0.0f);
-
-				DataRuntime.AnimationDataColorBlend = AnimationDataConvertRuntimeColorBlend(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLOR_BLEND]);
-				DataRuntime.AnimationDataVertexCorrection = AnimationDataConvertRuntimeQuadrilateral(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.VERTEX_CORRECTION]);
-
-				DataRuntime.AnimationDataOriginOffset = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_X],
-																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_Y],
-																							Vector2.zero
+				DataRuntime.DataMain.AnimationDataFlags = AnimationDataConvertRuntimeBools(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SHOW_HIDE],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.FLIP_X],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.FLIP_Y],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_FLIP_X],
+																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_FLIP_Y]
 																						);
 
-				DataRuntime.AnimationDataAnchorPosition = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_POSITION_X],
-																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_POSITION_Y],
-																								Vector2.zero
+				DataRuntime.DataMain.AnimationDataPosition = AnimationDataConvertRuntimeVector3(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_X],
+																									DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_Y],
+																									DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.POSITION_Z],
+																									Vector3.zero
 																							);
-				DataRuntime.AnimationDataAnchorSize =  AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_X],
-																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_Y],
-																							new Vector2(-1.0f, -1.0f)
-																						);
-
-				DataRuntime.AnimationDataTextureTranslate = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_X],
-																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_Y],
-																								Vector2.zero
-																							);
-				DataRuntime.AnimationDataTextureRotate = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_ROTATE],
-																							0.0f
-																						);
-				DataRuntime.AnimationDataTextureScale = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_SCALE_X],
-																							DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_SCALE_Y],
-																							Vector2.one
-																						);
-				DataRuntime.AnimationDataTextureExpand = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_WIDTH],
-																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_HEIGHT],
-																								Vector2.zero
+				DataRuntime.DataMain.AnimationDataRotation = AnimationDataConvertRuntimeVector3(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_X],
+																									DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_Y],
+																									DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ROTATE_Z],
+																									Vector3.zero
+																								);
+				DataRuntime.DataMain.AnimationDataScaling = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SCALE_X],
+																								DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.SCALE_Y],
+																								Vector2.one
 																							);
 
-				DataRuntime.AnimationDataCollisionRadius = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLLISION_RADIUS],
-																								0.0f
-																							);
-				DataRuntime.AnimationDataCell = AnimationDataConvertRuntimeCell(ref DataRuntime.ArrayDataBodyCell, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL], TableMaterial);
-				DataRuntime.AnimationDataUser = AnimationDataConvertRuntimeUserData(ref DataRuntime.ArrayDataBodyUser, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
+				DataRuntime.DataMain.AnimationDataOpacityRate = AnimationDataConvertRuntimeFloat(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.OPACITY_RATE], 1.0f);
+				DataRuntime.DataMain.AnimationDataPriority = AnimationDataConvertRuntimeFloat(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.PRIORITY], 0.0f);
+
+				DataRuntime.DataPlain.AnimationDataColorBlend = AnimationDataConvertRuntimeColorBlend(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLOR_BLEND]);
+				DataRuntime.DataPlain.AnimationDataVertexCorrection = AnimationDataConvertRuntimeQuadrilateral(DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.VERTEX_CORRECTION]);
+
+				DataRuntime.DataPlain.AnimationDataOriginOffset = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_X],
+																										DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ORIGIN_OFFSET_Y],
+																										Vector2.zero
+																									);
+
+				DataRuntime.DataPlain.AnimationDataAnchorPosition = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_POSITION_X],
+																										DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_POSITION_Y],
+																										Vector2.zero
+																									);
+				DataRuntime.DataPlain.AnimationDataAnchorSize =  AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_X],
+																										DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.ANCHOR_SIZE_Y],
+																										new Vector2(-1.0f, -1.0f)
+																									);
+
+				DataRuntime.DataPlain.AnimationDataTextureTranslate = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_X],
+																											DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_TRANSLATE_Y],
+																											Vector2.zero
+																										);
+				DataRuntime.DataPlain.AnimationDataTextureRotate = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_ROTATE],
+																										0.0f
+																									);
+				DataRuntime.DataPlain.AnimationDataTextureScale = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_SCALE_X],
+																										DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_SCALE_Y],
+																										Vector2.one
+																									);
+				DataRuntime.DataPlain.AnimationDataTextureExpand = AnimationDataConvertRuntimeVector2(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_WIDTH],
+																										DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.TEXTURE_EXPAND_HEIGHT],
+																										Vector2.zero
+																									);
+
+				DataRuntime.DataPlain.AnimationDataCollisionRadius = AnimationDataConvertRuntimeFloat(	DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.COLLISION_RADIUS],
+																										0.0f
+																									);
+				DataRuntime.DataPlain.AnimationDataCell = AnimationDataConvertRuntimeCell(ref DataRuntime.DataPlain.ArrayDataBodyCell, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.CELL], TableMaterial);
+				DataRuntime.DataMain.AnimationDataUser = AnimationDataConvertRuntimeUserData(ref DataRuntime.DataMain.ArrayDataBodyUser, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.USER_DATA]);
 				if(true == FlagInstanceParts)
 				{
-					DataRuntime.AnimationDataInstance = AnimationDataConvertRuntimeInstance(ref DataRuntime.ArrayDataBodyInstance, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
+					DataRuntime.DataMain.AnimationDataInstance = AnimationDataConvertRuntimeInstance(ref DataRuntime.DataMain.ArrayDataBodyInstance, DataEditor.DataKeyFrame[(int)DataIntermediate.KindAttributeKey.INSTANCE]);
 				}
 				else
 				{
-					DataRuntime.AnimationDataInstance = null;
+					DataRuntime.DataMain.AnimationDataInstance = null;
 				}
 
 				return(true);
@@ -5371,16 +5202,16 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
-			public void NodeSetCollider(	GameObject GameObjectParts,
+			public bool NodeSetCollider(	GameObject GameObjectParts,
 											int IndexParts,
-											Library_SpriteStudio.AnimationData DataPartsRuntime,
 											ref SettingImport DataSettingImport
 										)
 			{
+				Collider InstanceCollider = null;
 				switch(ListParts[IndexParts].CollisionKind)
 				{
 					case Library_SpriteStudio.KindCollision.NON:
-						return;
+						return(true);
 
 					case Library_SpriteStudio.KindCollision.SQUARE:
 						{
@@ -5396,14 +5227,14 @@ public static partial class LibraryEditor_SpriteStudio
 							InstanceColliderBox.size = new Vector3(1.0f, 1.0f, DataSettingImport.CollisionThicknessZ);
 							InstanceColliderBox.isTrigger = false;
 
-							DataPartsRuntime.CollisionKind = Library_SpriteStudio.KindCollision.SQUARE;
-							ListDataRuntimePass1[IndexParts].CollisionKind = Library_SpriteStudio.KindCollision.SQUARE;
-							ListDataRuntimePass1[IndexParts].CollisionComponent = InstanceColliderBox;
+							InstanceCollider = InstanceColliderBox;
+							ListDataRuntime[IndexParts].DataMain.CollisionKind = Library_SpriteStudio.KindCollision.SQUARE;
+							ListDataRuntime[IndexParts].CollisionComponent = InstanceCollider;
 						}
 						break;
 
 					case Library_SpriteStudio.KindCollision.AABB:
-						return;
+						return(true);
 
 					case Library_SpriteStudio.KindCollision.CIRCLE:
 						{
@@ -5421,43 +5252,72 @@ public static partial class LibraryEditor_SpriteStudio
 							InstanceColliderCapsule.direction = 2;
 							InstanceColliderCapsule.isTrigger = false;
 
-							DataPartsRuntime.CollisionKind = Library_SpriteStudio.KindCollision.CIRCLE;
-							ListDataRuntimePass1[IndexParts].CollisionKind = Library_SpriteStudio.KindCollision.CIRCLE;
-							ListDataRuntimePass1[IndexParts].CollisionComponent = InstanceColliderCapsule;
+							InstanceCollider = InstanceColliderCapsule;
+							ListDataRuntime[IndexParts].DataMain.CollisionKind = Library_SpriteStudio.KindCollision.CIRCLE;
+							ListDataRuntime[IndexParts].CollisionComponent = InstanceCollider;
 						}
 						break;
 
 					case Library_SpriteStudio.KindCollision.CIRCLE_SCALEMINIMUM:
-						return;
+						return(true);
 
 					case Library_SpriteStudio.KindCollision.CIRCLE_SCALEMAXIMUM:
-						return;
+						return(true);
 				}
+
+				Script_SpriteStudio_Triangle2 ComponentScript_Triangle2 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle2>();
+				if(null != ComponentScript_Triangle2)
+				{	/* Normal (Triangle-2) */
+					ComponentScript_Triangle2.CollisionComponent = InstanceCollider;
+				}
+				else
+				{
+					Script_SpriteStudio_Triangle4 ComponentScript_Triangle4 = GameObjectParts.GetComponent<Script_SpriteStudio_Triangle4>();
+					if(null != ComponentScript_Triangle4)
+					{	/* Normal (Triangle-4) */
+						ComponentScript_Triangle4.CollisionComponent = InstanceCollider;
+					}
+					else
+					{
+						Script_SpriteStudio_PartsNULL ComponentScript_PartsNULL = GameObjectParts.GetComponent<Script_SpriteStudio_PartsNULL>();
+						if(null != ComponentScript_PartsNULL)
+						{	/* NULL */
+							ComponentScript_PartsNULL.CollisionComponent = InstanceCollider;
+						}
+						else
+						{
+							Script_SpriteStudio_PartsInstance ComponentScript_PartsInstance = GameObjectParts.GetComponent<Script_SpriteStudio_PartsInstance>();
+							if(null != ComponentScript_PartsInstance)
+							{	/* Instance */
+								ComponentScript_PartsInstance.CollisionComponent = InstanceCollider;
+							}
+							else
+							{
+								Script_SpriteStudio_PartsRoot ComponentScript_PartsRoot = GameObjectParts.GetComponent<Script_SpriteStudio_PartsRoot>();
+								if(null != ComponentScript_PartsRoot)
+								{	/* Root */
+									ComponentScript_PartsRoot.CollisionComponent = InstanceCollider;
+								}
+								else
+								{	/* Node is Invalid */
+									Debug.LogError("SSAE-Create-Animation-Data Error: Collider[" + ListParts[IndexParts].Name + "] Invalid Node-Kind.");
+									return(false);
+								}
+							}
+						}
+					}
+				}
+
+				return(true);
 			}
 
 			private void DataRuntimeSolvingInherit(int NodeNo)
 			{
 				/* Get My Datas */
 				int Count = CountFrameFull;
-				Library_SpriteStudio.KeyFrame.ValueBools[] DataFlags = ListDataRuntimePass1[NodeNo].AnimationDataFlags;
-				float[] OpacityRate = ListDataRuntimePass1[NodeNo].AnimationDataOpacityRate;
+				Library_SpriteStudio.KeyFrame.ValueBools[] DataFlags = ListDataRuntime[NodeNo].DataMain.AnimationDataFlags;
+				float[] OpacityRate = ListDataRuntime[NodeNo].DataMain.AnimationDataOpacityRate;
 				FlagAttributeKeyInherit FlagInherit = DataRuntimeParentGetInherit(NodeNo);
-#if false
-				if(0 != (FlagInherit & (FlagAttributeKeyInherit.FLIP_X | FlagAttributeKeyInherit.FLIP_Y | FlagAttributeKeyInherit.SHOW_HIDE)))
-				{
-					if((null == DataFlags) && (Library_SpriteStudio.KindParts.NORMAL == ListParts[NodeNo].PartsKind))
-					{	/* Normal(Sprite)-Parts only */
-						/* Create New Frame-Datas */
-						DataFlags = new Library_SpriteStudio.KeyFrame.ValueBools[Count];
-						for(int i=0; i<Count; i++)
-						{
-							DataFlags[i] = new Library_SpriteStudio.KeyFrame.ValueBools();
-							DataFlags[i].Flag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
-						}
-						ListDataRuntimePass1[NodeNo].AnimationDataFlags = DataFlags;
-					}
-				}
-#endif
 
 				/* Get Parent-Datas */
 				bool FlagRootFlipX = false;
@@ -5557,7 +5417,7 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							OpacityRate[i] = 1.0f;
 						}
-						ListDataRuntimePass1[NodeNo].AnimationDataOpacityRate = OpacityRate;
+						ListDataRuntime[NodeNo].DataMain.AnimationDataOpacityRate = OpacityRate;
 					}
 
 					float[] OpacityRateParent = DataRuntimeParentGetOpacityRate(NodeNo);
@@ -5573,7 +5433,7 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					if(0 == (ListParts[NodeNo].DataAnimation.FlagInheritance & DataIntermediate.FlagAttributeKeyInherit.OPACITY_RATE))
 					{
-						ListDataRuntimePass1[NodeNo].AnimationDataOpacityRate = null;
+						ListDataRuntime[NodeNo].DataMain.AnimationDataOpacityRate = null;
 					}
 				}
 			}
@@ -5596,11 +5456,11 @@ public static partial class LibraryEditor_SpriteStudio
 				int NodeNoParent = ListParts[NodeNo].IDParent;
 				while(-1 != NodeNoParent)
 				{
-					if(null != ListDataRuntimePass1[NodeNoParent].AnimationDataFlags)
+					if(null != ListDataRuntime[NodeNoParent].DataMain.AnimationDataFlags)
 					{
-						if(0 < ListDataRuntimePass1[NodeNoParent].AnimationDataFlags.Length)
+						if(0 < ListDataRuntime[NodeNoParent].DataMain.AnimationDataFlags.Length)
 						{	/* Valid-Node */
-							return(ListDataRuntimePass1[NodeNoParent].AnimationDataFlags);
+							return(ListDataRuntime[NodeNoParent].DataMain.AnimationDataFlags);
 						}
 					}
 					NodeNoParent = ListParts[NodeNoParent].IDParent;
@@ -5615,13 +5475,13 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					if(0 != (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagAttributeKeyInherit.OPACITY_RATE))
 					{	/* Parent-Node has datas. */
-						return(ListDataRuntimePass1[NodeNoParent].AnimationDataOpacityRate);	/* valid-datas */
+						return(ListDataRuntime[NodeNoParent].DataMain.AnimationDataOpacityRate);	/* valid-datas */
 					}
 					else
 					{	/* Parent-Node has no-datas. */
 						if((KindInheritance.SELF == ListParts[NodeNoParent].DataAnimation.Inheritance) && (0 == (ListParts[NodeNoParent].DataAnimation.FlagInheritance & FlagAttributeKeyInherit.OPACITY_RATE)))
 						{	/* Parent-Node doesn't inherit datas */
-							return(ListDataRuntimePass1[NodeNoParent].AnimationDataOpacityRate);	/* null or valid-datas */
+							return(ListDataRuntime[NodeNoParent].DataMain.AnimationDataOpacityRate);	/* null or valid-datas */
 						}
 					}
 					NodeNoParent = ListParts[NodeNoParent].IDParent;

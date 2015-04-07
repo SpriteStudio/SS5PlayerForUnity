@@ -26,6 +26,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 	}
 
 	public Collider CollisionComponent;
+	private Library_SpriteStudio.AnimationData.WorkAreaRuntime WorkArea = null;
 
 	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
@@ -48,7 +49,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 	void Update()
 	{
 		/* Get Animation-Data-Referenced */
-		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		if((null != ScriptRoot.SpriteStudioDataReferenced) && (null == spriteStudioData))
 		{
 			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
 		}
@@ -62,6 +63,10 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		{
 			DataMeshInformation = new Library_SpriteStudio.DrawManager.InformationMeshData();
 		}
+		if(null == WorkArea)
+		{
+			WorkArea = new Library_SpriteStudio.AnimationData.WorkAreaRuntime();
+		}
 
 		/* Update User-CallBack */
 		spriteStudioData.UpdateUserData(ScriptRoot.FrameNoNow, gameObject, ScriptRoot);
@@ -70,7 +75,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		spriteStudioData.UpdateMesh(dataMesh, ScriptRoot.FrameNoNow, ScriptRoot);
 
 		/* Set Matrix for Transform (to the GameObject) */
-		if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, true)) && (false == FlagHideForce))
+		if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, CollisionComponent, WorkArea)) && (false == FlagHideForce))
 		{	/* Show the Sprite */
 			DataMeshInformation.DataMesh = dataMesh;
 			DataMeshInformation.DataTransform = transform;

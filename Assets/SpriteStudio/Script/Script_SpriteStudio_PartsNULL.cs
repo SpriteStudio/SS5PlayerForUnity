@@ -26,6 +26,7 @@ public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 	}
 
 	public Collider CollisionComponent;
+	private Library_SpriteStudio.AnimationData.WorkAreaRuntime WorkArea = null;
 
 	public int ID;
 	public Script_SpriteStudio_PartsRoot ScriptRoot;
@@ -43,9 +44,15 @@ public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 	void Update()
 	{
 		/* Get Animation-Data-Referenced */
-		if(null != ScriptRoot.SpriteStudioDataReferenced)
+		if((null != ScriptRoot.SpriteStudioDataReferenced) && (null == spriteStudioData))
 		{
 			spriteStudioData = ScriptRoot.SpriteStudioDataReferenced.DataGetNode(ID);
+		}
+
+		/* Boot-Check */
+		if(null == WorkArea)
+		{
+			WorkArea = new Library_SpriteStudio.AnimationData.WorkAreaRuntime();
 		}
 
 		/* Update User-CallBack */
@@ -53,7 +60,7 @@ public class Script_SpriteStudio_PartsNULL : Library_SpriteStudio.PartsBase
 
 		/* Set Matrix for Transform (to the GameObject) */
 		/* MEMO: Return-Value is ignored, 'cause NULL-Node has no Meshes. */
-		spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, false);
+		spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, CollisionComponent, WorkArea);
 	}
 
 	void LateUpdate()
