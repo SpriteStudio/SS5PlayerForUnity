@@ -829,6 +829,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 #else
 				Parameter = ListCallBackUserData[i];
 #endif
+#if false
+				/* MEMO: Until "Ver.1.2.3" */
 				functionUserData(	transform.parent.gameObject,
 									Parameter.PartsName,
 									Parameter.AnimationDataParts,
@@ -838,6 +840,18 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									Parameter.Data,
 									Parameter.FlagWayBack
 								);
+#else
+				/* MEMO: Later than "Ver.1.2.3" */
+				functionUserData(	((null == InstanceGameObjectControl) ? gameObject : InstanceGameObjectControl),
+									Parameter.PartsName,
+									Parameter.AnimationDataParts,
+									AnimationNo,
+									frameNoNow,
+									Parameter.FrameNo,
+									Parameter.Data,
+									Parameter.FlagWayBack
+								);
+#endif
 			}
 			ListCallBackUserData.Clear();
 		}
