@@ -127,9 +127,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		DataColorXX.g (0.0f to 1.0f) : "G" (0 to 255)<br>
 		DataColorXX.b (0.0f to 1.0f) : "B" (0 to 255)<br>
 		DataColorXX.a (0.0f to 1.0f) : "%" (0 to 255)<br>
-		<br>
-		You can set a value between 0.0f and 1.0f in "RateOpacityPixelXX".<br>
-		Caution: When you operate this value, all sprite-parts are transparent individually.<br>
 		*/
 		public void SetVertex(	Library_SpriteStudio.KindColorOperation KindOperation,
 								ref Color DataColorLU,
@@ -372,7 +369,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	private List<ParameterCallBackUserData> ListCallBackUserData;
 #endif
 	private Library_SpriteStudio.FunctionCallBackUserData functionUserData;
-	internal Library_SpriteStudio.FunctionCallBackUserData FunctionUserData
+	public Library_SpriteStudio.FunctionCallBackUserData FunctionUserData
 	{
 		set
 		{
@@ -384,7 +381,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 	private Library_SpriteStudio.FunctionCallBackPlayEnd functionPlayEnd;
-	internal Library_SpriteStudio.FunctionCallBackPlayEnd FunctionPlayEnd
+	public Library_SpriteStudio.FunctionCallBackPlayEnd FunctionPlayEnd
 	{
 		set
 		{
@@ -1232,7 +1229,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 	Get count of textures that can be set to "TableMaterial".
 	*/
-	public int TextureGetCount(Material[] TableDataMaterial)
+	public int TextureGetCount()
 	{
 		return(Library_SpriteStudio.UtilityMaterial.TextureGetCount(TableMaterial));
 	}
