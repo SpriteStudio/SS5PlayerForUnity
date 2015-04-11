@@ -1621,10 +1621,14 @@ public static partial class Library_SpriteStudio
 				if(-1 == PartsInstance.FrameNoPreviousUpdate)
 				{
 					DataBody = new KeyFrame.ValueInstance.Data();
+#if false
 					if(true == UpdateInstanceCheckRange(ScriptPartsRootSub, FrameNo - FrameNoInstanceBase, PartsInstance.AnimationNo, DataBody))
 					{
 						goto UpdateInstanceData_PlayCommand_Update;
 					}
+#else
+					goto UpdateInstanceData_PlayCommand_Update;
+#endif
 				}
 			}
 			return(true);

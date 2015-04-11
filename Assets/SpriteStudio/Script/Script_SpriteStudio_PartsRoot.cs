@@ -216,8 +216,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public bool FlagStylePingpong;
 
 	/* CAUTION!: This "rateAlpha" is value for "Instance"-Object. */
-	private	float	rateOpacity;
-	internal	float	RateOpacity
+	private float rateOpacity;
+	internal float RateOpacity
 	{
 		set
 		{
@@ -547,16 +547,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		if(-1 != frameNoPrevious)
 		{	/* Not Update, Just Starting */
 			TimeAnimation += (Time.deltaTime * rateTimePlay) * RateTimeProgress;
-			Status &= ~BitStatus.DECODE_USERDATA;
 			Status &= ~BitStatus.PLAY_FIRST;
+			Status &= ~BitStatus.DECODE_USERDATA;
+			Status &= ~BitStatus.REDECODE_INSTANCE;
 		}
 
 		FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 		countLoopThisTime = 0;
 		flagTurnBackPingPong = false;
 		flagReversePrevious = (0 != (Status & BitStatus.PLAYING_REVERSE)) ? true : false;
-		Status &= ~BitStatus.REDECODE_INSTANCE;
-		
+
 		if(false == FlagStylePingpong)
 		{	/* One-Way */
 			if(0 == (Status & BitStatus.PLAYING_REVERSE))
@@ -1000,6 +1000,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		Status &= ~BitStatus.MASK_INITIAL;
 		Status |= BitStatus.PLAYING;
 		Status |= BitStatus.DECODE_USERDATA;
+		Status |= BitStatus.REDECODE_INSTANCE;
 		switch(KindStylePlay)
 		{
 			case PlayStyle.NO_CHANGE:
