@@ -527,7 +527,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return;
 		}
 
+#if false
 		if(0 != (Status & BitStatus.PAUSING))
+#else
+		if(-1 != frameNoPrevious)
+		{
+			Status &= ~BitStatus.PLAY_FIRST;
+		}
+
+		if((0 != (Status & BitStatus.PAUSING)) && (0 == (Status & BitStatus.PLAY_FIRST)))
+#endif
 		{
 			return;
 		}
@@ -543,6 +552,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		bool FlagReLoop = true;
 
 		/* FrameNo Update */
+#if false
 		Status |= BitStatus.PLAY_FIRST;
 		if(-1 != frameNoPrevious)
 		{	/* Not Update, Just Starting */
@@ -551,6 +561,19 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			Status &= ~BitStatus.DECODE_USERDATA;
 			Status &= ~BitStatus.REDECODE_INSTANCE;
 		}
+#else
+		if(0 != (Status & BitStatus.PLAY_FIRST))
+		{	/* Not Update, Just Starting */
+			Status |= BitStatus.DECODE_USERDATA;
+			Status |= BitStatus.REDECODE_INSTANCE;
+		}
+		else
+		{
+			TimeAnimation += (Time.deltaTime * rateTimePlay) * RateTimeProgress;
+			Status &= ~BitStatus.DECODE_USERDATA;
+			Status &= ~BitStatus.REDECODE_INSTANCE;
+		}
+#endif
 
 		FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 		countLoopThisTime = 0;
@@ -999,8 +1022,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		/* Set Playing-Datas */
 		Status &= ~BitStatus.MASK_INITIAL;
 		Status |= BitStatus.PLAYING;
+#if false
 		Status |= BitStatus.DECODE_USERDATA;
 		Status |= BitStatus.REDECODE_INSTANCE;
+#else
+		Status |= BitStatus.PLAY_FIRST;
+#endif
 		switch(KindStylePlay)
 		{
 			case PlayStyle.NO_CHANGE:

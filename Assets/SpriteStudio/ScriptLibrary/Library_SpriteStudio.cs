@@ -20,8 +20,8 @@ public static partial class Library_SpriteStudio
 		NORMAL = 0,
 		ROOT,
 		NULL,
-		BOUND,
-		SOUND,
+		BOUND,					/* Disused */
+		SOUND,					/* DisUsed */
 		INSTANCE,
 
 		TERMINATOR
