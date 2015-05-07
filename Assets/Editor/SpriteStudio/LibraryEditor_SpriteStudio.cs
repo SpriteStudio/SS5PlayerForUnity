@@ -790,6 +790,7 @@ public static partial class LibraryEditor_SpriteStudio
 									)
 		{
 			string MessageError = "";
+			string NameOptions = "";
 
 			XmlDocument DataXML = new XmlDocument();
 			DataXML.Load(NameDirectoryCellMap + "/" + FileName);
@@ -813,6 +814,7 @@ public static partial class LibraryEditor_SpriteStudio
 			XmlNamespaceManager ManagerNameSpace = new XmlNamespaceManager(NodeNameSpace);
 			XmlNodeList NodeList = null;
 
+			/* Get Texture Path-Name */
 			string NameTexture = XMLUtility.TextGetSelectSingleNode(NodeRoot, "imagePath", ManagerNameSpace);
 			if(0 == string.Compare(NameDirectoryCellMap, string.Empty))
 			{
@@ -828,6 +830,39 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationCellMap.FileName = Path.GetFullPath(NameDirectoryImage + "/" + NameTexture);
 			}
 
+			/* Get Texture Wrap-Mode */
+			NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "wrapMode", ManagerNameSpace);
+			switch(NameOptions)
+			{
+				case "repeat":
+					InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindWrap.REPEAT;
+					break;
+
+				case "mirror":
+					Debug.LogWarning("SSCE-Import Warning: Texture Wrap-Mode \"Mirror\" is not Suppoted. Force-Changed \"Clamp\" (" + FileName + ")");
+					goto case "clamp";
+
+				case "clamp":
+				default:
+					InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindWrap.CLAMP;
+					break;
+			}
+
+			/* Get Texture Filter-Mode */
+			NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "filterMode", ManagerNameSpace);
+			switch(NameOptions)
+			{
+				case "nearlest":
+					InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindFilter.NEAREST;
+					break;
+
+				case "linear":
+				default:
+					InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindFilter.LINEAR;
+					break;
+			}
+
+			/* Get Cells */
 			InformationCellMap.CellArea = new Hashtable();
 			if(null == InformationCellMap.CellArea)
 			{
@@ -3148,7 +3183,17 @@ public static partial class LibraryEditor_SpriteStudio
 								Importer.borderMipmap = false;
 								Importer.convertToNormalmap = false;
 								Importer.fadeout = false;
-								Importer.filterMode = FilterMode.Bilinear;
+								switch(ListImage[TextureInformation.IndexImage].Filter)
+								{
+									case PartsImage.KindFilter.NEAREST:
+										Importer.filterMode = FilterMode.Point;
+										break;
+
+									case PartsImage.KindFilter.LINEAR:
+									default:
+										Importer.filterMode = FilterMode.Bilinear;
+										break;
+								}
 								Importer.generateCubemap = TextureImporterGenerateCubemap.None;
 								Importer.generateMipsInLinearSpace = false;
 								Importer.grayscaleToAlpha = false;
@@ -3161,7 +3206,18 @@ public static partial class LibraryEditor_SpriteStudio
 								Importer.npotScale = TextureImporterNPOTScale.None;
 								Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
 								Importer.textureType  = TextureImporterType.Advanced;
-								Importer.wrapMode = TextureWrapMode.Clamp;
+								switch(ListImage[TextureInformation.IndexImage].Wrap)
+								{
+									case PartsImage.KindWrap.REPEAT:
+										Importer.wrapMode = TextureWrapMode.Repeat;
+										break;
+
+									case PartsImage.KindWrap.MIRROR:
+									case PartsImage.KindWrap.CLAMP:
+									default:
+										Importer.wrapMode = TextureWrapMode.Clamp;
+										break;
+								}
 								AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
 							}
 							TextureInformation.SubstanceAsset = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
@@ -5546,12 +5602,28 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 		internal struct PartsImage
 		{
+			internal enum KindWrap
+			{
+				CLAMP = 0,
+				REPEAT,
+				MIRROR,
+			}
+			internal enum KindFilter
+			{
+				NEAREST = 0,
+				LINEAR,
+			}
+
 			internal string FileName;
+			internal KindWrap Wrap;
+			internal KindFilter Filter;
 			internal Hashtable CellArea;
 
 			internal void CleanUp()
 			{
 				FileName = "";
+				Wrap = KindWrap.CLAMP;
+				Filter = KindFilter.LINEAR;
 				CellArea = null;
 			}
 		}
