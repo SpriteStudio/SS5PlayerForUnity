@@ -473,7 +473,7 @@ public static partial class Library_SpriteStudio
 				FLIPX = 0x00100000,			/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
 				FLIPY = 0x00200000,			/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
 				FLIPXTEXTURE = 0x00400000,	/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
-				FLIPYTEXTURE = 0x00200000,	/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
+				FLIPYTEXTURE = 0x00800000,	/* Caution: Does not affect the display (State in "ssae" / Baked to Datas) */
 				TEXTURENO = 0x0000ffff,
 
 				CLEAR = TEXTURENO,

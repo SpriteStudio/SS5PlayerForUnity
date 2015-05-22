@@ -3494,7 +3494,13 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Create Prefab (GameObjects) */
+#if false
+				/* MEMO: until Ver.1.2.9 */
 				PrefabData = PrefabUtility.ReplacePrefab(GameObjectRoot, PrefabData, ReplacePrefabOptions.Default);
+#else
+				/* MEMO: since Ver.1.2.11 */
+				PrefabData = PrefabUtility.ReplacePrefab(GameObjectRoot, PrefabData, ReplacePrefabOptions.ReplaceNameBased);
+#endif
 				if(null == PrefabData)
 				{
 					return(false);
