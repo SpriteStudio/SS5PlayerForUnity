@@ -349,6 +349,41 @@ public static partial class Library_SpriteStudio
 					RatePixelAlpha[i] = 1.0f;
 				}
 			}
+
+			public bool Equals(ValueColor target)
+			{
+				if (this.Bound != target.Bound)
+				{
+					return false;
+				}
+				if (this.Operation != target.Operation)
+				{
+					return false;
+				}
+				if (this.VertexColor.Length != target.VertexColor.Length)
+				{
+					return false;
+				}
+				for(int i=0; i<this.VertexColor.Length ; ++i)
+				{
+					if (this.VertexColor[i] != target.VertexColor[i])
+					{
+						return false;
+					}
+				}
+				if (this.RatePixelAlpha.Length != target.RatePixelAlpha.Length)
+				{
+					return false;
+				}
+				for(int i=0; i<this.RatePixelAlpha.Length ; ++i)
+				{
+					if (this.RatePixelAlpha[i] != target.RatePixelAlpha[i])
+					{
+						return false;
+					}
+				}
+				return true;
+			}
 		}
 
 		[System.Serializable]
@@ -1228,11 +1263,17 @@ public static partial class Library_SpriteStudio
 		public KeyFrame.ValueBools[] AnimationDataFlags;
 
 		public Vector3[] AnimationDataPosition;
+		public CompressedVector3Array CompressedAnimationDataPosition;
 		public Vector3[] AnimationDataRotation;
+		public CompressedVector3Array CompressedAnimationDataRotation;
 		public Vector2[] AnimationDataScaling;
+		public CompressedVector2Array CompressedAnimationDataScaling;
 
 		public float[] AnimationDataOpacityRate;
+		public CompressedFloatArray CompressedAnimationDataOpacityRate;
+
 		public float[] AnimationDataPriority;
+		public CompressedFloatArray CompressedAnimationDataPriority;
 
 		public int[] AnimationDataUser;
 		public int[] AnimationDataInstance;
@@ -1254,11 +1295,16 @@ public static partial class Library_SpriteStudio
 			CollisionSizeZ = 0.0f;
 
 			AnimationDataPosition = null;
+			CompressedAnimationDataPosition = null;
 			AnimationDataRotation = null;
+			CompressedAnimationDataRotation = null;
 			AnimationDataScaling = null;
+			CompressedAnimationDataScaling = null;
 
 			AnimationDataOpacityRate = null;
+			CompressedAnimationDataOpacityRate = null;
 			AnimationDataPriority = null;
+			CompressedAnimationDataPriority = null;
 
 			AnimationDataUser = null;
 			AnimationDataInstance = null;
@@ -1271,33 +1317,180 @@ public static partial class Library_SpriteStudio
 			DataFix = null;
 		}
 
+		public void Decompress()
+		{
+			if (CompressedAnimationDataPosition != null && CompressedAnimationDataPosition.Length > 0)
+			{
+				AnimationDataPosition = CompressedAnimationDataPosition.ToArray();
+				CompressedAnimationDataPosition = null;
+			}
+
+			if (CompressedAnimationDataRotation != null && CompressedAnimationDataRotation.Length > 0)
+			{
+				AnimationDataRotation = CompressedAnimationDataRotation.ToArray();
+				CompressedAnimationDataRotation = null;
+			}
+
+			if (CompressedAnimationDataScaling != null && CompressedAnimationDataScaling.Length > 0)
+			{
+				AnimationDataScaling = CompressedAnimationDataScaling.ToArray();
+				CompressedAnimationDataScaling = null;
+			}
+
+			if (CompressedAnimationDataOpacityRate != null && CompressedAnimationDataOpacityRate.Length > 0)
+			{
+				AnimationDataOpacityRate = CompressedAnimationDataOpacityRate.ToArray();
+				CompressedAnimationDataOpacityRate = null;
+			}
+
+			if (CompressedAnimationDataPriority != null && CompressedAnimationDataPriority.Length > 0)
+			{
+				AnimationDataPriority = CompressedAnimationDataPriority.ToArray();
+				CompressedAnimationDataPriority = null;
+			}
+
+			if (DataPlain != null)
+			{
+				DataPlain.Decompress();
+			}
+			if (DataFix != null)
+			{
+				DataFix.Decompress();
+			}
+		}
+
+		public void Compress()
+		{
+			if (AnimationDataPosition != null && AnimationDataPosition.Length > 0)
+			{
+				CompressedAnimationDataPosition = CompressedVector3Array.Build(AnimationDataPosition);
+				AnimationDataPosition = null;
+			}
+
+			if (AnimationDataRotation != null && AnimationDataRotation.Length > 0)
+			{
+				CompressedAnimationDataRotation = CompressedVector3Array.Build(AnimationDataRotation);
+				AnimationDataRotation = null;
+			}
+
+			if (AnimationDataScaling != null && AnimationDataScaling.Length > 0)
+			{
+				CompressedAnimationDataScaling = CompressedVector2Array.Build(AnimationDataScaling);
+				AnimationDataScaling = null;
+			}
+
+			if (AnimationDataOpacityRate != null && AnimationDataOpacityRate.Length > 0)
+			{
+				CompressedAnimationDataOpacityRate = CompressedFloatArray.Build(AnimationDataOpacityRate);
+				AnimationDataOpacityRate = null;
+			}
+
+			if (AnimationDataPriority != null && AnimationDataPriority.Length > 0)
+			{
+				CompressedAnimationDataPriority = CompressedFloatArray.Build(AnimationDataPriority);
+				AnimationDataPriority = null;
+			}
+
+			if (DataPlain != null)
+			{
+				DataPlain.Compress();
+			}
+			if (DataFix != null)
+			{
+				DataFix.Compress();
+			}
+		}
+
+		public bool AnimationDataPositionIsNullOrEmpty
+		{
+			get
+			{
+				if ((null != CompressedAnimationDataPosition) && (0 < CompressedAnimationDataPosition.Length))
+				{
+					return false;
+				}
+				if ((null != AnimationDataPosition) && (0 < AnimationDataPosition.Length))
+				{
+					return false;
+				}
+				return true;
+			}
+		}
+		public bool AnimationDataRotationIsNullOrEmpty
+		{
+			get
+			{
+				if ((null != CompressedAnimationDataRotation) && (0 < CompressedAnimationDataRotation.Length))
+				{
+					return false;
+				}
+				if ((null != AnimationDataRotation) && (0 < AnimationDataRotation.Length))
+				{
+					return false;
+				}
+				return true;
+			}
+		}
+		public bool AnimationDataScalingIsNullOrEmpty
+		{
+			get
+			{
+				if ((null != CompressedAnimationDataScaling) && (0 < CompressedAnimationDataScaling.Length))
+				{
+					return false;
+				}
+				if ((null != AnimationDataScaling) && (0 < AnimationDataScaling.Length))
+				{
+					return false;
+				}
+				return true;
+			}
+		}
+		public bool AnimationDataOpacityRateIsNullOrEmpty
+		{
+			get
+			{
+				if ((null != CompressedAnimationDataOpacityRate) && (0 < CompressedAnimationDataOpacityRate.Length))
+				{
+					return false;
+				}
+				if ((null != AnimationDataOpacityRate) && (0 < AnimationDataOpacityRate.Length))
+				{
+					return false;
+				}
+				return true;
+			}
+		}
+
 		public bool UpdateGameObject(GameObject GameObjectNow, int FrameNo, Collider ComponentCollider, WorkAreaRuntime WorkArea)
 		{
 			/* Update Transform */
 			/* MEMO: No Transform-Datas, Not Changing "GameObject" */
-			bool FlagUpdateTransformPosition = ((null != AnimationDataPosition) && (0 < AnimationDataPosition.Length)) ? true : false;
-			bool FlagUpdateTransformRotate = ((null != AnimationDataRotation) && (0 < AnimationDataRotation.Length)) ? true : false;
-			bool FlagUpdateTransformScale = ((null != AnimationDataScaling) && (0 < AnimationDataScaling.Length)) ? true : false;
+			bool FlagUpdateTransformPosition = !AnimationDataPositionIsNullOrEmpty;
+			bool FlagUpdateTransformRotate = !AnimationDataRotationIsNullOrEmpty;
+			bool FlagUpdateTransformScale = !AnimationDataScalingIsNullOrEmpty;
+
 			if((true == FlagUpdateTransformPosition) || (true == FlagUpdateTransformRotate) || (true == FlagUpdateTransformScale))
 			{	/* No-Update Transform */
 				Vector3 Vector3Temp = Vector3.zero;
 				if(true == FlagUpdateTransformPosition)
 				{
-					Vector3Temp = AnimationDataPosition[FrameNo];
+					Vector3Temp = PositionGet(FrameNo);
 					GameObjectNow.transform.localPosition = Vector3Temp;
 				}
 
 				if(true == FlagUpdateTransformRotate)
 				{
-					Vector3Temp = AnimationDataRotation[FrameNo];
+					Vector3Temp = RotationGet(FrameNo);
 					GameObjectNow.transform.localEulerAngles = Vector3Temp;
 				}
 
 				if(true == FlagUpdateTransformScale)
 				{
-					Vector3Temp.x = AnimationDataScaling[FrameNo].x;
-					Vector3Temp.y = AnimationDataScaling[FrameNo].y;
+					Vector3Temp.x = ScalingGet(FrameNo).x;
+					Vector3Temp.y = ScalingGet(FrameNo).y;
 					Vector3Temp.z = 1.0f;
+
 					GameObjectNow.transform.localScale = Vector3Temp;
 				}
 			}
@@ -1331,15 +1524,67 @@ public static partial class Library_SpriteStudio
 			return(FlagDisplay);
 		}
 
-		public void UpdateMesh(Mesh MeshNow, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
+		Vector3 PositionGet(int FrameNo)
+		{
+			if ((null != CompressedAnimationDataPosition) && (0 < CompressedAnimationDataPosition.Length))
+			{
+				return CompressedAnimationDataPosition[FrameNo];
+			}
+			return AnimationDataPosition[FrameNo];
+		}
+		
+		Vector3 RotationGet(int FrameNo)
+		{
+			if (CompressedAnimationDataRotation != null && CompressedAnimationDataRotation.Length > 0)
+			{
+				return CompressedAnimationDataRotation[FrameNo];
+			}
+			return AnimationDataRotation[FrameNo];
+		}
+		Vector3 ScalingGet(int FrameNo)
+		{
+			if (CompressedAnimationDataScaling != null && CompressedAnimationDataScaling.Length > 0)
+			{
+				return CompressedAnimationDataScaling[FrameNo];
+			}
+			return AnimationDataScaling[FrameNo];
+		}
+
+		public float OpacityRateGet(int FrameNo)
+		{
+			if ((null != CompressedAnimationDataOpacityRate) && (0 < CompressedAnimationDataOpacityRate.Length))
+			{
+				return CompressedAnimationDataOpacityRate[FrameNo];
+			}
+			else if ((null != AnimationDataOpacityRate) && (0 < AnimationDataOpacityRate.Length))
+			{
+				return AnimationDataOpacityRate[FrameNo];
+			}
+			return 1f;
+		}
+
+		float PriorityGet(int FrameNo)
+		{
+			if ((null != CompressedAnimationDataPriority) && (0 < CompressedAnimationDataPriority.Length))
+			{
+				return CompressedAnimationDataPriority[FrameNo];
+			}
+			if ((null != AnimationDataPriority) && (0 < AnimationDataPriority.Length))
+			{
+				return AnimationDataPriority[FrameNo];
+			}
+			return 0f;
+		}
+
+		public void UpdateMesh(SmartMesh MeshNow, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 		{
 			switch(KindDataFormat)
 			{
 				case KindAnimationData.PLAIN:
-					DataPlain.UpdateMesh(MeshNow, AnimationDataFlags, AnimationDataOpacityRate, FrameNo, ScriptRoot);
+					DataPlain.UpdateMesh(MeshNow.Mesh, AnimationDataFlags, OpacityRateGet(FrameNo), FrameNo, ScriptRoot);
 					break;
 				case KindAnimationData.FIX:
-					DataFix.UpdateMesh(MeshNow, AnimationDataFlags, AnimationDataOpacityRate, FrameNo, ScriptRoot);
+					DataFix.UpdateMesh(MeshNow, AnimationDataFlags, FrameNo, ScriptRoot);
 					break;
 				default:
 					break;
@@ -1577,7 +1822,7 @@ public static partial class Library_SpriteStudio
 			Script_SpriteStudio_PartsRoot ScriptPartsRootSub = PartsInstance.ScriptPartsRootSub;
 			bool FlagPlayReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
 
-			ScriptPartsRootSub.RateOpacity = (0 < AnimationDataOpacityRate.Length) ? AnimationDataOpacityRate[FrameNo] : 1.0f;
+			ScriptPartsRootSub.RateOpacity = OpacityRateGet(FrameNo);
 
 			if(0 >= AnimationDataInstance.Length)
 			{	/* Error ... Force Play */
@@ -1685,7 +1930,7 @@ public static partial class Library_SpriteStudio
 
 		public void DrawEntryInstance(Library_SpriteStudio.DrawManager.InformationMeshData MeshDataInformation, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 		{
-			float Priority = (0 < AnimationDataPriority.Length) ? AnimationDataPriority[FrameNo] : 0.0f;
+			float Priority = PriorityGet(FrameNo);
 
 			MeshDataInformation.Priority = PriorityGet(Priority, ID);
 			Library_SpriteStudio.DrawManager.ArrayListMeshDraw ArrayListMeshDraw = ScriptRoot.ArrayListMeshDraw;
@@ -1699,7 +1944,7 @@ public static partial class Library_SpriteStudio
 		{
 			if(false == ScriptRoot.FlagHideForce)
 			{
-				float Priority = ((null != AnimationDataPriority) && (0 < AnimationDataPriority.Length)) ? AnimationDataPriority[FrameNo] : 0.0f;
+				float Priority = PriorityGet(FrameNo);
 				int TextureNo = -1;
 				switch(KindDataFormat)
 				{
@@ -1739,6 +1984,8 @@ public static partial class Library_SpriteStudio
 		public class Plain
 		{
 			public KeyFrame.ValueColor[] AnimationDataColorBlend;
+			public CompressedValueColorArray CompressedAnimationDataColorBlend;
+
 			public KeyFrame.ValueQuadrilateral[] AnimationDataVertexCorrection;
 			public Vector2[] AnimationDataOriginOffset;
 
@@ -1759,6 +2006,7 @@ public static partial class Library_SpriteStudio
 			public Plain()
 			{
 				AnimationDataColorBlend = null;
+				CompressedAnimationDataColorBlend = null;
 				AnimationDataVertexCorrection = null;
 				AnimationDataOriginOffset = null;
 
@@ -1775,6 +2023,23 @@ public static partial class Library_SpriteStudio
 				AnimationDataCell = null;
 
 				ArrayDataBodyCell = null;
+			}
+
+			public void Compress()
+			{
+				if (AnimationDataColorBlend != null && AnimationDataColorBlend.Length > 0)
+				{
+					CompressedAnimationDataColorBlend = CompressedValueColorArray.Build(AnimationDataColorBlend);
+					AnimationDataColorBlend = null;
+				}
+			}
+			public void Decompress()
+			{
+				if (CompressedAnimationDataColorBlend != null && CompressedAnimationDataColorBlend.Length > 0)
+				{
+					AnimationDataColorBlend = CompressedAnimationDataColorBlend.ToArray();
+					CompressedAnimationDataColorBlend = null;
+				}
 			}
 
 			public void UpdateCollider(Collider ComponentCollider, KindCollision CollisionKind, float ColliderSizeZ, KeyFrame.ValueBools[] AnimationDataFlags, int FrameNo, bool FlagAnimationDataFlags, WorkAreaRuntime WorkArea)
@@ -1854,7 +2119,33 @@ public static partial class Library_SpriteStudio
 				}
 			}
 
-			public void UpdateMesh(Mesh MeshNow, KeyFrame.ValueBools[] AnimationDataFlags, float[] AnimationDataOpacityRate, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
+
+			public bool AnimationDataColorBlendIsNullOrEmpty
+			{
+				get
+				{
+					if ((null != CompressedAnimationDataColorBlend) && (0 < CompressedAnimationDataColorBlend.Length))
+					{
+						return false;
+					}
+					if ((null != AnimationDataColorBlend) && (0 < AnimationDataColorBlend.Length))
+					{
+						return false;
+					}
+					return true;
+				}
+			}
+
+			public KeyFrame.ValueColor AnimationDataColorBlendGet(int FrameNo)
+			{
+				if ((null != CompressedAnimationDataColorBlend) && (0 < CompressedAnimationDataColorBlend.Length))
+				{
+					return CompressedAnimationDataColorBlend[FrameNo];
+				}
+				return AnimationDataColorBlend[FrameNo];
+			}
+
+			public void UpdateMesh(Mesh MeshNow, KeyFrame.ValueBools[] AnimationDataFlags, float RateOpacity, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 			{
 				Matrix4x4 MatrixTexture = Matrix4x4.identity;
 				Vector2 SizeTexture = Vector2.one;
@@ -1933,12 +2224,11 @@ public static partial class Library_SpriteStudio
 				}
 				MeshNow.uv = DataUV;
 
-				float RateOpacity = ((null != AnimationDataOpacityRate) && (0 < AnimationDataOpacityRate.Length)) ? AnimationDataOpacityRate[FrameNo] : 1.0f;
 				RateOpacity *= ScriptRoot.RateOpacity;
 
 				Vector2[] DataUV2 = new Vector2[CountVertexData];
 				Color32[] DataColor32 = new Color32[CountVertexData];
-				bool FlagExistAnimationDataColorBlend = ((null != AnimationDataColorBlend) && (0 < AnimationDataColorBlend.Length)) ? true : false;
+				bool FlagExistAnimationDataColorBlend = !AnimationDataColorBlendIsNullOrEmpty;
 				Script_SpriteStudio_PartsRoot.ColorBlendOverwrite DataColorBlendOverwrite = ScriptRoot.DataColorBlendOverwrite;
 				if(null == DataColorBlendOverwrite)
 				{	/* No-Overwrite */
@@ -1966,14 +2256,14 @@ public static partial class Library_SpriteStudio
 			UpdateMesh_ColorBlend_Animation:;
 				if(true == FlagExistAnimationDataColorBlend)	/* Blending-Color & Opacity*/
 				{	/* Animation-Data */
-					if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlend[FrameNo].Bound)
+					if(Library_SpriteStudio.KindColorBound.NON != AnimationDataColorBlendGet(FrameNo).Bound)
 					{
 						for(int i=0; i<CountVertexData; i++)
 						{
-							DataUV2[i] = new Vector2(	AnimationDataColorBlend[FrameNo].RatePixelAlpha[i] * RateOpacity,
-														(float)AnimationDataColorBlend[FrameNo].Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
+							DataUV2[i] = new Vector2(	AnimationDataColorBlendGet(FrameNo).RatePixelAlpha[i] * RateOpacity,
+														(float)AnimationDataColorBlendGet(FrameNo).Operation + 0.01f	/* "+0.01f" for Rounding-off-Error */
 													);
-							DataColor32[i] = AnimationDataColorBlend[FrameNo].VertexColor[i];
+							DataColor32[i] = AnimationDataColorBlendGet(FrameNo).VertexColor[i];
 						}
 					}
 					else
@@ -2135,9 +2425,71 @@ public static partial class Library_SpriteStudio
 					UV = new Vector2[Count];
 					UV2 = new Vector2[Count];
 				}
+
+				public bool Equals(MeshAlies rhs)
+				{
+					if (this.Coordinate.Length != rhs.Coordinate.Length)
+					{
+						return false;
+					}
+					for(int i=0 ; i<this.Coordinate.Length ; ++i)
+					{
+						if (this.Coordinate[i] != rhs.Coordinate[i])
+						{
+							return false;
+						}
+					}
+					if (this.ColorOverlay.Length != rhs.ColorOverlay.Length)
+					{
+						return false;
+					}
+					for(int i=0 ; i<this.ColorOverlay.Length ; ++i)
+					{
+						if (this.ColorOverlay[i].r != rhs.ColorOverlay[i].r)
+						{
+							return false;
+						}
+						if (this.ColorOverlay[i].g != rhs.ColorOverlay[i].g)
+						{
+							return false;
+						}
+						if (this.ColorOverlay[i].b != rhs.ColorOverlay[i].b)
+						{
+							return false;
+						}
+						if (this.ColorOverlay[i].a != rhs.ColorOverlay[i].a)
+						{
+							return false;
+						}
+					}
+					if (this.UV.Length != rhs.UV.Length)
+					{
+						return false;
+					}
+					for(int i=0 ; i<this.UV.Length ; ++i)
+					{
+						if (this.UV[i] != rhs.UV[i])
+						{
+							return false;
+						}
+					}
+					if (this.UV2.Length != rhs.UV2.Length)
+					{
+						return false;
+					}
+					for(int i=0 ; i<this.UV2.Length ; ++i)
+ 					{
+						if (this.UV2[i] != rhs.UV2[i])
+						{
+							return false;
+						}
+					}
+					return true;
+				}
 			};
 
 			public MeshAlies[] AnimationDataMesh;
+			public CompressedMeshArray CompressedAnimationDataMesh;
 
 			public Vector2[] AnimationDataCollisionSize;	/* for Box-Collider */
 			public Vector2[] AnimationDataCollisionPivot;	/* for Box-Collider */
@@ -2146,10 +2498,44 @@ public static partial class Library_SpriteStudio
 			public Fix()
 			{
 				AnimationDataMesh = null;
+				CompressedAnimationDataMesh = null;
 
 				AnimationDataCollisionSize = null;
 				AnimationDataCollisionPivot = null;
 				AnimationDataCollisionRadius = null;
+			}
+
+			public void Compress()
+			{
+				if (AnimationDataMesh != null && AnimationDataMesh.Length > 0)
+				{
+					CompressedAnimationDataMesh = CompressedMeshArray.Build(AnimationDataMesh);
+					AnimationDataMesh = null;
+				}
+			}
+			public void Decompress()
+			{
+				if (CompressedAnimationDataMesh != null && CompressedAnimationDataMesh.Length > 0)
+				{
+					AnimationDataMesh = CompressedAnimationDataMesh.ToArray();
+					CompressedAnimationDataMesh = null;
+				}
+			}
+
+			public bool AnimationDataMeshIsNull
+			{
+				get
+				{
+					if (CompressedAnimationDataMesh != null)
+					{
+						return false;
+ 					}
+					if (AnimationDataMesh != null)
+					{
+						return false;
+					}
+					return true;
+				}
 			}
 
 			public void UpdateCollider(Collider ComponentCollider, KindCollision CollisionKind, float ColliderSizeZ, KeyFrame.ValueBools[] AnimationDataFlags, int FrameNo, bool FlagAnimationDataFlags, WorkAreaRuntime WorkArea)
@@ -2211,10 +2597,19 @@ public static partial class Library_SpriteStudio
 				}
 			}
 
-			public void UpdateMesh(Mesh MeshNow, KeyFrame.ValueBools[] AnimationDataFlags, float[] AnimationDataOpacityRate, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
+			public MeshAlies AnimationDataMeshGet(int FrameNo)
+			{
+				if (CompressedAnimationDataMesh != null && CompressedAnimationDataMesh.Length > 0)
+				{
+					return CompressedAnimationDataMesh[FrameNo];
+				};
+				return AnimationDataMesh[FrameNo];
+			}
+
+			public void UpdateMesh(SmartMesh MeshNow, KeyFrame.ValueBools[] AnimationDataFlags, int FrameNo, Script_SpriteStudio_PartsRoot ScriptRoot)
 			{
 				float RateOpacity = (null != ScriptRoot) ? ScriptRoot.RateOpacity : 1.0f;
-				MeshAlies DataMeshAlies = AnimationDataMesh[FrameNo];
+				MeshAlies DataMeshAlies = AnimationDataMeshGet(FrameNo);
 				Vector2[] DataUV2 = new Vector2[DataMeshAlies.UV2.Length];
 				Script_SpriteStudio_PartsRoot.ColorBlendOverwrite DataColorBlendOverwrite = ScriptRoot.DataColorBlendOverwrite;
 				if(null == DataColorBlendOverwrite)
@@ -2234,7 +2629,7 @@ public static partial class Library_SpriteStudio
 													);
 							DataColor32[i] = DataColorBlendOverwrite.VertexColor[i];
 						}
-						MeshNow.colors32 = DataColor32;
+						MeshNow.ColorSet(DataColor32);
 					}
 					else
 					{	/* Default (Same as "No-Overwrite" ) */
@@ -2244,18 +2639,25 @@ public static partial class Library_SpriteStudio
 				goto UpdateMesh_ColorBlend_End;
 
 			UpdateMesh_ColorBlend_Animation:;
-				for(int i=0; i<DataUV2.Length; i++)
+				if (RateOpacity == 1f)
 				{
-					DataUV2[i] = DataMeshAlies.UV2[i];
-					DataUV2[i].x *= RateOpacity;
+					DataUV2 = DataMeshAlies.UV2;
 				}
-				MeshNow.colors32 = DataMeshAlies.ColorOverlay;
+				else
+				{
+					for(int i=0; i<DataUV2.Length; i++)
+					{
+						DataUV2[i] = DataMeshAlies.UV2[i];
+						DataUV2[i].x *= RateOpacity;
+					}
+				}
+				MeshNow.ColorSet(DataMeshAlies.ColorOverlay);
 /*				goto UpdateMesh_ColorBlend_End;	*/	/* Fall-Through */
 
 			UpdateMesh_ColorBlend_End:;
-				MeshNow.vertices = DataMeshAlies.Coordinate;
-				MeshNow.uv = DataMeshAlies.UV;
-				MeshNow.uv2 = DataUV2;
+				MeshNow.VerticesSet(DataMeshAlies.Coordinate);
+				MeshNow.UVSet(DataMeshAlies.UV);
+				MeshNow.UV2Set(DataUV2);
 			}
 		}
 
@@ -2401,11 +2803,66 @@ public static partial class Library_SpriteStudio
 		}
 	}
 
+	public class SmartMesh
+	{
+		public Mesh Mesh{get; protected set;}
+		Vector2[] _uv = new Vector2[0];
+		Vector2[] _uv2 = new Vector2[0];
+		Color32[] _colors = new Color32[0];
+		Vector3[] _vertices = new Vector3[0];
+
+		public SmartMesh()
+		{
+			Mesh = new Mesh();
+		}
+
+		public void UV2Set(Vector2[] uv2)
+		{
+			if (_uv2 == uv2)
+			{
+				return;
+			}
+			_uv2 = uv2;
+			Mesh.uv2 = uv2;
+		}
+
+		public void ColorSet(Color32[] colors)
+		{
+			if (_colors == colors)
+			{
+				return;
+			}
+			_colors = colors;
+			Mesh.colors32 = colors;
+		}
+
+		public void VerticesSet(Vector3[] vertices)
+		{
+			if (_vertices == vertices)
+			{
+				return;
+			}
+			_vertices = vertices;
+			Mesh.vertices = vertices;
+		}
+		public void UVSet(Vector2[] uv)
+		{
+			if (_uv == uv)
+			{
+				return;
+			}
+			_uv = uv;
+			Mesh.uv = uv;
+		}
+	
+	}
+
 	[System.Serializable]
 	public class SpriteBase : PartsBase
 	{
-		protected Mesh dataMesh;
-		public Mesh DataMesh
+
+		protected SmartMesh dataMesh;
+		public SmartMesh DataMesh
 		{
 			set
 			{
@@ -2418,5 +2875,447 @@ public static partial class Library_SpriteStudio
 		}
 
 		protected Library_SpriteStudio.DrawManager.InformationMeshData DataMeshInformation = null;
+	}
+
+	[System.Serializable]
+	public class CompressedVector3Array
+	{
+		[SerializeField]
+		int[] _indices;
+		
+		[SerializeField]
+		Vector3[] _values;
+		
+		static public CompressedVector3Array Build(Vector3[] src)
+		{
+			if (src == null)
+			{
+				return null;
+			}
+			var result = new CompressedVector3Array(src);
+			
+			return result;
+		}
+		
+		CompressedVector3Array(Vector3[] src)
+		{
+			if (src == null)
+			{
+				return;
+			}
+			var indices = new List<int>();
+			var values = new List<Vector3>();
+			
+			values.Add(src[0]);
+			for(int i=1; i<src.Length; ++i)
+			{
+				if (!values[values.Count - 1].Equals(src[i]))
+				{
+					values.Add(src[i]);
+					indices.Add(i);
+				}
+			}
+			indices.Add(src.Length);
+			
+			_indices = indices.ToArray();
+			_values = values.ToArray();
+		}
+		
+		public Vector3 this [int index]
+		{
+			get
+			{
+				var i = System.Array.BinarySearch<int>(_indices, index);
+				if (i < 0)
+				{
+					i = ~i;
+				}
+				else
+				{
+					++i;
+				}
+				return _values[i];
+			}
+		}
+		
+		public int Length
+		{
+			get
+			{
+				if (_indices == null)
+				{
+					return 0;
+				}
+				if (_indices.Length == 0)
+				{
+					return 0;
+				}
+				return _indices[_indices.Length - 1];
+			}
+		}
+		public Vector3[] ToArray()
+		{
+			var result = new Vector3[Length];
+			for(int i=0; i<Length; ++i)
+			{
+				result[i] = this[i];
+			}
+			return result;
+		}
+	}
+	
+	[System.Serializable]
+	public class CompressedFloatArray
+	{
+		[SerializeField]
+		int[] _indices;
+		
+		[SerializeField]
+		float[] _values;
+		
+		static public CompressedFloatArray Build(float[] src)
+		{
+			if (src == null)
+			{
+				return null;
+			}
+			var result = new CompressedFloatArray(src);
+			
+			return result;
+		}
+		
+		CompressedFloatArray(float[] src)
+		{
+			if (src == null)
+			{
+				return;
+			}
+			Set(src);
+		}
+		
+		public void Set(float[] src)
+		{
+			var indices = new List<int>();
+			var values = new List<float>();
+			
+			values.Add(src[0]);
+			for(int i=1; i<src.Length; ++i)
+			{
+				if (values[values.Count - 1] != src[i])
+				{
+					values.Add(src[i]);
+					indices.Add(i);
+				}
+			}
+			indices.Add(src.Length);
+			
+			_indices = indices.ToArray();
+			_values = values.ToArray();
+		}
+		
+		public float this [int index]
+		{
+			get
+			{
+				var i = System.Array.BinarySearch<int>(_indices, index);
+				if (i < 0)
+				{
+					i = ~i;
+				}
+				else
+				{
+					++i;
+				}
+				return _values[i];
+			}
+		}
+		
+		public int Length
+		{
+			get
+			{
+				if (_indices == null)
+				{
+					return 0;
+				}
+				if (_indices.Length == 0)
+				{
+					return 0;
+				}
+				return _indices[_indices.Length - 1];
+			}
+		}
+		
+		public float[] ToArray()
+		{
+			var result = new float[Length];
+			for(int i=0; i<Length; ++i)
+			{
+				result[i] = this[i];
+			}
+			return result;
+		}
+	}
+	
+	[System.Serializable]
+	public class CompressedVector2Array
+	{
+		[SerializeField]
+		int[] _indices;
+		
+		[SerializeField]
+		Vector2[] _values;
+		
+		static public CompressedVector2Array Build(Vector2[] src)
+		{
+			if (src == null)
+			{
+				return null;
+			}
+			var result = new CompressedVector2Array(src);
+			
+			return result;
+		}
+		
+		CompressedVector2Array(Vector2[] src)
+		{
+			if (src == null)
+			{
+				return;
+			}
+			var indices = new List<int>();
+			var values = new List<Vector2>();
+			
+			values.Add(src[0]);
+			for(int i=1; i<src.Length; ++i)
+			{
+				if (!values[values.Count - 1].Equals(src[i]))
+				{
+					values.Add(src[i]);
+					indices.Add(i);
+				}
+			}
+			indices.Add(src.Length);
+			
+			_indices = indices.ToArray();
+			_values = values.ToArray();
+		}
+		
+		public Vector2 this [int index]
+		{
+			get
+			{
+				var i = System.Array.BinarySearch<int>(_indices, index);
+				if (i < 0)
+				{
+					i = ~i;
+				}
+				else
+				{
+					++i;
+				}
+				return _values[i];
+			}
+		}
+		
+		public int Length
+		{
+			get
+			{
+				if (_indices == null)
+				{
+					return 0;
+				}
+				if (_indices.Length == 0)
+				{
+					return 0;
+				}
+				return _indices[_indices.Length - 1];
+			}
+		}
+		
+		public Vector2[] ToArray()
+		{
+			var result = new Vector2[Length];
+			for(int i=0; i<Length; ++i)
+			{
+				result[i] = this[i];
+			}
+			return result;
+		}
+	}
+	
+	[System.Serializable]
+	public class CompressedMeshArray
+	{
+		[SerializeField]
+		int[] _indices;
+		
+		[SerializeField]
+		Library_SpriteStudio.AnimationData.Fix.MeshAlies[] _values;
+		
+		static public CompressedMeshArray Build(Library_SpriteStudio.AnimationData.Fix.MeshAlies[] src)
+		{
+			if (src == null)
+			{
+				return null;
+			}
+			var result = new CompressedMeshArray(src);
+			
+			return result;
+		}
+		
+		CompressedMeshArray(Library_SpriteStudio.AnimationData.Fix.MeshAlies[] src)
+		{
+			if (src == null)
+			{
+				return;
+			}
+			var indices = new List<int>();
+			var values = new List<Library_SpriteStudio.AnimationData.Fix.MeshAlies>();
+			
+			values.Add(src[0]);
+			for(int i=1; i<src.Length; ++i)
+			{
+				if (!values[values.Count - 1].Equals(src[i]))
+				{
+					values.Add(src[i]);
+					indices.Add(i);
+				}
+			}
+			indices.Add(src.Length);
+			
+			_indices = indices.ToArray();
+			_values = values.ToArray();
+		}
+		
+		public Library_SpriteStudio.AnimationData.Fix.MeshAlies this [int index]
+		{
+			get
+			{
+				var i = System.Array.BinarySearch<int>(_indices, index);
+				if (i < 0)
+				{
+					i = ~i;
+				}
+				else
+				{
+					++i;
+				}
+				return _values[i];
+			}
+		}
+		
+		public int Length
+		{
+			get
+			{
+				if (_indices == null)
+				{
+					return 0;
+				}
+				if (_indices.Length == 0)
+				{
+					return 0;
+				}
+				return _indices[_indices.Length - 1];
+			}
+		}
+		public Library_SpriteStudio.AnimationData.Fix.MeshAlies[] ToArray()
+		{
+			var result = new Library_SpriteStudio.AnimationData.Fix.MeshAlies[Length];
+			for(int i=0; i<Length; ++i)
+			{
+				result[i] = this[i];
+			}
+			return result;
+		}
+		
+	}
+	[System.Serializable]
+	public class CompressedValueColorArray
+	{
+		[SerializeField]
+		int[] _indices;
+		
+		[SerializeField]
+		Library_SpriteStudio.KeyFrame.ValueColor[] _values;
+		
+		static public CompressedValueColorArray Build(Library_SpriteStudio.KeyFrame.ValueColor[] src)
+		{
+			if (src == null)
+			{
+				return null;
+			}
+			var result = new CompressedValueColorArray(src);
+			
+			return result;
+		}
+		
+		CompressedValueColorArray(Library_SpriteStudio.KeyFrame.ValueColor[] src)
+		{
+			if (src == null)
+			{
+				return;
+			}
+			var indices = new List<int>();
+			var values = new List<Library_SpriteStudio.KeyFrame.ValueColor>();
+			
+			values.Add(src[0]);
+			for(int i=1; i<src.Length; ++i)
+			{
+				if (!values[values.Count - 1].Equals(src[i]))
+				{
+					values.Add(src[i]);
+					indices.Add(i);
+				}
+			}
+			indices.Add(src.Length);
+			
+			_indices = indices.ToArray();
+			_values = values.ToArray();
+		}
+		
+		public Library_SpriteStudio.KeyFrame.ValueColor this [int index]
+		{
+			get
+			{
+				var i = System.Array.BinarySearch<int>(_indices, index);
+				if (i < 0)
+				{
+					i = ~i;
+				}
+				else
+				{
+					++i;
+				}
+				return _values[i];
+			}
+		}
+		
+		public int Length
+		{
+			get
+			{
+				if (_indices == null)
+				{
+					return 0;
+				}
+				if (_indices.Length == 0)
+				{
+					return 0;
+				}
+				return _indices[_indices.Length - 1];
+			}
+		}
+		public Library_SpriteStudio.KeyFrame.ValueColor[] ToArray()
+		{
+			var result = new Library_SpriteStudio.KeyFrame.ValueColor[Length];
+			for(int i=0; i<Length; ++i)
+			{
+				result[i] = this[i];
+			}
+			return result;
+		}
 	}
 }

@@ -3472,6 +3472,7 @@ public static partial class LibraryEditor_SpriteStudio
 						DataAnimationReferenced.ListNodeAnimationData[i] = ListDataRuntime[i].DataMain;
 					}
 
+					DataAnimationReferenced.Compress();
 					EditorUtility.SetDirty(DataAnimationReferenced);
 				}
 

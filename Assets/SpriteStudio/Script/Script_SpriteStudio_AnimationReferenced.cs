@@ -34,4 +34,19 @@ public class Script_SpriteStudio_AnimationReferenced : ScriptableObject
 		return(null);
 #endif
 	}
+
+	public void Decompress()
+	{
+		foreach(var it in ListNodeAnimationData)
+		{
+			it.Decompress();
+		}
+	}
+	public void Compress()
+	{
+		foreach(var it in ListNodeAnimationData)
+		{
+			it.Compress();
+		}
+	}
 }

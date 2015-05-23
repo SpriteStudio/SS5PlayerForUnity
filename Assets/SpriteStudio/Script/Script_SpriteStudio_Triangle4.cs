@@ -77,7 +77,7 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 		/* Set Matrix for Transform (to the GameObject) */
 		if((true == spriteStudioData.UpdateGameObject(gameObject, ScriptRoot.FrameNoNow, CollisionComponent, WorkArea)) && (false == FlagHideForce))
 		{	/* Show the Sprite */
-			DataMeshInformation.DataMesh = dataMesh;
+			DataMeshInformation.DataMesh = dataMesh.Mesh;
 			DataMeshInformation.DataTransform = transform;
 			DataMeshInformation.PartsInstance = null;
 			spriteStudioData.DrawEntry(DataMeshInformation, ScriptRoot.FrameNoNow, ScriptRoot);
@@ -130,15 +130,15 @@ public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 	private void MeshCreate()
 	{
 		/* Create Mesh */
-		dataMesh = new Mesh();
-		dataMesh.Clear();
+		dataMesh = new Library_SpriteStudio.SmartMesh();
+		dataMesh.Mesh.Clear();
 
 		/* Create Vertex-Datas */
 		/* MEMO: Create "vertices"-Datas for Deciding "vertexCount" */
 		Vector3[] CoordinateVertex = new Vector3[(int)Library_SpriteStudio.VertexNo.TERMINATOR4];
 
-		dataMesh.vertices = CoordinateVertex;
-		dataMesh.triangles = Library_SpriteStudio.ArrayVertexIndex_Triangle4;
-		dataMesh.normals = Library_SpriteStudio.ArrayNormal_Triangle4;
+		dataMesh.Mesh.vertices = CoordinateVertex;
+		dataMesh.Mesh.triangles = Library_SpriteStudio.ArrayVertexIndex_Triangle4;
+		dataMesh.Mesh.normals = Library_SpriteStudio.ArrayNormal_Triangle4;
 	}
 }
