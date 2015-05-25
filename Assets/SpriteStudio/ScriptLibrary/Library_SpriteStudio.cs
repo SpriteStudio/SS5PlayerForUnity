@@ -620,7 +620,8 @@ public static partial class Library_SpriteStudio
 		public class ListMeshDraw
 		{
 			public Material MaterialOriginal = null;
-			public InformationMeshData MeshDataTop;
+			public InformationMeshData MeshDataTop = null;
+			public InformationMeshData MeshDataLast = null;
 
 			public int Count = 0;
 			public float PriorityMinimum = float.MaxValue;
@@ -633,6 +634,7 @@ public static partial class Library_SpriteStudio
 				if(null == MeshDataTop)
 				{
 					MeshDataTop = DataNew;
+					MeshDataLast = DataNew;
 					PriorityMinimum = DataNew.Priority;
 					PriorityMaximum = DataNew.Priority;
 					Count = 1;
@@ -643,6 +645,15 @@ public static partial class Library_SpriteStudio
 					DataNew.ChainNext = MeshDataTop;
 					MeshDataTop = DataNew;
 					PriorityMinimum = DataNew.Priority;
+					Count++;
+					return;
+				}
+
+				if(PriorityMaximum <= DataNew.Priority)
+				{
+					MeshDataLast.ChainNext = DataNew;
+					MeshDataLast = DataNew;
+					PriorityMaximum = DataNew.Priority;
 					Count++;
 					return;
 				}
@@ -663,6 +674,7 @@ public static partial class Library_SpriteStudio
 				Count++;
 				if(null == DataNext)
 				{
+					MeshDataLast = DataNew;
 					PriorityMaximum = DataNew.Priority;
 				}
 			}
@@ -685,6 +697,7 @@ public static partial class Library_SpriteStudio
 						ListNew.MaterialOriginal = MaterialOriginal;
 						ListNew.Count = Count - CountNow;
 						ListNew.MeshDataTop = DataNext;
+						ListNew.MeshDataLast = MeshDataLast;
 						ListNew.PriorityMinimum = DataNext.Priority;
 
 						Count -= ListNew.Count;
@@ -693,10 +706,12 @@ public static partial class Library_SpriteStudio
 							PriorityMinimum = 0;
 							PriorityMaximum = 0;
 							MeshDataTop = null;
+							MeshDataLast = null;
 						}
 						else
 						{
 							DataPrevious.ChainNext = null;
+							MeshDataLast = DataPrevious;
 							ListNew.PriorityMaximum = PriorityMaximum;
 							PriorityMaximum = DataPrevious.Priority;
 						}
@@ -718,17 +733,14 @@ public static partial class Library_SpriteStudio
 				if(0 == Count)
 				{
 					MeshDataTop = ListNext.MeshDataTop;
+					MeshDataLast = ListNext.MeshDataLast;
 					PriorityMinimum = ListNext.PriorityMinimum;
 					PriorityMaximum = ListNext.PriorityMaximum;
 					Count = ListNext.Count;
 					return;
 				}
-				InformationMeshData DataLast = MeshDataTop;
-				while(null != DataLast.ChainNext)
-				{
-					DataLast = DataLast.ChainNext;
-				}
-				DataLast.ChainNext = ListNext.MeshDataTop;
+				MeshDataLast.ChainNext = ListNext.MeshDataTop;
+				MeshDataLast = ListNext.MeshDataLast;
 				PriorityMaximum = ListNext.PriorityMaximum;
 				Count += ListNext.Count;
 			}
