@@ -1846,7 +1846,8 @@ public static partial class Library_SpriteStudio
 			FrameNoInstanceBase = DataBody.FrameNoBase;
 			if(-1 == FrameNoInstanceBase)
 			{
-				return(false);
+//				return(false);
+				goto UpdateInstanceData_PlayCommand_Force;
 			}
 
 			FlagIndipendent = (0 != (DataBody.Flag & KeyFrame.ValueInstance.Data.FlagData.INDEPENDENT)) ? true : false;
@@ -1878,6 +1879,7 @@ public static partial class Library_SpriteStudio
 				if(-1 == PartsInstance.FrameNoPreviousUpdate)
 				{
 					DataBody = new KeyFrame.ValueInstance.Data();
+					FrameNoInstanceBase = ScriptRoot.FrameNoStart;
 #if false
 					if(true == UpdateInstanceCheckRange(ScriptPartsRootSub, FrameNo - FrameNoInstanceBase, PartsInstance.AnimationNo, DataBody))
 					{
