@@ -621,6 +621,7 @@ public static partial class Library_SpriteStudio
 		/* MEMO: These Defines for only Simplified-SpriteDrawManager */
 		public enum KindDrawQueue
 		{
+			NON = -1,
 			SHADER_SETTING = 0,
 			USER_SETTING,
 			BACKGROUND,
