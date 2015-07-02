@@ -5,11 +5,174 @@
 	All rights reserved.
 */
 using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 public static partial class Library_SpriteStudio
 {
+	public static class UtilityParts
+	{
+		/* ******************************************************** */
+		//! Get Root-Parts
+		/*!
+		@param	InstanceOrigin
+			GameObject to start the search
+		@retval	Return-Value
+			Instance of "Script_SpriteStudio_PartsRoot"<br>
+			null == Not-Found / Failure
+
+		Get "Script_SpriteStudio_PartsRoot" by examining "InstanceOrigin" and direct children.
+		*/
+		public static Script_SpriteStudio_PartsRoot InstanceGetRoot(GameObject InstanceOrigin)
+		{
+			Script_SpriteStudio_PartsRoot ScriptRoot = null;
+
+			/* Check Origin */
+			ScriptRoot = InstanceOrigin.GetComponent<Script_SpriteStudio_PartsRoot>();
+			if(null != ScriptRoot)
+			{	/* Has Root-Parts */
+				return(ScriptRoot);
+			}
+
+			/* Check Children */
+			int CountChild = InstanceOrigin.transform.childCount;
+			Transform InstanceTransformChild = null;
+			for(int i=0; i<CountChild; i++)
+			{
+				InstanceTransformChild = InstanceOrigin.transform.GetChild(i);
+				ScriptRoot = InstanceTransformChild.gameObject.GetComponent<Script_SpriteStudio_PartsRoot>();
+				if(null != ScriptRoot)
+				{	/* Has Root-Parts */
+					return(ScriptRoot);
+				}
+			}
+
+			/* Not-Found */
+			return(null);
+		}
+
+		/* ******************************************************** */
+		//! Get GameObject with a particular name
+		/*!
+		@param	PartsKind
+			(Output) Kind of Parts
+		@param	SpriteKind
+			(Output) Kind of Sprite
+		@param	InstanceOrigin
+			GameObject to start the search
+		@retval	Return-Value
+			Instance of GameObject<br>
+			null == Not-Found / Failure
+		@retval	PartsKind
+			Kind of Parts
+		@retval	SpriteKind
+			Kind of Sprite
+
+		Get GameObject with a particular name by examining "InstanceOrigin" and children.<br>
+		<br>
+		Value is set to " PartsKind" means the type of Component that GameObject has.<br>
+		It has the regularity of the following.<br>
+		- "Library_SpriteStudio.KindParts.NORMAL" ... "Script_SpriteStudio_Triangle2" / Script_SpriteStudio_Triangle4"<br>
+		- "Library_SpriteStudio.KindParts.ROOT" ... "Script_SpriteStudio_PartsRoot"<br>
+		- "Library_SpriteStudio.KindParts.NULL" ... "Script_SpriteStudio_PartsNULL"<br>
+		- "Library_SpriteStudio.KindParts.INSTANCE" ... "Script_SpriteStudio_PartsInstance"<br>
+		<br>
+		Value is set to "SpriteKind" is supplementary information when " PartsKind" is "Library_SpriteStudio.KindParts.NORMAL".<br>
+		- "Library_SpriteStudio.KindSprite.TRIANGLE2" ... "Script_SpriteStudio_Triangle2"<br>
+		- "Library_SpriteStudio.KindSprite.TRIANGLE4" ... "Script_SpriteStudio_Triangle4"<br>
+		- "Library_SpriteStudio.KindSprite.NON" ... the other<br>
+		<br>
+		If applicable GameObject has no component for "SS5Player for Unity",
+			"PartsKind" and "SpriteKind" are set to the contents of the "Library_SpriteStudio.KindParts.NORMAL" and "Library_SpriteStudio.KindSprite.NON" .<br>
+		*/
+		public static GameObject GameObjectGetName(out KindParts PartsKind, out KindSprite SpriteKind, GameObject InstanceOrigin, string Name)
+		{
+			/* Clear Output */
+			PartsKind = KindParts.NORMAL;
+			SpriteKind = KindSprite.NON;
+			if(true == String.IsNullOrEmpty(Name))
+			{	/* Error */
+				return(null);
+			}
+
+			/* Check Name */
+			if(true == Name.Equals(InstanceOrigin.name))
+			{
+				Script_SpriteStudio_Triangle2 ScriptTriangle2 = InstanceOrigin.GetComponent<Script_SpriteStudio_Triangle2>();
+				if(null != ScriptTriangle2)
+				{	/* Parts: Sprite-Triangle2 */
+					PartsKind = KindParts.NORMAL;
+					SpriteKind = KindSprite.TRIANGLE2;
+					return(InstanceOrigin);
+				}
+				else
+				{
+					Script_SpriteStudio_Triangle4 ScriptTriangle4 = InstanceOrigin.GetComponent<Script_SpriteStudio_Triangle4>();
+					if(null != ScriptTriangle4)
+					{	/* Parts: Sprite-Triangle4 */
+						PartsKind = KindParts.NORMAL;
+						SpriteKind = KindSprite.TRIANGLE4;
+						return(InstanceOrigin);
+					}
+					else
+					{
+						Script_SpriteStudio_PartsNULL ScriptNULL = InstanceOrigin.GetComponent<Script_SpriteStudio_PartsNULL>();
+						if(null != ScriptNULL)
+						{	/* Parts: NULL */
+							PartsKind = KindParts.NULL;
+							SpriteKind = KindSprite.NON;
+							return(InstanceOrigin);
+						}
+						else
+						{
+							Script_SpriteStudio_PartsInstance ScriptInstance = InstanceOrigin.GetComponent<Script_SpriteStudio_PartsInstance>();
+							if(null != ScriptInstance)
+							{	/* Parts: Instance */
+								PartsKind = KindParts.INSTANCE;
+								SpriteKind = KindSprite.NON;
+								return(InstanceOrigin);
+							}
+							else
+							{
+								Script_SpriteStudio_PartsRoot ScriptRoot = InstanceOrigin.GetComponent<Script_SpriteStudio_PartsRoot>();
+								if(null != ScriptRoot)
+								{	/* Parts: Root */
+									PartsKind = KindParts.ROOT;
+									SpriteKind = KindSprite.NON;
+									return(InstanceOrigin);
+								}
+								else
+								{	/* Parts: Not-for-SpriteStudio */
+									PartsKind = KindParts.NORMAL;
+									SpriteKind = KindSprite.NON;
+									return(InstanceOrigin);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			/* Check Children */
+			int CountChild = InstanceOrigin.transform.childCount;
+			Transform InstanceTransformChild = null;
+			GameObject InstanceChild = null;
+			for(int i=0; i<CountChild; i++)
+			{
+				InstanceTransformChild = InstanceOrigin.transform.GetChild(i);
+				InstanceChild = GameObjectGetName(out PartsKind, out SpriteKind, InstanceTransformChild.gameObject, Name);
+				if(null != InstanceChild)
+				{
+					return(InstanceChild);
+				}
+			}
+
+			/* Not-Found */
+			return(null);
+		}
+	}
+
 	public static class UtilityMaterial
 	{
 		public static readonly int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;

@@ -65,7 +65,7 @@ public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 			Script_SpriteStudio_PartsInstance ScriptPartsInstance = gameObject.GetComponent<Script_SpriteStudio_PartsInstance>();
 			GameObject PrefabRoot = (GameObject)LinkPrefab;
 			GameObject Instance = null;
-			Transform TransformChild = gameObject.transform.FindChild(PrefabRoot.name);
+			Transform TransformChild = gameObject.transform.Find(PrefabRoot.name);
 			if(null == TransformChild)
 			{
 				/* Instantiate Prefab */
@@ -113,7 +113,7 @@ public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 		if(null != LinkPrefab)
 		{
 			GameObject PrefabRoot = (GameObject)LinkPrefab;
-			Transform TransformChild = gameObject.transform.FindChild(PrefabRoot.name);
+			Transform TransformChild = gameObject.transform.Find(PrefabRoot.name);
 			if(null != TransformChild)
 			{
 				GameObject GameObjectChild = TransformChild.gameObject;

@@ -22,5 +22,16 @@ public class Inspector_SpriteStudio_AnimationReferenced : Editor
 		EditorGUILayout.Space();
 		EditorGUILayout.LabelField("- Node Count : " + Data.ListNodeAnimationData.Length);
 		EditorGUILayout.Space();
+
+		if (GUILayout.Button("Decompress"))
+		{
+			Data.Decompress();
+			EditorUtility.SetDirty(Data);
+		}
+		if (GUILayout.Button("Compress"))
+		{
+			Data.Compress();
+			EditorUtility.SetDirty(Data);
+		}
 	}
 }

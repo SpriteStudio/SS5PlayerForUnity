@@ -290,4 +290,36 @@ public class Script_SpriteStudio_DrawManagerView : MonoBehaviour
 			InstanceMeshFilter.sharedMesh = null;
 		}
 	}
+
+	/* ******************************************************** */
+	//! Set "Render-Queue"
+	/*!
+	@param	Kind
+		"Render-Queue Base"<br>
+		Library_SpriteStudio.DrawManager.KindDrawQueue.NON == use the settings in the Inspector.
+	@param	Offset
+		"Render-Queue Offset"<br>
+		-1 == use the settings in the Inspector.
+	@retval	Return-Value
+		(None)
+
+	Set to own "Render-Queue".<br>
+	You must set "-1" to "Offset", when you set "Library_SpriteStudio.DrawManager.KindDrawQueue.NON" to "Kind".
+	*/
+	public void RenderQueueSet(Library_SpriteStudio.DrawManager.KindDrawQueue Kind=Library_SpriteStudio.DrawManager.KindDrawQueue.NON, int Offset=-1)
+	{
+		if(Library_SpriteStudio.DrawManager.KindDrawQueue.NON == Kind)
+		{
+			Kind = KindRenderQueueBase;
+			Offset = OffsetDrawQueue;
+		}
+		if(-1 == OffsetDrawQueue)
+		{	/* Error */
+			Offset = OffsetDrawQueue;
+		}
+		if(null != arrayListMeshDraw)
+		{
+			arrayListMeshDraw.RenderQueueSet(Kind, Offset);
+		}
+	}
 }
