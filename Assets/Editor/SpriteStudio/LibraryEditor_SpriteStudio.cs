@@ -617,6 +617,7 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				case KindVersionSSPJ.VERSION_000100:
 				case KindVersionSSPJ.VERSION_010000:
+				case KindVersionSSPJ.VERSION_010200:
 					break;
 
 				case KindVersionSSPJ.ERROR:
@@ -696,6 +697,7 @@ public static partial class LibraryEditor_SpriteStudio
 			ERROR = 0x00000000,
 			VERSION_000100  = 0x00000100,
 			VERSION_010000  = 0x00010000,
+			VERSION_010200  = 0x00010200,	/* sspj ver. 5.5.0 beta-3 */
 
 			VERSION_REQUIRED = VERSION_000100,
 			VERSION_CURRENT = VERSION_010000,
@@ -790,6 +792,7 @@ public static partial class LibraryEditor_SpriteStudio
 									)
 		{
 			string MessageError = "";
+			string NameOptions = "";
 
 			XmlDocument DataXML = new XmlDocument();
 			DataXML.Load(NameDirectoryCellMap + "/" + FileName);
@@ -813,6 +816,7 @@ public static partial class LibraryEditor_SpriteStudio
 			XmlNamespaceManager ManagerNameSpace = new XmlNamespaceManager(NodeNameSpace);
 			XmlNodeList NodeList = null;
 
+			/* Get Texture Path-Name */
 			string NameTexture = XMLUtility.TextGetSelectSingleNode(NodeRoot, "imagePath", ManagerNameSpace);
 			if(0 == string.Compare(NameDirectoryCellMap, string.Empty))
 			{
@@ -828,6 +832,39 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationCellMap.FileName = Path.GetFullPath(NameDirectoryImage + "/" + NameTexture);
 			}
 
+			/* Get Texture Wrap-Mode */
+			NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "wrapMode", ManagerNameSpace);
+			switch(NameOptions)
+			{
+				case "repeat":
+					InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindWrap.REPEAT;
+					break;
+
+				case "mirror":
+					Debug.LogWarning("SSCE-Import Warning: Texture Wrap-Mode \"Mirror\" is not Suppoted. Force-Changed \"Clamp\" (" + FileName + ")");
+					goto case "clamp";
+
+				case "clamp":
+				default:
+					InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindWrap.CLAMP;
+					break;
+			}
+
+			/* Get Texture Filter-Mode */
+			NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "filterMode", ManagerNameSpace);
+			switch(NameOptions)
+			{
+				case "nearlest":
+					InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindFilter.NEAREST;
+					break;
+
+				case "linear":
+				default:
+					InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindFilter.LINEAR;
+					break;
+			}
+
+			/* Get Cells */
 			InformationCellMap.CellArea = new Hashtable();
 			if(null == InformationCellMap.CellArea)
 			{
@@ -913,6 +950,7 @@ public static partial class LibraryEditor_SpriteStudio
 				case KindVersionSSAE.VERSION_010000:
 				case KindVersionSSAE.VERSION_010001:
 				case KindVersionSSAE.VERSION_010002:
+				case KindVersionSSAE.VERSION_010200:
 					break;
 
 				case KindVersionSSAE.ERROR:
@@ -1112,6 +1150,7 @@ public static partial class LibraryEditor_SpriteStudio
 			VERSION_010000  = 0x00010000,
 			VERSION_010001  = 0x00010001,
 			VERSION_010002  = 0x00010002,	/* ssae ver.5.3.5 */
+			VERSION_010200  = 0x00010200,	/* ssae ver.5.5.0 beta-3 */
 
 			VERSION_REQUIRED = VERSION_000100,
 			VERSION_CURRENT = VERSION_010000,	/* VERSION_010002 */
@@ -1182,6 +1221,16 @@ public static partial class LibraryEditor_SpriteStudio
 					DataParts.PartsKind = Library_SpriteStudio.KindParts.INSTANCE;
 					break;
 
+				case "effect":
+//					DataParts.PartsKind = Library_SpriteStudio.KindParts.EFFECT;
+					DataParts.PartsKind = Library_SpriteStudio.KindParts.NULL;
+					Debug.LogWarning("SSAE-Import Warning: Parts["
+										+ DataParts.ID.ToString()
+										+ "] Now UnSupported Parts Kind.: "
+										+ ValueText
+									);
+					break;
+
 				default:
 					Debug.LogWarning("SSAE-Import Warning: Parts["
 										+ DataParts.ID.ToString()
@@ -1237,6 +1286,7 @@ public static partial class LibraryEditor_SpriteStudio
 							case KindVersionSSAE.VERSION_010000:
 							case KindVersionSSAE.VERSION_010001:
 							case KindVersionSSAE.VERSION_010002:
+							case KindVersionSSAE.VERSION_010200:
 								{
 									if(0 == DataParts.ID)
 									{
@@ -1294,6 +1344,7 @@ public static partial class LibraryEditor_SpriteStudio
 								break;
 
 							case KindVersionSSAE.VERSION_010002:
+							case KindVersionSSAE.VERSION_010200:
 								{
 									/* MEMO: Attributes'-Tag always exists. */
 									string ValueTextBool = "";
@@ -2353,6 +2404,9 @@ public static partial class LibraryEditor_SpriteStudio
 							GameObjectNow.AddComponent<Script_SpriteStudio_LinkPrefab>();
 						}
 						break;
+
+					case Library_SpriteStudio.KindParts.EFFECT:	/* Effect-Node (Now UnSupported) */
+						break;
 				}
 				return(GameObjectNow);
 			}
@@ -3148,7 +3202,17 @@ public static partial class LibraryEditor_SpriteStudio
 								Importer.borderMipmap = false;
 								Importer.convertToNormalmap = false;
 								Importer.fadeout = false;
-								Importer.filterMode = FilterMode.Bilinear;
+								switch(ListImage[TextureInformation.IndexImage].Filter)
+								{
+									case PartsImage.KindFilter.NEAREST:
+										Importer.filterMode = FilterMode.Point;
+										break;
+
+									case PartsImage.KindFilter.LINEAR:
+									default:
+										Importer.filterMode = FilterMode.Bilinear;
+										break;
+								}
 								Importer.generateCubemap = TextureImporterGenerateCubemap.None;
 								Importer.generateMipsInLinearSpace = false;
 								Importer.grayscaleToAlpha = false;
@@ -3161,7 +3225,18 @@ public static partial class LibraryEditor_SpriteStudio
 								Importer.npotScale = TextureImporterNPOTScale.None;
 								Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
 								Importer.textureType  = TextureImporterType.Advanced;
-								Importer.wrapMode = TextureWrapMode.Clamp;
+								switch(ListImage[TextureInformation.IndexImage].Wrap)
+								{
+									case PartsImage.KindWrap.REPEAT:
+										Importer.wrapMode = TextureWrapMode.Repeat;
+										break;
+
+									case PartsImage.KindWrap.MIRROR:
+									case PartsImage.KindWrap.CLAMP:
+									default:
+										Importer.wrapMode = TextureWrapMode.Clamp;
+										break;
+								}
 								AssetDatabase.ImportAsset(NameAsset, ImportAssetOptions.ForceUpdate);
 							}
 							TextureInformation.SubstanceAsset = AssetDatabase.LoadAssetAtPath(NameAsset, typeof(Texture2D)) as Texture2D;
@@ -3416,6 +3491,7 @@ public static partial class LibraryEditor_SpriteStudio
 						DataAnimationReferenced.ListNodeAnimationData[i] = ListDataRuntime[i].DataMain;
 					}
 
+					DataAnimationReferenced.Compress();
 					EditorUtility.SetDirty(DataAnimationReferenced);
 				}
 
@@ -3438,7 +3514,13 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Create Prefab (GameObjects) */
+#if false
+				/* MEMO: until Ver.1.2.9 */
 				PrefabData = PrefabUtility.ReplacePrefab(GameObjectRoot, PrefabData, ReplacePrefabOptions.Default);
+#else
+				/* MEMO: since Ver.1.2.11 */
+				PrefabData = PrefabUtility.ReplacePrefab(GameObjectRoot, PrefabData, ReplacePrefabOptions.ReplaceNameBased);
+#endif
 				if(null == PrefabData)
 				{
 					return(false);
@@ -4096,7 +4178,12 @@ public static partial class LibraryEditor_SpriteStudio
 						{	/* Same Animation */
 							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
 							{
+#if false
+								/* MEMO: Regular Procedure */
 								Debug.LogError("Vector2.X keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+#else
+								/* MEMO: Interim-Patch for "Effect"-Parts */
+#endif
 								return(null);
 							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
@@ -5387,6 +5474,7 @@ public static partial class LibraryEditor_SpriteStudio
 						break;
 
 					case ParseOPSS.KindVersionSSAE.VERSION_010002:
+					case ParseOPSS.KindVersionSSAE.VERSION_010200:
 						if(0 != (FlagInherit & FlagAttributeKeyInherit.SHOW_HIDE) && (null != DataFlagsParentHide))
 						{
 							Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;
@@ -5546,12 +5634,28 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 		internal struct PartsImage
 		{
+			internal enum KindWrap
+			{
+				CLAMP = 0,
+				REPEAT,
+				MIRROR,
+			}
+			internal enum KindFilter
+			{
+				NEAREST = 0,
+				LINEAR,
+			}
+
 			internal string FileName;
+			internal KindWrap Wrap;
+			internal KindFilter Filter;
 			internal Hashtable CellArea;
 
 			internal void CleanUp()
 			{
 				FileName = "";
+				Wrap = KindWrap.CLAMP;
+				Filter = KindFilter.LINEAR;
 				CellArea = null;
 			}
 		}

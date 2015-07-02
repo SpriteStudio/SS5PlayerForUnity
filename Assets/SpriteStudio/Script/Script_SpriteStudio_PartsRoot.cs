@@ -127,9 +127,6 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		DataColorXX.g (0.0f to 1.0f) : "G" (0 to 255)<br>
 		DataColorXX.b (0.0f to 1.0f) : "B" (0 to 255)<br>
 		DataColorXX.a (0.0f to 1.0f) : "%" (0 to 255)<br>
-		<br>
-		You can set a value between 0.0f and 1.0f in "RateOpacityPixelXX".<br>
-		Caution: When you operate this value, all sprite-parts are transparent individually.<br>
 		*/
 		public void SetVertex(	Library_SpriteStudio.KindColorOperation KindOperation,
 								ref Color DataColorLU,
@@ -219,8 +216,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public bool FlagStylePingpong;
 
 	/* CAUTION!: This "rateAlpha" is value for "Instance"-Object. */
-	private	float	rateOpacity;
-	internal	float	RateOpacity
+	private float rateOpacity;
+	internal float RateOpacity
 	{
 		set
 		{
@@ -372,7 +369,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	private List<ParameterCallBackUserData> ListCallBackUserData;
 #endif
 	private Library_SpriteStudio.FunctionCallBackUserData functionUserData;
-	internal Library_SpriteStudio.FunctionCallBackUserData FunctionUserData
+	public Library_SpriteStudio.FunctionCallBackUserData FunctionUserData
 	{
 		set
 		{
@@ -384,7 +381,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 	private Library_SpriteStudio.FunctionCallBackPlayEnd functionPlayEnd;
-	internal Library_SpriteStudio.FunctionCallBackPlayEnd FunctionPlayEnd
+	public Library_SpriteStudio.FunctionCallBackPlayEnd FunctionPlayEnd
 	{
 		set
 		{
@@ -530,7 +527,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 			return;
 		}
 
+#if false
 		if(0 != (Status & BitStatus.PAUSING))
+#else
+		if(-1 != frameNoPrevious)
+		{
+			Status &= ~BitStatus.PLAY_FIRST;
+		}
+
+		if((0 != (Status & BitStatus.PAUSING)) && (0 == (Status & BitStatus.PLAY_FIRST)))
+#endif
 		{
 			return;
 		}
@@ -546,20 +552,34 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		bool FlagReLoop = true;
 
 		/* FrameNo Update */
+#if false
 		Status |= BitStatus.PLAY_FIRST;
 		if(-1 != frameNoPrevious)
 		{	/* Not Update, Just Starting */
 			TimeAnimation += (Time.deltaTime * rateTimePlay) * RateTimeProgress;
-			Status &= ~BitStatus.DECODE_USERDATA;
 			Status &= ~BitStatus.PLAY_FIRST;
+			Status &= ~BitStatus.DECODE_USERDATA;
+			Status &= ~BitStatus.REDECODE_INSTANCE;
 		}
+#else
+		if(0 != (Status & BitStatus.PLAY_FIRST))
+		{	/* Not Update, Just Starting */
+			Status |= BitStatus.DECODE_USERDATA;
+			Status |= BitStatus.REDECODE_INSTANCE;
+		}
+		else
+		{
+			TimeAnimation += (Time.deltaTime * rateTimePlay) * RateTimeProgress;
+			Status &= ~BitStatus.DECODE_USERDATA;
+			Status &= ~BitStatus.REDECODE_INSTANCE;
+		}
+#endif
 
 		FrameCountNow = (int)(TimeAnimation / TimeFramePerSecond);
 		countLoopThisTime = 0;
 		flagTurnBackPingPong = false;
 		flagReversePrevious = (0 != (Status & BitStatus.PLAYING_REVERSE)) ? true : false;
-		Status &= ~BitStatus.REDECODE_INSTANCE;
-		
+
 		if(false == FlagStylePingpong)
 		{	/* One-Way */
 			if(0 == (Status & BitStatus.PLAYING_REVERSE))
@@ -832,6 +852,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 #else
 				Parameter = ListCallBackUserData[i];
 #endif
+#if false
+				/* MEMO: Until "Ver.1.2.3" */
 				functionUserData(	transform.parent.gameObject,
 									Parameter.PartsName,
 									Parameter.AnimationDataParts,
@@ -841,6 +863,18 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 									Parameter.Data,
 									Parameter.FlagWayBack
 								);
+#else
+				/* MEMO: Later than "Ver.1.2.3" */
+				functionUserData(	((null == InstanceGameObjectControl) ? gameObject : InstanceGameObjectControl),
+									Parameter.PartsName,
+									Parameter.AnimationDataParts,
+									AnimationNo,
+									frameNoNow,
+									Parameter.FrameNo,
+									Parameter.Data,
+									Parameter.FlagWayBack
+								);
+#endif
 			}
 			ListCallBackUserData.Clear();
 		}
@@ -988,7 +1022,12 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		/* Set Playing-Datas */
 		Status &= ~BitStatus.MASK_INITIAL;
 		Status |= BitStatus.PLAYING;
+#if false
 		Status |= BitStatus.DECODE_USERDATA;
+		Status |= BitStatus.REDECODE_INSTANCE;
+#else
+		Status |= BitStatus.PLAY_FIRST;
+#endif
 		switch(KindStylePlay)
 		{
 			case PlayStyle.NO_CHANGE:
@@ -1232,7 +1271,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 	Get count of textures that can be set to "TableMaterial".
 	*/
-	public int TextureGetCount(Material[] TableDataMaterial)
+	public int TextureGetCount()
 	{
 		return(Library_SpriteStudio.UtilityMaterial.TextureGetCount(TableMaterial));
 	}

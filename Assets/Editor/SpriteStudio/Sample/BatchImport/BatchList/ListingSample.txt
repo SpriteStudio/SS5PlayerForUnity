@@ -104,10 +104,49 @@
 * 
 * ex:
 * NameBaseFolderAsset > Assets/SS5PU_Data
-* 
+*
+* ---------------------
+* FlagGetAnimationReferencedPartsRoot > Flag
+*   Flag ... true / false (bool)
+*            default == true
+*
+* This is the same function as "Fixed-Animation Data" in the import settings.
+*
+* ex:
+* FlagGetAnimationReferencedPartsRoot > false
+*
+* ---------------------
+* FlagGetMaterialPartsRoot > Flag
+*   Flag ... true / false (bool)
+*            default == false
+*
+* This is the same function as "Material" in the import settings.
+*
+* ex:
+* FlagGetMaterialPartsRoot > true
+*
+* ---------------------
+* FlagGetTextureMaterial > Flag
+*   Flag ... true / false (bool)
+*            default == false
+*
+* This is the same function as "Texture (from Material)" in the import settings.
+*
+* ex:
+* FlagGetTextureMaterial > false
+*
+* ---------------------
+* FlagDataCalculateInAdvance > Flag
+*   Flag ... true / false (bool)
+*            default == true
+*
+* This is the same function as "Calculate in advance" in the import settings.
+*
+* ex:
+* FlagDataCalculateInAdvance > false
+*
 * ------------------------------------------
-* 
-* 
+*
 * 
 * [Caution]
 * 
