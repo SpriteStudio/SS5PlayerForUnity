@@ -617,6 +617,7 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				case KindVersionSSPJ.VERSION_000100:
 				case KindVersionSSPJ.VERSION_010000:
+				case KindVersionSSPJ.VERSION_010200:
 					break;
 
 				case KindVersionSSPJ.ERROR:
@@ -696,6 +697,7 @@ public static partial class LibraryEditor_SpriteStudio
 			ERROR = 0x00000000,
 			VERSION_000100  = 0x00000100,
 			VERSION_010000  = 0x00010000,
+			VERSION_010200  = 0x00010200,	/* sspj ver. 5.5.0 beta-3 */
 
 			VERSION_REQUIRED = VERSION_000100,
 			VERSION_CURRENT = VERSION_010000,
@@ -948,6 +950,7 @@ public static partial class LibraryEditor_SpriteStudio
 				case KindVersionSSAE.VERSION_010000:
 				case KindVersionSSAE.VERSION_010001:
 				case KindVersionSSAE.VERSION_010002:
+				case KindVersionSSAE.VERSION_010200:
 					break;
 
 				case KindVersionSSAE.ERROR:
@@ -1147,6 +1150,7 @@ public static partial class LibraryEditor_SpriteStudio
 			VERSION_010000  = 0x00010000,
 			VERSION_010001  = 0x00010001,
 			VERSION_010002  = 0x00010002,	/* ssae ver.5.3.5 */
+			VERSION_010200  = 0x00010200,	/* ssae ver.5.5.0 beta-3 */
 
 			VERSION_REQUIRED = VERSION_000100,
 			VERSION_CURRENT = VERSION_010000,	/* VERSION_010002 */
@@ -1217,6 +1221,16 @@ public static partial class LibraryEditor_SpriteStudio
 					DataParts.PartsKind = Library_SpriteStudio.KindParts.INSTANCE;
 					break;
 
+				case "effect":
+//					DataParts.PartsKind = Library_SpriteStudio.KindParts.EFFECT;
+					DataParts.PartsKind = Library_SpriteStudio.KindParts.NULL;
+					Debug.LogWarning("SSAE-Import Warning: Parts["
+										+ DataParts.ID.ToString()
+										+ "] Now UnSupported Parts Kind.: "
+										+ ValueText
+									);
+					break;
+
 				default:
 					Debug.LogWarning("SSAE-Import Warning: Parts["
 										+ DataParts.ID.ToString()
@@ -1272,6 +1286,7 @@ public static partial class LibraryEditor_SpriteStudio
 							case KindVersionSSAE.VERSION_010000:
 							case KindVersionSSAE.VERSION_010001:
 							case KindVersionSSAE.VERSION_010002:
+							case KindVersionSSAE.VERSION_010200:
 								{
 									if(0 == DataParts.ID)
 									{
@@ -1329,6 +1344,7 @@ public static partial class LibraryEditor_SpriteStudio
 								break;
 
 							case KindVersionSSAE.VERSION_010002:
+							case KindVersionSSAE.VERSION_010200:
 								{
 									/* MEMO: Attributes'-Tag always exists. */
 									string ValueTextBool = "";
@@ -2387,6 +2403,9 @@ public static partial class LibraryEditor_SpriteStudio
 							GameObjectNow.AddComponent<Script_SpriteStudio_PartsInstance>();
 							GameObjectNow.AddComponent<Script_SpriteStudio_LinkPrefab>();
 						}
+						break;
+
+					case Library_SpriteStudio.KindParts.EFFECT:	/* Effect-Node (Now UnSupported) */
 						break;
 				}
 				return(GameObjectNow);
@@ -4159,7 +4178,12 @@ public static partial class LibraryEditor_SpriteStudio
 						{	/* Same Animation */
 							if (IndexAnimationStart < 0 || IndexAnimationStart >= ListInformationPlay.Length)
 							{
+#if false
+								/* MEMO: Regular Procedure */
 								Debug.LogError("Vector2.X keyframe is out of range!! Parts:" + CurrentProcessingPartsName + " frame:" + DataStart.Time);
+#else
+								/* MEMO: Interim-Patch for "Effect"-Parts */
+#endif
 								return(null);
 							}
 							if((true == FirstKeyFrameAnimation) && (ListInformationPlay[IndexAnimationStart].FrameStart < DataStart.Time))
@@ -5450,6 +5474,7 @@ public static partial class LibraryEditor_SpriteStudio
 						break;
 
 					case ParseOPSS.KindVersionSSAE.VERSION_010002:
+					case ParseOPSS.KindVersionSSAE.VERSION_010200:
 						if(0 != (FlagInherit & FlagAttributeKeyInherit.SHOW_HIDE) && (null != DataFlagsParentHide))
 						{
 							Library_SpriteStudio.KeyFrame.ValueBools.FlagData MaskFlag = Library_SpriteStudio.KeyFrame.ValueBools.FlagData.HIDE;

@@ -23,6 +23,7 @@ public static partial class Library_SpriteStudio
 		BOUND,					/* Disused */
 		SOUND,					/* DisUsed */
 		INSTANCE,
+		EFFECT,
 
 		TERMINATOR
 	};
