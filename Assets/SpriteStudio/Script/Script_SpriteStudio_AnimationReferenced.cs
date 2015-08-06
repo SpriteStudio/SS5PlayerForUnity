@@ -8,7 +8,7 @@ using UnityEngine;
 using System.Collections;
 
 [System.Serializable]
-public class Script_SpriteStudio_AnimationReferenced : ScriptableObject
+public partial class Script_SpriteStudio_AnimationReferenced : ScriptableObject
 {
 	/* Animation Data */
 	public Library_SpriteStudio.AnimationInformationPlay[] ListInformationAnimation;

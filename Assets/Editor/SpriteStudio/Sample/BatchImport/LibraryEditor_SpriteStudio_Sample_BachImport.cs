@@ -40,6 +40,7 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 			DataSettingImport.FlagGetMaterialPartsRoot = true;
 			DataSettingImport.FlagGetTextureMaterial = true;
 			DataSettingImport.FlagDataCalculateInAdvance = true;
+			DataSettingImport.FlagDataCompress = false;		/* Caution!: This item is different */
 
 			UnityEngine.Object ObjectSelected = Selection.activeObject;
 			if(null == ObjectSelected)
@@ -121,6 +122,7 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 		private const string CommandNameBaseFolderAsset = "NameBaseFolderAsset";
 
 		private const string CommandFlagDataCalculateInAdvance = "FlagDataCalculateInAdvance";
+		private const string CommandFlagDataCompress = "FlagDataCompress";
 
 		private const string TextTrue = "true";
 		private const string TextFalse = "false";
@@ -195,6 +197,11 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 				case CommandFlagDataCalculateInAdvance:	/* FlagDataCalculateInAdvance */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.FlagDataCalculateInAdvance = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagDataCompress:	/* FlagDataCompress */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagDataCompress = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandNameBaseFolderSS5Data:	/* NameBaseFolderSS5Data */

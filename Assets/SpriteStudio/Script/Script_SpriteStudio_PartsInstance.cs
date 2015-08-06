@@ -12,7 +12,7 @@ using UnityEditor;
 
 [ExecuteInEditMode]
 [System.Serializable]
-public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
+public partial class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 {
 	/* Variables & Propaties */
 	private Library_SpriteStudio.AnimationData spriteStudioData;
@@ -147,7 +147,8 @@ public class Script_SpriteStudio_PartsInstance : Library_SpriteStudio.SpriteBase
 			Script_SpriteStudio_PartsRoot PartsOrigin = scriptPartsRootSub.PartsRootOrigin;
 			if(null != PartsOrigin)
 			{
-				if(false == PartsOrigin.AnimationCheckPlay())
+//				if(false == PartsOrigin.AnimationCheckPlay())
+				if((false == PartsOrigin.AnimationCheckPlay()) && (true == scriptPartsRootSub.AnimationCheckPlay()))
 				{	/* Parent is stopped */
 					scriptPartsRootSub.AnimationStop();
 				}

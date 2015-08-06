@@ -145,6 +145,16 @@
 * ex:
 * FlagDataCalculateInAdvance > false
 *
+* ---------------------
+* FlagDataCompress > Flag
+*   Flag ... true / false (bool)
+*            default == false
+*
+* This is the same function as "Compress" in the import settings.
+*
+* ex:
+* FlagDataCompress > true
+*
 * ------------------------------------------
 *
 * 

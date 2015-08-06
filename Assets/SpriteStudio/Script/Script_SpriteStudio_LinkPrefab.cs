@@ -13,7 +13,7 @@ using System.Collections;
 [ExecuteInEditMode]
 /* [InitializeOnLoad] */
 [System.Serializable]
-public class Script_SpriteStudio_LinkPrefab : MonoBehaviour
+public partial class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 {
 	public bool FlagAutoDevelop;
 	public bool FlagDeleteScript;
