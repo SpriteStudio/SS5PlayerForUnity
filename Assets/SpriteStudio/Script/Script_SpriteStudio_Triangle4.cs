@@ -9,7 +9,7 @@ using System.Collections;
 
 [ExecuteInEditMode]
 [System.Serializable]
-public class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
+public partial class Script_SpriteStudio_Triangle4 : Library_SpriteStudio.SpriteBase
 {
 	/* Variables & Propaties */
 	private Library_SpriteStudio.AnimationData spriteStudioData;

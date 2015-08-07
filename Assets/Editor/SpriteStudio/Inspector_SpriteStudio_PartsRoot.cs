@@ -314,6 +314,12 @@ public class Inspector_SpriteStudio_PartsRoot : Editor
 		}
 		EditorGUILayout.Space();
 	
+		EditorGUILayout.Space();
+		if(true == GUILayout.Button("Reset Parent-\"View\""))
+		{
+			Data.ViewSet();
+		}
+
 		if(true == GUI.changed)
 		{
 			EditorUtility.SetDirty(target);

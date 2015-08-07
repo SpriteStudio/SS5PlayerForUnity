@@ -1098,6 +1098,11 @@ public static partial class Library_SpriteStudio
 						DataMeshInformation = ListMesh.MeshDataTop;
 						while(null != DataMeshInformation)
 						{
+							if((0 > IndexMesh) || (CountMesh <= IndexMesh))
+							{	/* Error Trapping */
+								break;
+							}
+
 							CombineMesh[IndexMesh].mesh = DataMeshInformation.DataMesh;
 							if(null != DataMeshInformation.DataTransform)
 							{
@@ -1613,7 +1618,8 @@ public static partial class Library_SpriteStudio
 				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.DECODE_USERDATA))
 				{
 					int LoopCount = ScriptRoot.CountLoopThisTime;
-					bool FlagFirst = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAY_FIRST)) ? true : false;
+//					bool FlagFirst = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAY_FIRST)) ? true : false;
+					bool FlagFirst = ScriptRoot.IsFirstPlay();
 					bool FlagReverse = (0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.PLAYING_REVERSE)) ? true : false;
 					bool FlagReversePrevious = ScriptRoot.FlagReversePrevious;
 					int FrameNoPrevious = (true == FlagFirst) ? ScriptRoot.FrameNoStart : (ScriptRoot.FrameNoPrevious + ((true == FlagReverse) ? -1 : 1));
@@ -1856,7 +1862,8 @@ public static partial class Library_SpriteStudio
 			int FramePreviousUpdateInstance = PartsInstance.FrameNoPreviousUpdate;
 			if(false == FlagIndipendent)
 			{	/* Non-Indipendent */
-				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
+//				if(0 != (ScriptRoot.Status & Script_SpriteStudio_PartsRoot.BitStatus.REDECODE_INSTANCE))
+				if(true == ScriptRoot.CheckRedecodeInstanceInParent())
 				{
 					PartsInstance.FrameNoPreviousUpdate = FramePreviousUpdateInstance = -1;
 				}
@@ -1913,8 +1920,11 @@ public static partial class Library_SpriteStudio
 													DataBody.LabelEnd,
 													DataBody.OffsetEnd
 												);
+				ScriptPartsRootSub.Status |= Script_SpriteStudio_PartsRoot.BitStatus.DECODE_USERDATA;
+				ScriptPartsRootSub.Status &= ~Script_SpriteStudio_PartsRoot.BitStatus.PLAY_FIRST;
 
-				int FrameCount = FrameNo - FrameNoInstanceBase;
+//				int FrameCount = FrameNo - FrameNoInstanceBase;
+				int FrameCount = ScriptRoot.FrameCountProgress - FrameNoInstanceBase;
 				FrameCount = (0 > FrameCount) ? 0 : FrameCount;
 				ScriptPartsRootSub.TimeElapsedSetForce(FrameCount * ScriptRoot.TimeFramePerSecond, FlagIndipendent);
 				PartsInstance.FrameNoPreviousUpdate = FrameNoInstanceBase;
@@ -2208,11 +2218,19 @@ public static partial class Library_SpriteStudio
 						RateScaleMesh.y *= 1.0f;
 					}
 				}
+#if false
 				if((null != AnimationDataTextureScale) && (0 < AnimationDataTextureScale.Length))
 				{
 					RateScaleTexture.x *= AnimationDataTextureScale[FrameNo].x;
 					RateScaleTexture.y *= AnimationDataTextureScale[FrameNo].y;
 				}
+#else
+				if((null != AnimationDataTextureExpand) && (0 < AnimationDataTextureExpand.Length))
+				{
+					RateScaleTexture.x *= AnimationDataTextureExpand[FrameNo].x;
+					RateScaleTexture.y *= AnimationDataTextureExpand[FrameNo].y;
+				}
+#endif
 
 				/* Calculate Matrix-Texture */
 				float Rotate = ((null != AnimationDataTextureRotate) && (0 < AnimationDataTextureRotate.Length)) ? AnimationDataTextureRotate[FrameNo] :  0.0f;
@@ -2225,7 +2243,7 @@ public static partial class Library_SpriteStudio
 												(RectCell.height / SizeTexture.y) * RateScaleTexture.y,
 												1.0f
 											);
-				Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, Rotate);
+				Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, -Rotate);
 				MatrixTexture = Matrix4x4.TRS(Translation, Rotation, Scaling);
 
 				/* Set Vertex-Datas */
@@ -2774,7 +2792,8 @@ public static partial class Library_SpriteStudio
 		{
 			if(null != functionOnTriggerEnter)
 			{
-				functionOnTriggerEnter(collider, Pair);
+//				functionOnTriggerEnter(collider, Pair);
+				functionOnTriggerEnter(GetComponent<Collider>(), Pair);
 			}
 		}
 
@@ -2782,7 +2801,8 @@ public static partial class Library_SpriteStudio
 		{
 			if(null != functionOnTriggerEnd)
 			{
-				functionOnTriggerEnter(collider, Pair);
+//				functionOnTriggerEnter(collider, Pair);
+				functionOnTriggerEnter(GetComponent<Collider>(), Pair);
 			}
 		}
 
@@ -2790,7 +2810,8 @@ public static partial class Library_SpriteStudio
 		{
 			if(null != functionOnTriggerStay)
 			{
-				functionOnTriggerStay(collider, Pair);
+//				functionOnTriggerStay(collider, Pair);
+				functionOnTriggerStay(GetComponent<Collider>(), Pair);
 			}
 		}
 
@@ -2798,7 +2819,8 @@ public static partial class Library_SpriteStudio
 		{
 			if(null != functionOnCollisionEnter)
 			{
-				functionOnCollisionEnter(collider, Contacts);
+//				functionOnCollisionEnter(collider, Contacts);
+				functionOnCollisionEnter(GetComponent<Collider>(), Contacts);
 			}
 		}
 
@@ -2806,7 +2828,8 @@ public static partial class Library_SpriteStudio
 		{
 			if(null != functionOnCollisionEnd)
 			{
-				functionOnCollisionEnd(collider, Contacts);
+//				functionOnCollisionEnd(collider, Contacts);
+				functionOnCollisionEnd(GetComponent<Collider>(), Contacts);
 			}
 		}
 
@@ -2814,7 +2837,8 @@ public static partial class Library_SpriteStudio
 		{
 			if(null != functionOnCollisionStay)
 			{
-				functionOnCollisionStay(collider, Contacts);
+//				functionOnCollisionStay(collider, Contacts);
+				functionOnCollisionStay(GetComponent<Collider>(), Contacts);
 			}
 		}
 	}
