@@ -38,7 +38,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		EditorGUILayout.LabelField(" Checked: Improving execution speed of the runtime.");
 		EditorGUILayout.LabelField(" Unchecked: The data size is reduced.");
 		EditorGUILayout.Space();
-		FlagDataCompress = EditorGUILayout.Toggle("Compress", FlagDataCalculateInAdvance);
+		FlagDataCompress = EditorGUILayout.Toggle("Compress", FlagDataCompress);
 		EditorGUILayout.LabelField(" Compress animation data at importing.");
 		EditorGUILayout.LabelField(" Checked: Compress.");
 		EditorGUILayout.LabelField(" Unchecked: Uncompress. CPU-Load is reduced.");
@@ -125,7 +125,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.2.17";
+		string VersionText = "1.2.29";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
