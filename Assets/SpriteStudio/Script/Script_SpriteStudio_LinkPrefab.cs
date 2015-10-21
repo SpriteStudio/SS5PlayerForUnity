@@ -73,6 +73,7 @@ public partial class Script_SpriteStudio_LinkPrefab : MonoBehaviour
 				Instance = (GameObject)PrefabUtility.InstantiatePrefab(LinkPrefab);
 #else
 				Instance = (GameObject)Instantiate(LinkPrefab);
+				Instance.name = LinkPrefab.name;
 #endif
 				if(null != Instance)
 				{

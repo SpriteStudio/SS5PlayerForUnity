@@ -481,11 +481,8 @@ public partial class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsB
 		}
 	}
 
-	private int MainLoopCount = 0;
 	void Update()
 	{
-		MainLoopCount++;
-
 		/* Get Animation-Data-Referenced */
 		if((null != SpriteStudioDataReferenced) && (null == spriteStudioData))
 		{
