@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [System.Serializable]
-public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
+public partial class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 {
 	/* Constants */
 	public enum BitStatus
@@ -28,7 +28,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		REDECODE_INSTANCE = 0x002000,
 
 		CLEAR = 0x000000,
-		MASK_INITIAL = (PLAYING | PAUSING | STYLE_REVERSE | PLAYING_REVERSE | PLAY_FIRST | REQUEST_PLAYEND | DECODE_USERDATA),
+		MASK_INITIAL = (PLAYING | PAUSING | STYLE_REVERSE | PLAYING_REVERSE | PLAY_FIRST | REQUEST_PLAYEND | DECODE_USERDATA | REDECODE_INSTANCE),
+		INITIAL = ~MASK_INITIAL,
 	};
 	public enum PlayStyle
 	{
@@ -319,6 +320,16 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 
+	internal int FrameCountProgress
+	{
+		get
+		{
+			Script_SpriteStudio_AnimationReferenced animRef = SpriteStudioDataReferenced;
+			Library_SpriteStudio.AnimationInformationPlay animationInfo = animRef.ListInformationAnimation[AnimationNo];
+			return(FrameNoNow - animationInfo.FrameStart);
+		}
+	}
+
 	protected int framePerSecond;
 	public int FramePerSecond
 	{
@@ -406,7 +417,7 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 
-	private Camera InstanceCameraDraw;
+//	private Camera InstanceCameraDraw;
 	private Script_SpriteStudio_DrawManagerView InstanceDrawManagerView;
 	private GameObject InstanceGameObjectControl = null;
 	private Script_SpriteStudio_PartsRoot partsRootOrigin = null;
@@ -436,8 +447,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 
 	void Start()
 	{
-		InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);
-		InstanceDrawManagerView = Library_SpriteStudio.Utility.DrawManagerViewGetParent(gameObject);
+//		InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);
+		ViewSet(null);
 		rateOpacity = 1.0f;
 
 		arrayListMeshDraw = new Library_SpriteStudio.DrawManager.ArrayListMeshDraw();
@@ -470,11 +481,8 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 	}
 
-	private int MainLoopCount = 0;
 	void Update()
 	{
-		MainLoopCount++;
-
 		/* Get Animation-Data-Referenced */
 		if((null != SpriteStudioDataReferenced) && (null == spriteStudioData))
 		{
@@ -483,13 +491,13 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 		}
 
 		/* Boot-Check */
-		if(null == InstanceCameraDraw)
-		{
-			InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);
-		}
+//		if(null == InstanceCameraDraw)
+//		{
+//			InstanceCameraDraw = Library_SpriteStudio.Utility.CameraGetParent(gameObject);
+//		}
 		if(null == InstanceDrawManagerView)
 		{
-			InstanceDrawManagerView = Library_SpriteStudio.Utility.DrawManagerViewGetParent(gameObject);
+			ViewSet(null);
 		}
 		if(null == arrayListMeshDraw)
 		{
@@ -1463,5 +1471,53 @@ public class Script_SpriteStudio_PartsRoot : Library_SpriteStudio.PartsBase
 	public void DataReleaseColorBlendOverwrite()
 	{
 		dataColorBlendOverwrite = null;
+	}
+
+	/* ******************************************************** */
+	//! Set the "View"
+	/*!
+	@param	DrawManagerView
+		View to set.<br>
+		null == Automatically scanning the parent.
+	@retval	Return-Value
+		(None)
+
+	Set the "View" to manage.
+	*/
+	public void ViewSet(Script_SpriteStudio_DrawManagerView DrawManagerView=null)
+	{
+		if(null == DrawManagerView)
+		{
+			DrawManagerView = Library_SpriteStudio.Utility.DrawManagerViewGetParent(gameObject);
+		}
+		InstanceDrawManagerView = DrawManagerView;
+	}
+
+#if true
+	/* MEMO: Measures to Garbage-Collect */
+	internal float OrderGetDisplay()
+	{
+		Matrix4x4 MatrixWorld = transform.localToWorldMatrix;
+		Vector3 OriginWorld = MatrixWorld.MultiplyPoint3x4(Vector3.zero);
+		return(OriginWorld.z);
+	}
+#else
+#endif
+
+	internal bool CheckRedecodeInstanceInParent()
+	{
+		if(0 != (Status & BitStatus.REDECODE_INSTANCE))
+		{
+			return(true);
+		}
+
+		Script_SpriteStudio_PartsInstance parentInstance = transform.parent.GetComponent<Script_SpriteStudio_PartsInstance>();
+		return((null == parentInstance) ? false : parentInstance.ScriptRoot.CheckRedecodeInstanceInParent());
+	}
+
+	internal bool IsFirstPlay()
+	{
+//		return((0 != (Status & BitStatus.PLAY_FIRST)) ? true : false);
+		return((FrameNoPrevious == FrameNoStart) ? true : false);
 	}
 }

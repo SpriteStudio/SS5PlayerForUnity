@@ -99,6 +99,7 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagGetMaterialPartsRoot;
 		public bool FlagGetTextureMaterial;
 		public bool FlagDataCalculateInAdvance;
+		public bool FlagDataCompress;
 	}
 	internal readonly static string PrefsKeyTextureSizePixelMaximum = "SS5PU_Importer_TextureSizePixelMaximum";
 	internal readonly static string PrefsKeyCollisionThicknessZ = "SS5PU_Importer_CollisionThicknessZ";
@@ -110,6 +111,7 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static string PrefsKeyFlagGetMaterialPartsRoot = "SS5PU_Importer_FlagGetMaterialPartsRoot";
 	internal readonly static string PrefsKeyFlagGetTextureMaterial = "SS5PU_Importer_FlagGetTextureMaterial";
 	internal readonly static string PrefsKeyFlagDataCalculateInAdvance = "SS5PU_Importer_FlagDataCalculateInAdvance";
+	internal readonly static string PrefsKeyFlagDataCompress = "SS5PU_Importer_FlagDataCompress";
 	internal readonly static string PrefsKeyFolderNameImpoertLast = "SS5PU_Importer_FolderNameImpoertLast";
 
 	public static partial class Menu
@@ -141,6 +143,7 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
 			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, true);
 			EditorPrefs.SetBool(PrefsKeyFlagDataCalculateInAdvance, true);
+			EditorPrefs.SetBool(PrefsKeyFlagDataCompress, true);
 			EditorPrefs.SetString(PrefsKeyFolderNameImpoertLast, "");
 		}
 
@@ -156,6 +159,7 @@ public static partial class LibraryEditor_SpriteStudio
 			DataSettingImport.FlagGetMaterialPartsRoot = EditorPrefs.GetBool(PrefsKeyFlagGetMaterialPartsRoot, true);
 			DataSettingImport.FlagGetTextureMaterial = EditorPrefs.GetBool(PrefsKeyFlagGetTextureMaterial, true);
 			DataSettingImport.FlagDataCalculateInAdvance = EditorPrefs.GetBool(PrefsKeyFlagDataCalculateInAdvance, true);
+			DataSettingImport.FlagDataCompress = EditorPrefs.GetBool(PrefsKeyFlagDataCompress, true);
 		}
 		internal static void SettingSetImport(ref SettingImport DataSettingImport)
 		{
@@ -169,6 +173,7 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagGetMaterialPartsRoot, DataSettingImport.FlagGetMaterialPartsRoot);
 			EditorPrefs.SetBool(PrefsKeyFlagGetTextureMaterial, DataSettingImport.FlagGetTextureMaterial);
 			EditorPrefs.SetBool(PrefsKeyFlagDataCalculateInAdvance, DataSettingImport.FlagDataCalculateInAdvance);
+			EditorPrefs.SetBool(PrefsKeyFlagDataCompress, DataSettingImport.FlagDataCompress);
 		}
 		internal static void SettingGetFolderImport(out string NameFolder)
 		{
@@ -516,6 +521,15 @@ public static partial class LibraryEditor_SpriteStudio
 					Debug.LogError("SSAE-Convert-Prefab Error:" + NameFileBodySSAE);
 					goto Menu_ImportSSPJ_ErrorEnd;
 				}
+
+				/* Animation Converting "Pass-3" (Compress) */
+				if(true == DataSettingImport.FlagDataCompress)
+				{
+					if(null != DataOutput[IndexOrder].DataAnimationReferenced)
+					{
+						DataOutput[IndexOrder].DataAnimationReferenced.Compress();
+					}
+				}
 			}
 
 			/* End of Importing (Success) */
@@ -621,9 +635,16 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSPJ.ERROR:
-				default:
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSPJ_ErrorEnd;
+
+				default:
+					if(KindVersionSSPJ.VERSION_010200 < VersionCode)
+					{	/* MEMO: Dealing as the latest supported version. */
+						VersionCode = KindVersionSSPJ.VERSION_010200;
+						goto case KindVersionSSPJ.VERSION_010200;
+					}
+					goto case KindVersionSSPJ.ERROR;
 			}
 
 			/* Get Directories */
@@ -640,6 +661,7 @@ public static partial class LibraryEditor_SpriteStudio
 			XmlNamespaceManager ManagerNameSpace = new XmlNamespaceManager(NodeNameSpace);
 			XmlNodeList NodeList = null;
 
+			/* Get Project-Setting */
 			InformationProject.NameDirectorySSAE = string.Copy(DataPathBase);
 			string ValueText = "";
 			ValueText = XMLUtility.TextGetSelectSingleNode(NodeRoot, "settings/animeBaseDirectory", ManagerNameSpace);
@@ -658,6 +680,36 @@ public static partial class LibraryEditor_SpriteStudio
 			if(false == string.IsNullOrEmpty(ValueText))
 			{
 				InformationProject.NameDirectoryImage += "/" + ValueText;
+			}
+
+			ValueText = XMLUtility.TextGetSelectSingleNode(NodeRoot, "settings/wrapMode", ManagerNameSpace);
+			switch(ValueText)
+			{
+				case "repeat":
+					InformationProject.WrapTexture = LibraryEditor_SpriteStudio.DataIntermediate.KindWrapTexture.REPEAT;
+					break;
+
+				case "mirror":
+					Debug.LogWarning("SSPJ-Import Warning: Texture Wrap-Mode \"Mirror\" is not Suppoted. Force-Changed \"Clamp\" (" + FileName + ")");
+					goto case "clamp";
+
+				case "clamp":
+				default:
+					InformationProject.WrapTexture = LibraryEditor_SpriteStudio.DataIntermediate.KindWrapTexture.CLAMP;
+					break;
+			}
+
+			ValueText = XMLUtility.TextGetSelectSingleNode(NodeRoot, "settings/filterMode", ManagerNameSpace);
+			switch(ValueText)
+			{
+				case "nearlest":
+					InformationProject.FilterTexture = LibraryEditor_SpriteStudio.DataIntermediate.KindFilterTexture.NEAREST;
+					break;
+
+				case "linear":
+				default:
+					InformationProject.FilterTexture = LibraryEditor_SpriteStudio.DataIntermediate.KindFilterTexture.LINEAR;
+					break;
 			}
 
 			/* Get Cell-Maps */
@@ -698,9 +750,6 @@ public static partial class LibraryEditor_SpriteStudio
 			VERSION_000100  = 0x00000100,
 			VERSION_010000  = 0x00010000,
 			VERSION_010200  = 0x00010200,	/* sspj ver. 5.5.0 beta-3 */
-
-			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,
 		};
 		internal class InformationSSPJ
 		{
@@ -711,6 +760,9 @@ public static partial class LibraryEditor_SpriteStudio
 			internal string NameDirectorySSAE;
 			internal string NameDirectoryImage;
 
+			internal DataIntermediate.KindWrapTexture WrapTexture;
+			internal DataIntermediate.KindFilterTexture FilterTexture;
+
 			internal void CleanUp()
 			{
 				VersionCode = LibraryEditor_SpriteStudio.ParseOPSS.KindVersionSSPJ.ERROR;
@@ -719,6 +771,9 @@ public static partial class LibraryEditor_SpriteStudio
 				NameDirectorySSCE = "";
 				NameDirectorySSAE = "";
 				NameDirectoryImage = "";
+
+				WrapTexture = DataIntermediate.KindWrapTexture.CLAMP;
+				FilterTexture = DataIntermediate.KindFilterTexture.NEAREST;
 			}
 
 			internal void AddSSCE(string FileName)
@@ -807,9 +862,16 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSCE.ERROR:
-				default:
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSCE_ErrorEnd;
+
+				default:
+					if(KindVersionSSCE.VERSION_010000 < VersionCode)
+					{	/* MEMO: Dealing as the latest supported version. */
+						VersionCode = KindVersionSSCE.VERSION_010000;
+						goto case KindVersionSSCE.VERSION_010000;
+					}
+					goto case KindVersionSSCE.ERROR;
 			}
 
 			NameTable NodeNameSpace = new NameTable();
@@ -832,36 +894,54 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationCellMap.FileName = Path.GetFullPath(NameDirectoryImage + "/" + NameTexture);
 			}
 
-			/* Get Texture Wrap-Mode */
-			NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "wrapMode", ManagerNameSpace);
-			switch(NameOptions)
+			/* Get Texture Addressing */
+			InformationCellMap.Wrap = InformationProject.WrapTexture;
+			InformationCellMap.Filter = InformationProject.FilterTexture;
+
+			string ValueTextBool = null;
+			bool ValueBool = false;
+			ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeRoot, "overrideTexSettings", ManagerNameSpace);
+			if(null != ValueTextBool)
 			{
-				case "repeat":
-					InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindWrap.REPEAT;
-					break;
+				ValueBool = XMLUtility.ValueGetBool(ValueTextBool);
+				if(true == ValueBool)
+				{
+					/* Get Texture Wrap-Mode */
+					NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "wrapMode", ManagerNameSpace);
+					switch(NameOptions)
+					{
+						case "repeat":
+							InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.KindWrapTexture.REPEAT;
+							break;
 
-				case "mirror":
-					Debug.LogWarning("SSCE-Import Warning: Texture Wrap-Mode \"Mirror\" is not Suppoted. Force-Changed \"Clamp\" (" + FileName + ")");
-					goto case "clamp";
+						case "mirror":
+							Debug.LogWarning("SSCE-Import Warning: Texture Wrap-Mode \"Mirror\" is not Suppoted. Force-Changed \"Clamp\" (" + FileName + ")");
+							goto case "clamp";
 
-				case "clamp":
-				default:
-					InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindWrap.CLAMP;
-					break;
-			}
+						case "clamp":
+							InformationCellMap.Wrap = LibraryEditor_SpriteStudio.DataIntermediate.KindWrapTexture.CLAMP;
+							break;
 
-			/* Get Texture Filter-Mode */
-			NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "filterMode", ManagerNameSpace);
-			switch(NameOptions)
-			{
-				case "nearlest":
-					InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindFilter.NEAREST;
-					break;
+						default:
+							break;
+					}
 
-				case "linear":
-				default:
-					InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.PartsImage.KindFilter.LINEAR;
-					break;
+					/* Get Texture Filter-Mode */
+					NameOptions = XMLUtility.TextGetSelectSingleNode(NodeRoot, "filterMode", ManagerNameSpace);
+					switch(NameOptions)
+					{
+						case "nearlest":
+							InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.KindFilterTexture.NEAREST;
+							break;
+
+						case "linear":
+							InformationCellMap.Filter = LibraryEditor_SpriteStudio.DataIntermediate.KindFilterTexture.LINEAR;
+							break;
+
+						default:
+							break;
+					}
+				}
 			}
 
 			/* Get Cells */
@@ -928,9 +1008,6 @@ public static partial class LibraryEditor_SpriteStudio
 			ERROR = 0x00000000,
 			VERSION_000100  = 0x00000100,
 			VERSION_010000  = 0x00010000,
-
-			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,
 		};
 
 		/* for Parsing ".ssae" */
@@ -954,9 +1031,16 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSAE.ERROR:
-				default:
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSAE_ErrorEnd;
+
+				default:
+					if(KindVersionSSAE.VERSION_010200 < VersionCode)
+					{	/* MEMO: Dealing as the latest supported version. */
+						VersionCode = KindVersionSSAE.VERSION_010200;
+						goto case KindVersionSSAE.VERSION_010200;
+					}
+					goto case KindVersionSSAE.ERROR;
 			}
 			DataTrunk.VersionCodeSSAE = VersionCode;
 
@@ -1151,9 +1235,6 @@ public static partial class LibraryEditor_SpriteStudio
 			VERSION_010001  = 0x00010001,
 			VERSION_010002  = 0x00010002,	/* ssae ver.5.3.5 */
 			VERSION_010200  = 0x00010200,	/* ssae ver.5.5.0 beta-3 */
-
-			VERSION_REQUIRED = VERSION_000100,
-			VERSION_CURRENT = VERSION_010000,	/* VERSION_010002 */
 		};
 
 		/* Version-Code Shaping */
@@ -1349,8 +1430,17 @@ public static partial class LibraryEditor_SpriteStudio
 									/* MEMO: Attributes'-Tag always exists. */
 									string ValueTextBool = "";
 									bool ValueBool = false;
+#if false
+									/* MEMO: until "Ver.1.2.16" */
+#else
+									/* MEMO: Later than "Ver.1.2.16" */
 									DataParts.DataAnimation.Inheritance = DataIntermediate.KindInheritance.SELF;
 									DataParts.DataAnimation.FlagInheritance = DataIntermediate.FlagAttributeKeyInherit.PRESET;
+									DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_X;
+									DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.FLIP_Y;
+									DataParts.DataAnimation.FlagInheritance |= DataIntermediate.FlagAttributeKeyInherit.SHOW_HIDE;
+#endif
+
 									ValueTextBool = XMLUtility.TextGetSelectSingleNode(NodeParts, "ineheritRates/ALPH", ManagerNameSpace);
 									if(null != ValueTextBool)
 									{
@@ -2445,6 +2535,18 @@ public static partial class LibraryEditor_SpriteStudio
 		internal readonly static string NameExtensionPrefab = "prefab";
 		internal readonly static string NameExtensionAnimation = "asset";
 
+		internal enum KindWrapTexture
+		{
+			CLAMP = 0,
+			REPEAT,
+			MIRROR,
+		}
+		internal enum KindFilterTexture
+		{
+			NEAREST = 0,
+			LINEAR,
+		}
+
 		/* Animation-Parts Trunk */
 		internal class TrunkParts
 		{
@@ -2642,11 +2744,19 @@ public static partial class LibraryEditor_SpriteStudio
 							RateScaleMesh.y *= 1.0f;
 						}
 					}
+#if false
 					if((null != DataPlain.AnimationDataTextureScale) && (0 < DataPlain.AnimationDataTextureScale.Length))
 					{
 						RateScaleTexture.x *= DataPlain.AnimationDataTextureScale[FrameNo].x;
 						RateScaleTexture.y *= DataPlain.AnimationDataTextureScale[FrameNo].y;
 					}
+#else
+					if((null != DataPlain.AnimationDataTextureExpand) && (0 < DataPlain.AnimationDataTextureExpand.Length))
+					{
+						RateScaleTexture.x *= DataPlain.AnimationDataTextureExpand[FrameNo].x;
+						RateScaleTexture.y *= DataPlain.AnimationDataTextureExpand[FrameNo].y;
+					}
+#endif
 
 					/* Calculate Matrix-Texture */
 					float Rotate = 0.0f;
@@ -2668,7 +2778,7 @@ public static partial class LibraryEditor_SpriteStudio
 													(RectCell.height / SizeTexture.y) * RateScaleTexture.y,
 													1.0f
 												);
-					Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, Rotate);
+					Quaternion Rotation = Quaternion.Euler(0.0f, 0.0f, -Rotate);
 					MatrixTexture = Matrix4x4.TRS(Translation, Rotation, Scaling);
 
 					/* Set Vertex-Datas */
@@ -3204,11 +3314,11 @@ public static partial class LibraryEditor_SpriteStudio
 								Importer.fadeout = false;
 								switch(ListImage[TextureInformation.IndexImage].Filter)
 								{
-									case PartsImage.KindFilter.NEAREST:
+									case KindFilterTexture.NEAREST:
 										Importer.filterMode = FilterMode.Point;
 										break;
 
-									case PartsImage.KindFilter.LINEAR:
+									case KindFilterTexture.LINEAR:
 									default:
 										Importer.filterMode = FilterMode.Bilinear;
 										break;
@@ -3227,12 +3337,12 @@ public static partial class LibraryEditor_SpriteStudio
 								Importer.textureType  = TextureImporterType.Advanced;
 								switch(ListImage[TextureInformation.IndexImage].Wrap)
 								{
-									case PartsImage.KindWrap.REPEAT:
+									case KindWrapTexture.REPEAT:
 										Importer.wrapMode = TextureWrapMode.Repeat;
 										break;
 
-									case PartsImage.KindWrap.MIRROR:
-									case PartsImage.KindWrap.CLAMP:
+									case KindWrapTexture.MIRROR:
+									case KindWrapTexture.CLAMP:
 									default:
 										Importer.wrapMode = TextureWrapMode.Clamp;
 										break;
@@ -3409,6 +3519,7 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					ListDataRuntime[i].ConvertPass1to2(ref DataSettingImport);
 				}
+
 				return(true);
 			}
 
@@ -5634,28 +5745,16 @@ public static partial class LibraryEditor_SpriteStudio
 		}
 		internal struct PartsImage
 		{
-			internal enum KindWrap
-			{
-				CLAMP = 0,
-				REPEAT,
-				MIRROR,
-			}
-			internal enum KindFilter
-			{
-				NEAREST = 0,
-				LINEAR,
-			}
-
 			internal string FileName;
-			internal KindWrap Wrap;
-			internal KindFilter Filter;
+			internal DataIntermediate.KindWrapTexture Wrap;
+			internal DataIntermediate.KindFilterTexture Filter;
 			internal Hashtable CellArea;
 
 			internal void CleanUp()
 			{
 				FileName = "";
-				Wrap = KindWrap.CLAMP;
-				Filter = KindFilter.LINEAR;
+				Wrap = DataIntermediate.KindWrapTexture.CLAMP;
+				Filter = DataIntermediate.KindFilterTexture.LINEAR;
 				CellArea = null;
 			}
 		}

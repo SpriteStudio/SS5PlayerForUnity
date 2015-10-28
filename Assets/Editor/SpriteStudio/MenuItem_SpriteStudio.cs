@@ -19,6 +19,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	static private bool FlagGetMaterialPartsRoot = true;
 	static private bool FlagGetTextureMaterial = true;
 	static private bool FlagDataCalculateInAdvance = true;
+	static private bool FlagDataCompress = true;
 
 	[MenuItem("Tools/SpriteStudio/Import SS5(sspj)")]
 	static void OpenWindow()
@@ -37,7 +38,13 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		EditorGUILayout.LabelField(" Checked: Improving execution speed of the runtime.");
 		EditorGUILayout.LabelField(" Unchecked: The data size is reduced.");
 		EditorGUILayout.Space();
+		FlagDataCompress = EditorGUILayout.Toggle("Compress", FlagDataCompress);
+		EditorGUILayout.LabelField(" Compress animation data at importing.");
+		EditorGUILayout.LabelField(" Checked: Compress.");
+		EditorGUILayout.LabelField(" Unchecked: Uncompress. CPU-Load is reduced.");
 		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+
 		FlagAttachControlGameObject = EditorGUILayout.Toggle("Create Control-Prefab", FlagAttachControlGameObject);
 		EditorGUILayout.LabelField(" Control-Prefab is GameObject attached the script");
 		EditorGUILayout.LabelField("    for \"Auto-Developping Body-Data-Prefab (Script_LinkPrefab.cs)\".");
@@ -86,6 +93,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			SettingImport.FlagGetMaterialPartsRoot = FlagGetMaterialPartsRoot;
 			SettingImport.FlagGetTextureMaterial = FlagGetTextureMaterial;
 			SettingImport.FlagDataCalculateInAdvance = FlagDataCalculateInAdvance;
+			SettingImport.FlagDataCompress = FlagDataCompress;
 			LibraryEditor_SpriteStudio.Menu.ImportSSPJ(SettingImport);
 
 			Close();
@@ -117,7 +125,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.2.16";
+		string VersionText = "1.2.29";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
