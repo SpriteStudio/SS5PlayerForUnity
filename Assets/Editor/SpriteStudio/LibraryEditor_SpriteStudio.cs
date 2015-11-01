@@ -5148,7 +5148,7 @@ public static partial class LibraryEditor_SpriteStudio
 				int CountKeyFrame = DataOriginalArray.Count;
 				int IndexAnimationStart;
 				int IndexAnimationEnd;
-				
+
 				for(int i=0; i<CountKeyFrame; i++)
 				{
 					/* Get Key-Frames */
@@ -5180,10 +5180,20 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
+#if false
+						/* MEMO: until Ver.1.2.29 */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
+#else
+						/* MEMO: after Ver.1.2.30 */
+						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
+						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataEnd.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+#endif
 					}
 				}
 			}
@@ -5233,10 +5243,20 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
+#if false
+						/* MEMO: until Ver.1.2.29 */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
+#else
+						/* MEMO: after Ver.1.2.30 */
+						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
+						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataEnd.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+#endif
 					}
 				}
 			}
@@ -5285,11 +5305,21 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 					else
 					{	/* Same Animation */
+#if false
+						/* MEMO: until Ver.1.2.29 */
 						/* Range-Fill (Not Interpolation) */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
+#else
+						/* MEMO: after Ver.1.2.30 */
+						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
+						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataEnd.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+#endif
 					}
 				}
 			}
@@ -5339,10 +5369,20 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
+#if false
+						/* MEMO: until Ver.1.2.29 */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
+#else
+						/* MEMO: after Ver.1.2.30 */
+						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
+						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataEnd.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+#endif
 					}
 				}
 			}
@@ -5392,10 +5432,20 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
+#if false
+						/* MEMO: until Ver.1.2.29 */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
+#else
+						/* MEMO: after Ver.1.2.30 */
+						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
+						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
+						{
+							DataOutput[j].Flag = (true == DataEnd.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
+						}
+#endif
 					}
 				}
 			}
