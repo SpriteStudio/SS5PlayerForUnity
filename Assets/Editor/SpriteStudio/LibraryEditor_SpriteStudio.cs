@@ -5180,14 +5180,14 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
-#if false
-						/* MEMO: until Ver.1.2.29 */
+#if true
+						/* MEMO: until Ver.1.2.29 & after Ver.1.2.29b(1.2.31) */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
 #else
-						/* MEMO: after Ver.1.2.30 */
+						/* MEMO: only Ver.1.2.30 */
 						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
 						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
 						{
@@ -5243,14 +5243,14 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
-#if false
-						/* MEMO: until Ver.1.2.29 */
+#if true
+						/* MEMO: until Ver.1.2.29 & after Ver.1.2.29b(1.2.31) */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
 #else
-						/* MEMO: after Ver.1.2.30 */
+						/* MEMO: only Ver.1.2.30 */
 						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
 						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
 						{
@@ -5305,15 +5305,15 @@ public static partial class LibraryEditor_SpriteStudio
 					}
 					else
 					{	/* Same Animation */
-#if false
-						/* MEMO: until Ver.1.2.29 */
+#if true
+						/* MEMO: until Ver.1.2.29 & after Ver.1.2.29b(1.2.31) */
 						/* Range-Fill (Not Interpolation) */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
 #else
-						/* MEMO: after Ver.1.2.30 */
+						/* MEMO: only Ver.1.2.30 */
 						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
 						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
 						{
@@ -5369,14 +5369,14 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
-#if false
-						/* MEMO: until Ver.1.2.29 */
+#if true
+						/* MEMO: until Ver.1.2.29 & after Ver.1.2.29b(1.2.31) */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
 #else
-						/* MEMO: after Ver.1.2.30 */
+						/* MEMO: only Ver.1.2.30 */
 						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
 						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
 						{
@@ -5432,14 +5432,14 @@ public static partial class LibraryEditor_SpriteStudio
 					else
 					{	/* Same Animation */
 						/* Range-Fill (Not Interpolation) */
-#if false
-						/* MEMO: until Ver.1.2.29 */
+#if true
+						/* MEMO: until Ver.1.2.29 & after Ver.1.2.29b(1.2.31) */
 						for(int j=DataStart.Time; j<=DataEnd.Time; j++)
 						{
 							DataOutput[j].Flag = (true == DataStart.Value) ? (DataOutput[j].Flag | ValueFlag) : (DataOutput[j].Flag & ~ValueFlag);
 						}
 #else
-						/* MEMO: after Ver.1.2.30 */
+						/* MEMO: only Ver.1.2.30 */
 						DataOutput[DataStart.Time].Flag = (true == DataStart.Value) ? (DataOutput[DataStart.Time].Flag | ValueFlag) : (DataOutput[DataStart.Time].Flag & ~ValueFlag);
 						for(int j=(DataStart.Time + 1); j<=DataEnd.Time; j++)
 						{
