@@ -4,14 +4,9 @@
 //	Copyright(C) Web Technology Corp.
 //	All rights reserved.
 //
-Shader "Custom/SpriteStudio5/Sub" {
+Shader "Custom/SpriteStudio5/Effect/Add" {
 	Properties	{
 		_MainTex ("Base (RGB)", 2D) = "white" {}
-		_OverlayParameter_Non ("Parameter(Non)", Vector) = (1.0, 0.0, -1.0, 0.0)
-		_OverlayParameter_Mix ("Parameter(Mix)", Vector) = (1.0, 1.0, -1.0, 1.0)
-		_OverlayParameter_Add ("Parameter(Add)", Vector) = (1.0, 0.0, -1.0, 1.0)
-		_OverlayParameter_Sub ("Parameter(Sub)", Vector) = (1.0, 0.0, -1.0, -1.0)
-		_OverlayParameter_Mul ("Parameter(Mul)", Vector) = (1.0, 1.0, 1.0, 1.0)
 	}
 
 	SubShader	{
@@ -29,7 +24,6 @@ Shader "Custom/SpriteStudio5/Sub" {
 			ZTest LEqual
 			ZWRITE Off
 
-			BlendOp RevSub
 			Blend SrcAlpha One
 
 			CGPROGRAM
@@ -38,9 +32,9 @@ Shader "Custom/SpriteStudio5/Sub" {
 
 			#include "UnityCG.cginc"
 
-			#include "Base/ShaderVertex_Sprite_SpriteStudio.cginc"
+			#include "Base/ShaderVertex_Particle_SpriteStudio.cginc"
 
-			#include "Base/ShaderPixel_Sprite_SpriteStudio.cginc"
+			#include "Base/ShaderPixel_Particle_SpriteStudio.cginc"
 
 			ENDCG
 

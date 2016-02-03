@@ -20,7 +20,7 @@ public sealed class MenuItem_SpriteStudio_Sample_BatchImport : EditorWindow
 	{
 		EditorWindow.GetWindow<MenuItem_SpriteStudio_Sample_BatchImport>(true, "OPTPiX SpriteStudio BatchImport-Sample");
 	}
-    void OnGUI()
+	void OnGUI()
 	{
 		if(true == GUILayout.Button("Choose List-File & Import"))
 		{
