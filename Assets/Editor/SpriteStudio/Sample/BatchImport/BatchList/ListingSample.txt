@@ -7,7 +7,7 @@
 *	Copyright(C) Web Technology Corp. 
 *	All rights reserved.
 * 
-
+* 
 * ------------------------------------------
 * [Usage]
 * 
@@ -28,6 +28,36 @@
 * 
 * [Instructions] (Line that has been described is "?" at the beginning of a line)
 * ---------------------
+* NameBaseFolderAsset > AssetFolderName
+*   AssetFolderName ... Imported datas are Base-Asset-folder.
+*                       default == Selected Folder in "Project".
+* 
+* Imported datas will be stored under this Asset-Folder.
+* 
+* ex:
+* NameBaseFolderAsset > Assets/SS5PU_Data
+*
+* ---------------------
+* NameBaseFolderSS5Data > FolderName
+*   FolderName ... Reference folder of the file(sspj) you want to import.
+*                  default == "" (Empty)
+* 
+* It becomes Base-Folder of files that have been described in the list.
+* 
+* ex:
+* NameBaseFolderSS5Data > E://SS5Data
+* 
+* ---------------------
+* FlagNameDataRuleOld > Flag
+*   Flag ... true / false (bool)
+*            default == true
+* 
+* This is the same function as "Naming Old Rule" in the import settings.
+* 
+* ex.
+* FlagNameDataRuleOld > false
+* 
+* ---------------------
 * TextureSizePixelMaximum > PixelSize
 *   PixelSize ... Max Texture Pixel-Size (int)
 *                 default == 8192
@@ -35,6 +65,56 @@
 * ex.
 * TextureSizePixelMaximum > 4096
 * 
+* ---------------------
+* FlagAttachControlGameObject > Flag
+*   Flag ... true / false (bool)
+*            default == true
+* 
+* This is the same function as "Create Control-Prefab" in the import settings.
+* 
+* ex:
+* FlagAttachControlGameObject > false
+* 
+* ---------------------
+* FlagCreateProjectFolder > Flag
+*   Flag ... true / false (bool)
+*            default == true
+* 
+* This is the same function as "Create Project Folder" in the import settings.
+* 
+* ex:
+* FlagConfirmOverWrite > false
+* 
+* ---------------------
+* FlagDataCalculateInAdvance > Flag
+*   Flag ... true / false (bool)
+*            default == false
+*
+* This is the same function as "Calculate in advance" in the import settings.
+*
+* ex:
+* FlagDataCalculateInAdvance > false
+*
+* ---------------------
+* FlagDataCompress > Flag
+*   Flag ... true / false (bool)
+*            default == true
+*
+* This is the same function as "Compress" in the import settings.
+*
+* ex:
+* FlagDataCompress > true
+*
+* ---------------------
+* FlagDataTakeOverSettingPrefab > Flag
+*   Flag ... true / false (bool)
+*            default == false
+*
+* This is the same function as "Take over setting" in the import settings.
+*
+* ex:
+* FlagDataTakeOverSettingPrefab > false
+*
 * ---------------------
 * CollisionThicknessZ > ValueZ
 *   ValueZ ... Z-Axis Collision Thickness (float)
@@ -56,55 +136,85 @@
 * FlagAttachRigidBody > true
 * 
 * ---------------------
-* FlagAttachControlGameObject > Flag
-*   Flag ... true / false (bool)
-*            default == true
-* 
-* This is the same function as "Create Control-Prefab" in the import settings.
-* 
-* ex:
-* FlagAttachControlGameObject > false
-* 
-* ---------------------
 * FlagConfirmOverWrite > Flag
 *   Flag ... true / false (bool)
 *            default == false
 * 
-* This is the same function as "Confirm Overwrite-Prefab" in the import settings.
+* This is the same function as "Confirm Overwrite" in the import settings.
 * 
 * ex:
 * FlagConfirmOverWrite > false
 * 
 * ---------------------
-* FlagCreateProjectFolder > Flag
+* FlagConfirmOverWriteRoot > Flag
 *   Flag ... true / false (bool)
-*            default == true
+*            default == false
 * 
-* This is the same function as "Create Project Folder" in the import settings.
+* This is the same function as "Root"(Additional "Confirm Overwrite") in the import settings.
 * 
 * ex:
-* FlagConfirmOverWrite > false
+* FlagConfirmOverWriteRoot > false
 * 
 * ---------------------
-* NameBaseFolderSS5Data > FolderName
-*   FolderName ... Reference folder of the file(sspj) you want to import.
-*                  default == "" (Empty)
+* FlagConfirmOverWriteRootEffect > Flag
+*   Flag ... true / false (bool)
+*            default == false
 * 
-* It becomes Base-Folder of files that have been described in the list.
+* This is the same function as "RootEffect"(Additional "Confirm Overwrite") in the import settings.
 * 
 * ex:
-* NameBaseFolderSS5Data > E://SS5Data
+* FlagConfirmOverWriteRootEffect > false
 * 
 * ---------------------
-* NameBaseFolderSS5Data > AssetFolderName
-*   AssetFolderName ... Imported datas are Base-Asset-folder.
-*                       default == Selected Folder in "Project".
+* FlagConfirmOverWriteDataCellMap > Flag
+*   Flag ... true / false (bool)
+*            default == false
 * 
-* Imported datas will be stored under this Asset-Folder.
+* This is the same function as "Fixed-CellMap Data"(Additional "Confirm Overwrite") in the import settings.
 * 
 * ex:
-* NameBaseFolderAsset > Assets/SS5PU_Data
-*
+* FlagConfirmOverWriteDataCellMap > true
+* 
+* ---------------------
+* FlagConfirmOverWriteDataAnimation > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Fixed-Animation Data"(Additional "Confirm Overwrite") in the import settings.
+* 
+* ex:
+* FlagConfirmOverWriteDataAnimation > false
+* 
+* ---------------------
+* FlagConfirmOverWriteDataEffect > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Fixed-Effect Data"(Additional "Confirm Overwrite") in the import settings.
+* 
+* ex:
+* FlagConfirmOverWriteDataEffect > true
+* 
+* ---------------------
+* FlagConfirmOverWriteMaterial > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Material"(Additional "Confirm Overwrite") in the import settings.
+* 
+* ex:
+* FlagConfirmOverWriteMaterial > true
+* 
+* ---------------------
+* FlagConfirmOverWriteTexture > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Texture"(Additional "Confirm Overwrite") in the import settings.
+* 
+* ex:
+* FlagConfirmOverWriteTexture > false
+* 
 * ---------------------
 * FlagGetAnimationReferencedPartsRoot > Flag
 *   Flag ... true / false (bool)
@@ -114,6 +224,16 @@
 *
 * ex:
 * FlagGetAnimationReferencedPartsRoot > false
+*
+* ---------------------
+* FlagGetCellMapReferencedPartsRoot > Flag
+*   Flag ... true / false (bool)
+*            default == true
+*
+* This is the same function as "Fixed-CellMap Data" in the import settings.
+*
+* ex:
+* FlagGetCellMapReferencedPartsRoot > false
 *
 * ---------------------
 * FlagGetMaterialPartsRoot > Flag
@@ -134,26 +254,6 @@
 *
 * ex:
 * FlagGetTextureMaterial > false
-*
-* ---------------------
-* FlagDataCalculateInAdvance > Flag
-*   Flag ... true / false (bool)
-*            default == true
-*
-* This is the same function as "Calculate in advance" in the import settings.
-*
-* ex:
-* FlagDataCalculateInAdvance > false
-*
-* ---------------------
-* FlagDataCompress > Flag
-*   Flag ... true / false (bool)
-*            default == false
-*
-* This is the same function as "Compress" in the import settings.
-*
-* ex:
-* FlagDataCompress > true
 *
 * ------------------------------------------
 *

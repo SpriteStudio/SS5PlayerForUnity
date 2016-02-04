@@ -37,7 +37,7 @@ Shader "Custom/SpriteStudio5/Mul" {
 
 			#include "UnityCG.cginc"
 
-			#include "Base/ShaderVertex_SpriteStudio.cginc"
+			#include "Base/ShaderVertex_Sprite_SpriteStudio.cginc"
 
 //			#include "Base/ShaderPixel_Sprite_SpriteStudio.cginc"
 			#define	LIMIT_ALPHA	0.0038
