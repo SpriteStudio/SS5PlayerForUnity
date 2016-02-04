@@ -28,19 +28,29 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 		public static bool ImportSSPJBatch(string FileImportList)
 		{
 			/* Create SSPJ Import-Setting */
-			/* MEMO: Default-Values are same SSPJ-Importer's Default. (except "FlagConfirmOverWrite") */
+			/* MEMO: Default-Values are same SSPJ-Importer's Default. (except "FlagConfirmOverWriteXXX") */
 			LibraryEditor_SpriteStudio.SettingImport DataSettingImport = new LibraryEditor_SpriteStudio.SettingImport();
-			DataSettingImport.TextureSizePixelMaximum = 8192;
+			DataSettingImport.FlagNameDataRuleOld = true;
+			DataSettingImport.TextureSizePixelMaximum = 4096;
+			DataSettingImport.FlagAttachControlGameObject = true;
+			DataSettingImport.FlagCreateProjectFolder = true;
+			DataSettingImport.FlagDataCalculateInAdvance = false;
+			DataSettingImport.FlagDataCompress = true;
+			DataSettingImport.FlagDataTakeOverSettingPrefab = false;
 			DataSettingImport.CollisionThicknessZ = 1.0f;
 			DataSettingImport.FlagAttachRigidBody = true;
-			DataSettingImport.FlagAttachControlGameObject = true;
-			DataSettingImport.FlagConfirmOverWrite = false;		/* Caution!: This item is different */
-			DataSettingImport.FlagCreateProjectFolder = true;
+			DataSettingImport.FlagConfirmOverWrite = false;					/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteRoot = false;				/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteRootEffect = false;		/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteDataCellMap = false;		/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteDataAnimation = false;	/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteDataEffect = false;		/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteMaterial = false;			/* Caution!: This item is different */
+			DataSettingImport.FlagConfirmOverWriteTexture = false;			/* Caution!: This item is different */
 			DataSettingImport.FlagGetAnimationReferencedPartsRoot = true;
+			DataSettingImport.FlagGetCellMapReferencedPartsRoot = true;
 			DataSettingImport.FlagGetMaterialPartsRoot = true;
 			DataSettingImport.FlagGetTextureMaterial = true;
-			DataSettingImport.FlagDataCalculateInAdvance = true;
-			DataSettingImport.FlagDataCompress = false;		/* Caution!: This item is different */
 
 			UnityEngine.Object ObjectSelected = Selection.activeObject;
 			if(null == ObjectSelected)
@@ -106,23 +116,33 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 		private readonly static char[] TextSeparatorCommand = new char[] { '>' };
 
 		/* Command-Names for Setting-Changing */
-		private const string CommandTextureSizePixelMaximum = "TextureSizePixelMaximum";
-
-		private const string CommandCollisionThicknessZ = "CollisionThicknessZ";
-		private const string CommandFlagAttachRigidBody = "FlagAttachRigidBody";
-		private const string CommandFlagAttachControlGameObject = "FlagAttachControlGameObject";
-		private const string CommandFlagConfirmOverWrite = "FlagConfirmOverWrite";
-		private const string CommandFlagCreateProjectFolder = "FlagCreateProjectFolder";
-
-		private const string CommandFlagGetAnimationReferencedPartsRoot = "FlagGetAnimationReferencedPartsRoot";
-		private const string CommandFlagGetMaterialPartsRoot = "FlagGetMaterialPartsRoot";
-		private const string CommandFlagGetTextureMaterial = "FlagGetTextureMaterial";
-
 		private const string CommandNameBaseFolderSS5Data = "NameBaseFolderSS5Data";
 		private const string CommandNameBaseFolderAsset = "NameBaseFolderAsset";
 
+		private const string CommandFlagNameDataRuleOld = "FlagNameDataRuleOld";
+		private const string CommandTextureSizePixelMaximum = "TextureSizePixelMaximum";
+		private const string CommandFlagAttachControlGameObject = "FlagAttachControlGameObject";
+		private const string CommandFlagCreateProjectFolder = "FlagCreateProjectFolder";
 		private const string CommandFlagDataCalculateInAdvance = "FlagDataCalculateInAdvance";
 		private const string CommandFlagDataCompress = "FlagDataCompress";
+		private const string CommandFlagDataTakeOverSettingPrefab = "FlagDataTakeOverSettingPrefab";
+
+		private const string CommandCollisionThicknessZ = "CollisionThicknessZ";
+		private const string CommandFlagAttachRigidBody = "FlagAttachRigidBody";
+
+		private const string CommandFlagConfirmOverWrite = "FlagConfirmOverWrite";
+		private const string CommandFlagConfirmOverWriteRoot = "FlagConfirmOverWriteRoot";
+		private const string CommandFlagConfirmOverWriteRootEffect = "FlagConfirmOverWriteRootEffect";
+		private const string CommandFlagConfirmOverWriteDataCellMap = "FlagConfirmOverWriteDataCellMap";
+		private const string CommandFlagConfirmOverWriteDataAnimation = "FlagConfirmOverWriteDataAnimation";
+		private const string CommandFlagConfirmOverWriteDataEffect = "FlagConfirmOverWriteDataEffect";
+		private const string CommandFlagConfirmOverWriteMaterial = "FlagConfirmOverWriteMaterial";
+		private const string CommandFlagConfirmOverWriteTexture = "FlagConfirmOverWriteTexture";
+
+		private const string CommandFlagGetAnimationReferencedPartsRoot = "FlagGetAnimationReferencedPartsRoot";
+		private const string CommandFlagGetCellMapReferencedPartsRoot = "FlagGetCellMapReferencedPartsRoot";
+		private const string CommandFlagGetMaterialPartsRoot = "FlagGetMaterialPartsRoot";
+		private const string CommandFlagGetTextureMaterial = "FlagGetTextureMaterial";
 
 		private const string TextTrue = "true";
 		private const string TextFalse = "false";
@@ -143,10 +163,49 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 			/* Command Decoding */
 			switch(TextCommand)
 			{
+				case CommandNameBaseFolderAsset:	/* NameBaseFolderAsset */
+					/* NameBaseFolderAsset [Base Asset-Folder Name] */
+					TextParameter = String.Copy(Arguments[1]);
+					NameBaseFolderAsset = TextTrim(TextParameter);
+					break;
+
+				case CommandNameBaseFolderSS5Data:	/* NameBaseFolderSS5Data */
+					/* NameBaseFolderSS5Data [Base Folder Name] */
+					TextParameter = String.Copy(Arguments[1]);
+					NameBaseFolderSS5Data = TextTrim(TextParameter);
+					break;
+
 				case CommandTextureSizePixelMaximum:	/* TextureSizePixelMaximum */
 					/* TextureSizePixelMaximum [value] */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.TextureSizePixelMaximum = IntGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagAttachControlGameObject:	/* FlagAttachControlGameObject */
+					/* FlagAttachControlGameObject [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagAttachControlGameObject = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagCreateProjectFolder:	/* FlagCreateProjectFolder */
+					/* FlagCreateProjectFolder [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagCreateProjectFolder = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagDataCalculateInAdvance:	/* FlagDataCalculateInAdvance */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagDataCalculateInAdvance = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagDataCompress:	/* FlagDataCompress */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagDataCompress = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagDataTakeOverSettingPrefab:	/* FlagDataTakeOverSettingPrefab */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagDataTakeOverSettingPrefab = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandCollisionThicknessZ:	/* CollisionThicknessZ */
@@ -161,27 +220,62 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 					DataSettingImport.FlagAttachRigidBody = FlagGetChangeSetting(TextParameter);
 					break;
 
-				case CommandFlagAttachControlGameObject:	/* FlagAttachControlGameObject */
-					/* FlagAttachControlGameObject [true/false] */
-					TextParameter = String.Copy(Arguments[1]);
-					DataSettingImport.FlagAttachControlGameObject = FlagGetChangeSetting(TextParameter);
-					break;
-
 				case CommandFlagConfirmOverWrite:	/* FlagConfirmOverWrite */
 					/* FlagConfirmOverWrite [true/false] */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.FlagConfirmOverWrite = FlagGetChangeSetting(TextParameter);
 					break;
 
-				case CommandFlagCreateProjectFolder:	/* FlagCreateProjectFolder */
-					/* FlagCreateProjectFolder [true/false] */
+				case CommandFlagConfirmOverWriteRoot:	/* FlagConfirmOverWriteRoot */
+					/* FlagConfirmOverWriteRoot [true/false] */
 					TextParameter = String.Copy(Arguments[1]);
-					DataSettingImport.FlagCreateProjectFolder = FlagGetChangeSetting(TextParameter);
+					DataSettingImport.FlagConfirmOverWriteRoot = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagConfirmOverWriteRootEffect:	/* FlagConfirmOverWriteRootEffect */
+					/* FlagConfirmOverWriteRootEffect [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagConfirmOverWriteRootEffect = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagConfirmOverWriteDataCellMap:	/* FlagConfirmOverWriteDataCellMap */
+					/* FlagConfirmOverWriteDataCellMap [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagConfirmOverWriteDataCellMap = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagConfirmOverWriteDataAnimation:	/* FlagConfirmOverWriteDataAnimation */
+					/* FlagConfirmOverWriteDataAnimation [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagConfirmOverWriteDataAnimation = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagConfirmOverWriteDataEffect:	/* FlagConfirmOverWriteDataEffect */
+					/* FlagConfirmOverWriteDataEffect [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagConfirmOverWriteDataEffect = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagConfirmOverWriteMaterial:	/* FlagConfirmOverWriteMaterial */
+					/* FlagConfirmOverWriteMaterial [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagConfirmOverWriteMaterial = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagConfirmOverWriteTexture:	/* FlagConfirmOverWriteTexture */
+					/* FlagConfirmOverWriteTexture [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagConfirmOverWriteTexture = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandFlagGetAnimationReferencedPartsRoot:	/* FlagGetAnimationReferencedPartsRoot */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.FlagGetAnimationReferencedPartsRoot = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagGetCellMapReferencedPartsRoot:	/* FlagGetCellMapReferencedPartsRoot */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagGetCellMapReferencedPartsRoot = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandFlagGetMaterialPartsRoot:	/* FlagGetMaterialPartsRoot */
@@ -192,28 +286,6 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 				case CommandFlagGetTextureMaterial:	/* FlagGetTextureMaterial */
 					TextParameter = String.Copy(Arguments[1]);
 					DataSettingImport.FlagGetTextureMaterial = FlagGetChangeSetting(TextParameter);
-					break;
-
-				case CommandFlagDataCalculateInAdvance:	/* FlagDataCalculateInAdvance */
-					TextParameter = String.Copy(Arguments[1]);
-					DataSettingImport.FlagDataCalculateInAdvance = FlagGetChangeSetting(TextParameter);
-					break;
-
-				case CommandFlagDataCompress:	/* FlagDataCompress */
-					TextParameter = String.Copy(Arguments[1]);
-					DataSettingImport.FlagDataCompress = FlagGetChangeSetting(TextParameter);
-					break;
-
-				case CommandNameBaseFolderSS5Data:	/* NameBaseFolderSS5Data */
-					/* NameBaseFolderSS5Data [Base Folder Name] */
-					TextParameter = String.Copy(Arguments[1]);
-					NameBaseFolderSS5Data = TextTrim(TextParameter);
-					break;
-
-				case CommandNameBaseFolderAsset:	/* NameBaseFolderAsset */
-					/* NameBaseFolderAsset [Base Asset-Folder Name] */
-					TextParameter = String.Copy(Arguments[1]);
-					NameBaseFolderAsset = TextTrim(TextParameter);
 					break;
 
 				default:	/* Command Error */
