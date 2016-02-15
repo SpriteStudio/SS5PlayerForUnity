@@ -4,7 +4,7 @@
 //	Copyright(C) Web Technology Corp.
 //	All rights reserved.
 //
-Shader "Custom/SpriteStudio5/Effect/Add" {
+Shader "Custom/SpriteStudio5/Effect/Add2"	{
 	Properties	{
 		_MainTex ("Base (RGB)", 2D) = "white" {}
 	}
@@ -17,7 +17,7 @@ Shader "Custom/SpriteStudio5/Effect/Add" {
 		}
 
 		Pass	{
-			// MEMO: Blend "Add", "PreMultiplied-Alpha"
+			// MEMO: Blend "Add", "Straight-Alpha"
 			Lighting Off
 			Fog { Mode off }
 
@@ -26,7 +26,6 @@ Shader "Custom/SpriteStudio5/Effect/Add" {
 			ZWRITE Off
 
 			Blend SrcAlpha One
-//			Blend SrcColor One
 
 			CGPROGRAM
 			#pragma vertex VS_main
@@ -36,22 +35,7 @@ Shader "Custom/SpriteStudio5/Effect/Add" {
 
 			#include "Base/ShaderVertex_Particle_SpriteStudio.cginc"
 
-//			#include "Base/ShaderPixel_Particle_SpriteStudio.cginc"
-			#define	LIMIT_ALPHA	0.0038
-			sampler2D	_MainTex;
-			fixed4	PS_main(InputPS Input) : COLOR0
-			{
-				fixed4	Output;
-
-				fixed4	Pixel = tex2D(_MainTex, Input.Texture00UV.xy);
-				Pixel *= Input.ColorMain;
-				Pixel *= Pixel.a;
-//				Pixel.a = 1.0f;
-				Output = Pixel;
-
-				return(Output);
-			}
-
+			#include "Base/ShaderPixel_Particle_SpriteStudio.cginc"
 			ENDCG
 
 			SetTexture [_MainTex]	{
