@@ -736,6 +736,7 @@ public static partial class Library_SpriteStudio
 						ListNew.MeshDataTop = DataNext;
 						ListNew.MeshDataLast = MeshDataLast;
 						ListNew.PriorityMinimum = DataNext.Priority;
+						ListNew.PriorityMaximum = PriorityMaximum;
 
 						Count -= ListNew.Count;
 						if(null == DataPrevious)
@@ -749,7 +750,6 @@ public static partial class Library_SpriteStudio
 						{
 							DataPrevious.ChainNext = null;
 							MeshDataLast = DataPrevious;
-							ListNew.PriorityMaximum = PriorityMaximum;
 							PriorityMaximum = DataPrevious.Priority;
 						}
 						return(ListNew);
