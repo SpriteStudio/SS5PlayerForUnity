@@ -2247,6 +2247,56 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssee") : "";
 			}
 
+			/* Color-Label Get */
+			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "colorLabel", ManagerNameSpace);
+			if(null == ValueText)
+			{
+				InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
+			}
+			else
+			{
+				switch(ValueText)
+				{
+					case "Red":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.RED;
+						break;
+
+					case "Orange":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.ORANGE;
+						break;
+
+					case "Yellow":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.YELLOW;
+						break;
+
+					case "Green":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.GREEN;
+						break;
+
+					case "Blue":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.BLUE;
+						break;
+
+					case "Violet":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.VIOLET;
+						break;
+
+					case "Gray":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.GRAY;
+						break;
+
+					default:
+						Debug.LogWarning("SSAE-Import Warning: Parts["
+											+ InformationParts.ID.ToString()
+											+ "] Invalid Color-Label Kind.: "
+											+ ValueText
+										);
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
+						break;
+				}
+			}
+
+
 			return(InformationParts);
 
 		ParseOPSS_InformationSSAEParts_ErrorEnd:;
@@ -4742,6 +4792,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 				InformationPartsRuntime.Kind = InformationParts.Kind;	/* Not firm */
 				InformationPartsRuntime.KindBlendTarget = InformationParts.KindBlendTarget;
+				InformationPartsRuntime.KindLabelColor = InformationParts.KindLabelColor;
 				InformationPartsRuntime.KindShapeCollision = InformationParts.KindShapeCollision;
 				InformationPartsRuntime.SizeCollisionZ = InformationParts.SizeCollisionZ;
 

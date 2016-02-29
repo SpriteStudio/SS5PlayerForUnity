@@ -97,6 +97,18 @@ public static partial class Library_SpriteStudio
 
 		TERMINATOR,
 	}
+	public enum KindColorLabel
+	{
+		NON = 0,
+
+		RED = 1,
+		ORANGE,
+		YELLOW,
+		GREEN,
+		BLUE,
+		VIOLET,
+		GRAY,
+	}
 	public enum KindColorBound
 	{
 		NON = 0,
@@ -361,6 +373,7 @@ public static partial class Library_SpriteStudio
 
 			public Library_SpriteStudio.KindParts Kind;
 			public Library_SpriteStudio.KindColorOperation KindBlendTarget;
+			public Library_SpriteStudio.KindColorLabel KindLabelColor;
 
 			public Library_SpriteStudio.KindCollision KindShapeCollision;
 			public float SizeCollisionZ;
@@ -377,6 +390,7 @@ public static partial class Library_SpriteStudio
 
 				Kind = Library_SpriteStudio.KindParts.NON;
 				KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
+				KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
 
 				KindShapeCollision = Library_SpriteStudio.KindCollision.NON;
 				SizeCollisionZ = 0.0f;
