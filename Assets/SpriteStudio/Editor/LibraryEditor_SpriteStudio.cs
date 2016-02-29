@@ -1,4 +1,4 @@
-/**
+﻿/**
 	SpriteStudio5 Player for Unity
 
 	Copyright(C) Web Technology Corp. 
@@ -18,7 +18,7 @@ public static partial class LibraryEditor_SpriteStudio
 {
 	/* Default Shaders' Data */
 	private readonly static int ShaderOperationMax = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;				/* Excluded "NON" */
-	private readonly static int ShaderOperationMaxEffect = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1;	/* Excluded "NON" */
+	private readonly static int ShaderOperationMaxEffect = (int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1;	/* Excluded "NON" */
 
 	/* Default Asset-File Folders & Extensions */
 	internal readonly static string NamePathSubImportTexture = "Texture";
@@ -1015,12 +1015,13 @@ public static partial class LibraryEditor_SpriteStudio
 					InformationTexture.ListPrefabMaterial[j] = null;
 					InformationTexture.ListNamePrefabMaterial[j] = NamePathAsset;
 				}
+				Library_SpriteStudio.KindColorOperationEffect KindColorOperationEffect;
 				for(int j=0; j<ShaderOperationMaxEffect; j++)
 				{
-					KindColorOperation = (Library_SpriteStudio.KindColorOperation)(j + 1);	/* +1 == ".NON" */
+					KindColorOperationEffect = (Library_SpriteStudio.KindColorOperationEffect)(j + 1);	/* +1 == ".NON" */
 					NamePathAsset = NameBaseAssetPath + "/"
 									+ NamePathSubImportMaterialEffect + "/"
-									+ InformationTexture.Name + "_" + (KindColorOperation.ToString()) + NameExtensionMaterialEffect;
+									+ InformationTexture.Name + "_" + (KindColorOperationEffect.ToString()) + NameExtensionMaterialEffect;
 
 					InformationTexture.ListPrefabMaterialEffect[j] = null;
 					InformationTexture.ListNamePrefabMaterialEffect[j] = NamePathAsset;
@@ -2246,6 +2247,56 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssee") : "";
 			}
 
+			/* Color-Label Get */
+			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "colorLabel", ManagerNameSpace);
+			if(null == ValueText)
+			{
+				InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
+			}
+			else
+			{
+				switch(ValueText)
+				{
+					case "Red":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.RED;
+						break;
+
+					case "Orange":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.ORANGE;
+						break;
+
+					case "Yellow":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.YELLOW;
+						break;
+
+					case "Green":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.GREEN;
+						break;
+
+					case "Blue":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.BLUE;
+						break;
+
+					case "Violet":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.VIOLET;
+						break;
+
+					case "Gray":
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.GRAY;
+						break;
+
+					default:
+						Debug.LogWarning("SSAE-Import Warning: Parts["
+											+ InformationParts.ID.ToString()
+											+ "] Invalid Color-Label Kind.: "
+											+ ValueText
+										);
+						InformationParts.KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
+						break;
+				}
+			}
+
+
 			return(InformationParts);
 
 		ParseOPSS_InformationSSAEParts_ErrorEnd:;
@@ -3435,18 +3486,18 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationPartsEffectParent.ListIndexPartsChild.Add(InformationPartsEffect.ID);
 			}
 
-			Library_SpriteStudio.KindColorOperation KindColorOperationTartget = Library_SpriteStudio.KindColorOperation.NON;
+			Library_SpriteStudio.KindColorOperationEffect KindColorOperationTartget = Library_SpriteStudio.KindColorOperationEffect.NON;
 			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "behavior/BlendType", ManagerNameSpace);
 			if(false == string.IsNullOrEmpty(ValueText))
 			{
 				switch(ValueText)
 				{
 					case "Mix":
-						KindColorOperationTartget = Library_SpriteStudio.KindColorOperation.MIX;
+						KindColorOperationTartget = Library_SpriteStudio.KindColorOperationEffect.MIX;
 						break;
 
 					case "Add":
-						KindColorOperationTartget = Library_SpriteStudio.KindColorOperation.ADD;
+						KindColorOperationTartget = Library_SpriteStudio.KindColorOperationEffect.ADD;
 						break;
 
 					default:
@@ -3535,7 +3586,7 @@ public static partial class LibraryEditor_SpriteStudio
 																											XmlNamespaceManager ManagerNameSpace,
 																											LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffectSet,
 																											LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts InformationEffectParts,
-																											Library_SpriteStudio.KindColorOperation KindColorOperationTartget,
+																											Library_SpriteStudio.KindColorOperationEffect KindColorOperationTartget,
 																											string NameCellMap,
 																											string NameCell,
 																											int ID,
@@ -3617,14 +3668,8 @@ public static partial class LibraryEditor_SpriteStudio
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "lifetime", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
 							{
-#if false
-								/* MEMO: Data intact */
 								InformationEmitter.TimeDurationEmitter = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute);
-#else
-								/* MEMO: Correction to match as "SS5.6" */
-								InformationEmitter.TimeDurationEmitter = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute) + 1.0f;
-#endif
-		}
+							}
 
 							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.SpeedStart.Main, ref InformationEmitter.SpeedStart.Sub, NodeAttribute, "speed", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 
@@ -3852,8 +3897,10 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			/* Time-Datas Recalc */
+			/* MEMO: FPS is dependent on SSAE when playing. */
 			float FPS = (float)InformationEffectSet.FramePerSecond;
 			InformationEmitter.CountFramePerSecond = FPS;
+#if false
 			if(0 != (InformationEmitter.FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.BASIC))
 			{
 				InformationEmitter.TimeInterval /= FPS;
@@ -3865,7 +3912,7 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				InformationEmitter.TimeDelay /= FPS;
 			}
-
+#endif
 			return(InformationEmitter);
 
 		ParseOPSS_InformationSSEEEmitter_ErrorEnd:;
@@ -4745,6 +4792,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 				InformationPartsRuntime.Kind = InformationParts.Kind;	/* Not firm */
 				InformationPartsRuntime.KindBlendTarget = InformationParts.KindBlendTarget;
+				InformationPartsRuntime.KindLabelColor = InformationParts.KindLabelColor;
 				InformationPartsRuntime.KindShapeCollision = InformationParts.KindShapeCollision;
 				InformationPartsRuntime.SizeCollisionZ = InformationParts.SizeCollisionZ;
 
@@ -6376,8 +6424,16 @@ public static partial class LibraryEditor_SpriteStudio
 
 							/* Sprite Size Get */
 							DataCell = DataCellMap.DataGetCell(IndexCell);
-							PivotMesh = DataCell.Pivot;
-							RectangleCell = DataCell.Rectangle;
+							if(null == DataCell)
+							{	/* Invalid */
+								PivotMesh = Vector2.zero;
+								RectangleCell = Rect.MinMaxRect(0.0f, 0.0f, 64.0f, 64.0f);
+							}
+							else
+							{	/* Valid */
+								PivotMesh = DataCell.Pivot;
+								RectangleCell = DataCell.Rectangle;
+							}
 							SizePixelMesh.x = RectangleCell.width;
 							SizePixelMesh.y = RectangleCell.height;
 
@@ -6455,6 +6511,7 @@ public static partial class LibraryEditor_SpriteStudio
 							for(int i=0; i<(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2; i++)
 							{
 								ColorBlendMesh.ListValue[FrameNo].UV[i] = DataUV2;
+								ColorBlendMesh.ListValue[FrameNo].UV[i].x *= DataColorBlend.RatePixelAlpha[i];
 								ColorBlendMesh.ListValue[FrameNo].ColorOverlay[i] = DataColorBlend.VertexColor[i];
 							}
 							goto UpdateMesh_ColorBlend_End;
@@ -6484,6 +6541,13 @@ public static partial class LibraryEditor_SpriteStudio
 						DataColor += ColorBlendMesh.ListValue[FrameNo].ColorOverlay[3];
 						DataColor *= 0.25f;
 						ColorBlendMesh.ListValue[FrameNo].ColorOverlay[(int)Library_SpriteStudio.KindVertexNo.C] = DataColor;
+
+						Vector2 DataUV2 = ColorBlendMesh.ListValue[FrameNo].UV[0];
+						DataUV2 += ColorBlendMesh.ListValue[FrameNo].UV[1];
+						DataUV2 += ColorBlendMesh.ListValue[FrameNo].UV[2];
+						DataUV2 += ColorBlendMesh.ListValue[FrameNo].UV[3];
+						DataUV2 *= 0.25f;
+						ColorBlendMesh.ListValue[FrameNo].UV[(int)Library_SpriteStudio.KindVertexNo.C] = DataUV2;
 
 						/* Get Coordinates */
 						/* MEMO: No Check "AnimationDataVertexCorrection.Length", 'cause 4-Triangles-Mesh necessarily has "AnimationDataVertexCorrection" */
@@ -6873,6 +6937,7 @@ public static partial class LibraryEditor_SpriteStudio
 				InstanceRootEffect.CountLimitPartsInitial = InstanceRootOld.CountLimitPartsInitial;
 				InstanceRootEffect.RateSpeed = InstanceRootOld.RateSpeed;
 			}
+			InstanceRootEffect.TableCreateBlendOffset();
 			Library_SpriteStudio.Miscellaneousness.Asset.ActiveSetGameObject(InstanceGameObjectRoot, true);
 
 			/* Fixing Created Assets */

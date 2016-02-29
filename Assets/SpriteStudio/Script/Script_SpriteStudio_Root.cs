@@ -310,6 +310,9 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			}
 		}
 
+		Status &= ~(FlagBitStatus.DECODE_USERDATA | FlagBitStatus.DECODE_INSTANCE | FlagBitStatus.DECODE_EFFECT);
+		Status &= ~FlagBitStatus.PLAYING_START;
+
 		/* Exec CallBack (Play-End) */
 		if(0 != (Status & FlagBitStatus.REQUEST_PLAYEND))
 		{
@@ -324,9 +327,6 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			}
 			Status &= ~FlagBitStatus.REQUEST_PLAYEND;
 		}
-
-		Status &= ~(FlagBitStatus.DECODE_USERDATA | FlagBitStatus.DECODE_INSTANCE | FlagBitStatus.DECODE_EFFECT);
-		Status &= ~FlagBitStatus.PLAYING_START;
 
 		/* Set to DrawManager */
 		if(((null != InstanceManagerDraw) && (null != DrawObject)) && (false == FlagHideForce))
@@ -844,7 +844,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 	*/
 	public int IDGetParts(string Name)
 	{
-		return(((null != DataAnimation) && (true == string.IsNullOrEmpty(Name))) ? DataAnimation.IndexGetParts(Name) : -1);
+		return(((null != DataAnimation) && (false == string.IsNullOrEmpty(Name))) ? DataAnimation.IndexGetParts(Name) : -1);
 	}
 
 	/* ******************************************************** */
@@ -862,7 +862,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 	*/
 	public Library_SpriteStudio.Control.Parts ControlGetParts(int IDParts)
 	{
-		return((null == ListControlParts) ? null : ListControlParts[IDParts]);
+		return(((null == ListControlParts) || (0 >= ListControlParts.Length)) ? null : ListControlParts[IDParts]);
 	}
 
 	/* ******************************************************** */

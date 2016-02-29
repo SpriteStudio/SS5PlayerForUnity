@@ -53,6 +53,20 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	public Script_SpriteStudio_DataCell DataCellMap;
 	public Script_SpriteStudio_DataEffect DataEffect;
 
+	/* Material Replacement Parameters  */
+	/* MEMO: "IndexMaterialBlendDefault" & "IndexMaterialBlendOffset" is for Inspector & Importer. */
+	public static readonly int[] IndexMaterialBlendDefault = new int[(int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND - 1]
+	{
+		(int)Library_SpriteStudio.KindColorOperationEffect.MIX - 1,
+		(int)Library_SpriteStudio.KindColorOperationEffect.ADD - 1,
+	};
+	public static readonly int[] CountVariationShader = new int[(int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND - 1]
+	{
+		(int)Library_SpriteStudio.KindColorOperationEffect.MIX - (int)Library_SpriteStudio.KindColorOperationEffect.MIX,
+		(int)Library_SpriteStudio.KindColorOperationEffect.ADD2 - (int)Library_SpriteStudio.KindColorOperationEffect.ADD,
+	};
+	public int[] IndexMaterialBlendOffset;
+
 	/* Effect Datas */
 	public int SeedRandomInitialize;	/* uint *//* 0xffffffff: Not Initialize (default Seed) */
 	internal uint SeedRandom;
@@ -301,6 +315,19 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		return(new RandomGenerator());
 	}
 
+	public void TableCreateBlendOffset()
+	{
+		int CountBlendKind = (int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND - 1;
+		if((null == IndexMaterialBlendOffset) || (CountBlendKind != IndexMaterialBlendOffset.Length))
+		{
+			IndexMaterialBlendOffset = new int[CountBlendKind];
+			for(int i=0; i<CountBlendKind; i++)
+			{
+				IndexMaterialBlendOffset[i] = 0;
+			}
+		}
+	}
+
 	/* ******************************************************** */
 	//! Start playing the animation
 	/*!
@@ -427,7 +454,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		true == Playing / Pause-true(suspended) <br>
 		false == Stopping
 
-	Use this function for checking the animation's play-status.<br>
+	Use this function for checking the animation's play-status.
 	*/
 	public bool AnimationCheckPlay()
 	{
@@ -443,7 +470,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		true == Suspended <br>
 		false == Not Suspended or Stopping
 
-	Use this function for checking the animation's pause-status.<br>
+	Use this function for checking the animation's pause-status.
 	*/
 	public bool AnimationCheckPause()
 	{
@@ -460,14 +487,32 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	@retval	Return-Value
 		Material
 	*/
-	public Material MaterialGet(int IndexCellMap, Library_SpriteStudio.KindColorOperation KindOperation)
+	public Material MaterialGet(int IndexCellMap, Library_SpriteStudio.KindColorOperationEffect KindOperation)
 	{
+#if false
 		return((	(0 <= IndexCellMap) && (DataCellMap.ListDataCellMap.Length > IndexCellMap)
-					&& (Library_SpriteStudio.KindColorOperation.NON < KindOperation) && (Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT > KindOperation)
+					&& (Library_SpriteStudio.KindColorOperationEffect.NON < KindOperation) && (Library_SpriteStudio.KindColorOperationEffect.TERMINATOR > KindOperation)
 				)
-				? TableMaterial[(IndexCellMap * ((int)Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1)) + ((int)KindOperation - 1)]
+				? TableMaterial[(IndexCellMap * ((int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1)) + ((int)KindOperation - 1)]
 				: null
 			);
+#else
+		if((0 > IndexCellMap) && (DataCellMap.ListDataCellMap.Length <= IndexCellMap))
+		{
+			return(null);
+		}
+		if((Library_SpriteStudio.KindColorOperationEffect.NON >= KindOperation) && (Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND <= KindOperation))
+		{
+			return(null);
+		}
+		int IndexBlendKind = (int)KindOperation - 1;
+		int IndexMaterial = IndexMaterialBlendDefault[IndexBlendKind];
+		if((null != IndexMaterialBlendOffset) && (0 < IndexMaterialBlendOffset.Length))
+		{
+			IndexMaterial += IndexMaterialBlendOffset[IndexBlendKind];
+		}
+		return(TableMaterial[(IndexCellMap * ((int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1)) + IndexMaterial]);
+#endif
 	}
 
 	/* ******************************************************** */
@@ -521,7 +566,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	*/
 	public bool TextureChange(int Index, Texture2D DataTexture)
 	{
-		int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1;
+		int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1;
 
 		if(null == TableMaterial)
 		{

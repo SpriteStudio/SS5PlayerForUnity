@@ -77,13 +77,37 @@ public static partial class Library_SpriteStudio
 	public enum KindColorOperation
 	{
 		NON = 0,
+
 		MIX,
 		ADD,
-		TERMINATOR_EFFECT,
-		SUB = TERMINATOR_EFFECT,
+		SUB,
 		MUL,
 
 		TERMINATOR,
+	}
+	public enum KindColorOperationEffect
+	{
+		NON = 0,
+
+		MIX,
+		ADD,
+		ADD2,
+
+		TERMINATOR_KIND = ADD2,
+
+		TERMINATOR,
+	}
+	public enum KindColorLabel
+	{
+		NON = 0,
+
+		RED = 1,
+		ORANGE,
+		YELLOW,
+		GREEN,
+		BLUE,
+		VIOLET,
+		GRAY,
 	}
 	public enum KindColorBound
 	{
@@ -143,10 +167,11 @@ public static partial class Library_SpriteStudio
 		Shader.Find("Custom/SpriteStudio5/Sub"),
 		Shader.Find("Custom/SpriteStudio5/Mul")
 	};
-	public readonly static Shader[] Shader_SpriteStudioEffect = new Shader[(int)Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1]
+	public readonly static Shader[] Shader_SpriteStudioEffect = new Shader[(int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1]
 	{
 		Shader.Find("Custom/SpriteStudio5/Effect/Mix"),
 		Shader.Find("Custom/SpriteStudio5/Effect/Add"),
+		Shader.Find("Custom/SpriteStudio5/Effect/Add2"),
 	};
 
 	public readonly static int[] ArrayVertexIndex_Triangle2 =
@@ -348,6 +373,7 @@ public static partial class Library_SpriteStudio
 
 			public Library_SpriteStudio.KindParts Kind;
 			public Library_SpriteStudio.KindColorOperation KindBlendTarget;
+			public Library_SpriteStudio.KindColorLabel KindLabelColor;
 
 			public Library_SpriteStudio.KindCollision KindShapeCollision;
 			public float SizeCollisionZ;
@@ -364,6 +390,7 @@ public static partial class Library_SpriteStudio
 
 				Kind = Library_SpriteStudio.KindParts.NON;
 				KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
+				KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
 
 				KindShapeCollision = Library_SpriteStudio.KindCollision.NON;
 				SizeCollisionZ = 0.0f;
@@ -1210,7 +1237,7 @@ public static partial class Library_SpriteStudio
 				int IndexExist = -1;
 				for(int i=1; i<Count; i++)
 				{
-					if(true == ListValue[i - 1].Equals(ListValue[i]))
+					if(true == ListValue[i].Equals(ListValue[i - 1]))
 					{	/* Unchanging */
 						continue;
 					}
@@ -1219,7 +1246,7 @@ public static partial class Library_SpriteStudio
 					IndexExist = -1;
 					for(int j=0; j<CountArray; j++)
 					{
-						if(true == ArrayValue[j].Equals(ListValue[i]))
+						if(true == ListValue[i].Equals(ArrayValue[j]))
 						{
 							IndexExist = j;
 							break;
@@ -1421,9 +1448,30 @@ public static partial class Library_SpriteStudio
 
 //			public void Duplicate(AttributeStatus Original)
 
-			public bool Equals(AttributeStatus Target)
+			public override bool Equals(System.Object Target)
 			{
-				return((Flags == Target.Flags) ? true : false);
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeStatus TargetData = (AttributeStatus)Target;
+				if(	(IsValid == TargetData.IsValid)
+					&& (IsHide == TargetData.IsHide)
+					&& (IsFlipX == TargetData.IsFlipX)
+					&& (IsFlipY == TargetData.IsFlipY)
+					&& (IsTextureFlipX == TargetData.IsTextureFlipX)
+					&& (IsTextureFlipY == TargetData.IsTextureFlipY)
+					)
+				{
+					return(true);
+				}
+				return(false);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1453,46 +1501,57 @@ public static partial class Library_SpriteStudio
 				}
 			}
 
-			public bool Equals(AttributeColorBlend Target)
+			public override bool Equals(System.Object Target)
 			{
-				int Count;
-
-				if(Bound != Target.Bound)
+				if((null == Target) || (GetType() != Target.GetType()))
 				{
 					return(false);
 				}
-				if(Operation == Target.Operation)
+
+				AttributeColorBlend TargetData = (AttributeColorBlend)Target;
+				int Count;
+
+				if(Bound != TargetData.Bound)
+				{
+					return(false);
+				}
+				if(Operation == TargetData.Operation)
 				{
 					return(false);
 				}
 
 				Count = VertexColor.Length;
-				if(Count != Target.VertexColor.Length)
+				if(Count != TargetData.VertexColor.Length)
 				{
 					return(false);
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(VertexColor[i] != Target.VertexColor[i])
+					if(VertexColor[i] != TargetData.VertexColor[i])
 					{
 						return(false);
 					}
 				}
 
 				Count = RatePixelAlpha.Length;
-				if(Count != Target.RatePixelAlpha.Length)
+				if(Count != TargetData.RatePixelAlpha.Length)
 				{
 					return(false);
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(RatePixelAlpha[i] != Target.RatePixelAlpha[i])
+					if(RatePixelAlpha[i] != TargetData.RatePixelAlpha[i])
 					{
 						return(false);
 					}
 				}
 
 				return(true);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1513,23 +1572,34 @@ public static partial class Library_SpriteStudio
 				}
 			}
 
-			public bool Equals(AttributeVertexCorrection Target)
+			public override bool Equals(System.Object Target)
 			{
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeVertexCorrection TargetData = (AttributeVertexCorrection)Target;
 				int Count;
 
 				Count = Coordinate.Length;
-				if(Count != Target.Coordinate.Length)
+				if(Count != TargetData.Coordinate.Length)
 				{
 					return(false);
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(Coordinate[i] != Target.Coordinate[i])
+					if(Coordinate[i] != TargetData.Coordinate[i])
 					{
 						return(false);
 					}
 				}
 				return(true);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1550,9 +1620,20 @@ public static partial class Library_SpriteStudio
 				IndexCell = Original.IndexCell;
 			}
 
-			public bool Equals(AttributeCell Target)
+			public override bool Equals(System.Object Target)
 			{
-				return(((IndexCellMap == Target.IndexCellMap) && (IndexCell == Target.IndexCell)) ? true : false);
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeCell TargetData = (AttributeCell)Target;
+				return(((IndexCellMap == TargetData.IndexCellMap) && (IndexCell == TargetData.IndexCell)) ? true : false);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1634,17 +1715,28 @@ public static partial class Library_SpriteStudio
 				Text = (true == string.IsNullOrEmpty(Original.Text)) ? "" : string.Copy(Original.Text);
 			}
 
-			public bool Equals(AttributeUserData Target)
+			public override bool Equals(System.Object Target)
 			{
-				return((	(Flags == Target.Flags)
-							&& (NumberInt == Target.NumberInt)
-							&& (Rectangle.xMin == Target.Rectangle.xMin)
-							&& (Rectangle.yMin == Target.Rectangle.yMin)
-							&& (Rectangle.xMax == Target.Rectangle.xMax)
-							&& (Rectangle.yMax == Target.Rectangle.yMax)
-							&& (Coordinate == Target.Coordinate)
-							&& (0 == string.Compare(Text, Target.Text))
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeUserData TargetData = (AttributeUserData)Target;
+				return((	(Flags == TargetData.Flags)
+							&& (NumberInt == TargetData.NumberInt)
+							&& (Rectangle.xMin == TargetData.Rectangle.xMin)
+							&& (Rectangle.yMin == TargetData.Rectangle.yMin)
+							&& (Rectangle.xMax == TargetData.Rectangle.xMax)
+							&& (Rectangle.yMax == TargetData.Rectangle.yMax)
+							&& (Coordinate == TargetData.Coordinate)
+							&& (0 == string.Compare(Text, TargetData.Text))
 						) ? true : false);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1689,16 +1781,27 @@ public static partial class Library_SpriteStudio
 				LabelEnd = string.Copy(Original.LabelEnd);
 			}
 
-			public bool Equals(AttributeInstance Target)
+			public override bool Equals(System.Object Target)
 			{
-				return((	(Flags == Target.Flags)
-							&& (PlayCount == Target.PlayCount)
-							&& (RateTime == Target.RateTime)
-							&& (OffsetStart == Target.OffsetStart)
-							&& (OffsetEnd == Target.OffsetEnd)
-							&& (0 == string.Compare(LabelStart, Target.LabelStart))
-							&& (0 == string.Compare(LabelEnd, Target.LabelEnd))
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeInstance TargetData = (AttributeInstance)Target;
+				return((	(Flags == TargetData.Flags)
+							&& (PlayCount == TargetData.PlayCount)
+							&& (RateTime == TargetData.RateTime)
+							&& (OffsetStart == TargetData.OffsetStart)
+							&& (OffsetEnd == TargetData.OffsetEnd)
+							&& (0 == string.Compare(LabelStart, TargetData.LabelStart))
+							&& (0 == string.Compare(LabelEnd, TargetData.LabelEnd))
 						) ? true : false);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1722,9 +1825,20 @@ public static partial class Library_SpriteStudio
 				Flags = Original.Flags;
 			}
 
-			public bool Equals(AttributeEffect Target)
+			public override bool Equals(System.Object Target)
 			{
-				return(((Flags == Target.Flags)) ? true : false);
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeEffect TargetData = (AttributeEffect)Target;
+				return(((Flags == TargetData.Flags)) ? true : false);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1737,21 +1851,32 @@ public static partial class Library_SpriteStudio
 				Coordinate = null;
 			}
 
-			public bool Equals(AttributeCoordinateMeshFix Target)
+			public override bool Equals(System.Object Target)
 			{
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeCoordinateMeshFix TargetData = (AttributeCoordinateMeshFix)Target;
 				int Count = Coordinate.Length;
-				if(Count != Target.Coordinate.Length)
+				if(Count != TargetData.Coordinate.Length)
 				{
 					return(false);
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(Coordinate[i] != Target.Coordinate[i])
+					if(Coordinate[i] != TargetData.Coordinate[i])
 					{
 						return(false);
 					}
 				}
 				return(true);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1764,21 +1889,32 @@ public static partial class Library_SpriteStudio
 				UV = null;
 			}
 
-			public bool Equals(AttributeUVMeshFix Target)
+			public override bool Equals(System.Object Target)
 			{
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeUVMeshFix TargetData = (AttributeUVMeshFix)Target;
 				int Count = UV.Length;
-				if(Count != Target.UV.Length)
+				if(Count != TargetData.UV.Length)
 				{
 					return(false);
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(UV[i] != Target.UV[i])
+					if(UV[i] != TargetData.UV[i])
 					{
 						return(false);
 					}
 				}
 				return(true);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 		[System.Serializable]
@@ -1792,25 +1928,36 @@ public static partial class Library_SpriteStudio
 				ColorOverlay = null;
 			}
 
-			public bool Equals(AttributeColorBlendMeshFix Target)
+			public override bool Equals(System.Object Target)
 			{
-				if(false == base.Equals(Target))
+				if((null == Target) || (GetType() != Target.GetType()))
+				{
+					return(false);
+				}
+
+				AttributeColorBlendMeshFix TargetData = (AttributeColorBlendMeshFix)Target;
+				if(false == base.Equals(TargetData))
 				{
 					return(false);
 				}
 				int Count = ColorOverlay.Length;
-				if(Count != Target.ColorOverlay.Length)
+				if(Count != TargetData.ColorOverlay.Length)
 				{
 					return(false);
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(true == ColorOverlay[i].Equals(Target.ColorOverlay[i]))
+					if(true == ColorOverlay[i].Equals(TargetData.ColorOverlay[i]))
 					{
 						return(false);
 					}
 				}
 				return(true);
+			}
+
+			public override int GetHashCode()
+			{
+				return(base.GetHashCode());
 			}
 		}
 
@@ -1862,7 +2009,7 @@ public static partial class Library_SpriteStudio
 			}
 			public FlagBit FlagData;
 
-			public Library_SpriteStudio.KindColorOperation KindBlendTarget;
+			public Library_SpriteStudio.KindColorOperationEffect KindBlendTarget;
 			public int IndexCellMap;
 			public int IndexCell;
 
@@ -1911,7 +2058,7 @@ public static partial class Library_SpriteStudio
 
 				IndexCellMap = -1;
 				IndexCell = -1;
-				KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
+				KindBlendTarget = Library_SpriteStudio.KindColorOperationEffect.NON;
 
 				CountFramePerSecond = 60.0f;
 				TimeDurationEmitter = 30.0f;
@@ -2518,10 +2665,20 @@ public static partial class Library_SpriteStudio
 								{
 									BufferParameterParts.SizeTextureOriginal = DataCellMap.SizeOriginal;
 
-									BufferParameterParts.DataCell = DataCellMap.DataGetCell(IndexCell);
-									BufferParameterParts.PivotMesh = BufferParameterParts.DataCell.Pivot;
-									BufferParameterParts.SizePixelMesh.x = BufferParameterParts.DataCell.Rectangle.width;
-									BufferParameterParts.SizePixelMesh.y = BufferParameterParts.DataCell.Rectangle.height;
+									Library_SpriteStudio.Data.Cell DataCell = DataCellMap.DataGetCell(IndexCell);
+									BufferParameterParts.DataCell = DataCell;
+									if(null == DataCell)
+									{	/* Invalid */
+										BufferParameterParts.PivotMesh = Vector2.zero;
+										BufferParameterParts.SizePixelMesh.x = 64.0f;
+										BufferParameterParts.SizePixelMesh.y = 64.0f;
+									}
+									else
+									{	/* Valid */
+										BufferParameterParts.PivotMesh = DataCell.Pivot;
+										BufferParameterParts.SizePixelMesh.x = DataCell.Rectangle.width;
+										BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
+									}
 								}
 							}
 
@@ -2787,6 +2944,7 @@ public static partial class Library_SpriteStudio
 									for(int i=0; i<(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2; i++)
 									{
 										InstanceParameterMesh.UV2[i] = DataUV2;
+										InstanceParameterMesh.UV2[i].x *= DataColorBlend.RatePixelAlpha[i];
 										InstanceParameterMesh.ColorOverlay[i] = DataColorBlend.VertexColor[i];
 									}
 									goto UpdateMesh_Plain_ColorBlend_End;
@@ -2815,6 +2973,13 @@ public static partial class Library_SpriteStudio
 						DataColor += InstanceParameterMesh.ColorOverlay[3];
 						DataColor *= 0.25f;
 						InstanceParameterMesh.ColorOverlay[(int)Library_SpriteStudio.KindVertexNo.C] = DataColor;
+
+						Vector2 DataUV2 = InstanceParameterMesh.UV2[0];
+						DataUV2 += InstanceParameterMesh.UV2[1];
+						DataUV2 += InstanceParameterMesh.UV2[2];
+						DataUV2 += InstanceParameterMesh.UV2[3];
+						DataUV2 *= 0.25f;
+						InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.C] = DataUV2;
 
 						/* Get Coordinates */
 						/* MEMO: No Check "AnimationDataVertexCorrection.Length", 'cause 4-Triangles-Mesh necessarily has "AnimationDataVertexCorrection" */
@@ -2996,28 +3161,48 @@ public static partial class Library_SpriteStudio
 				bool FlagFirst = InstanceRoot.StatusIsPlayingStart;
 				bool FlagReverse = InstanceRoot.StatusIsPlayingReverse;
 				bool FlagReversePrevious = InstanceRoot.StatusIsPlayingReversePrevious;
+				bool FlagTurn = InstanceRoot.StatusIsPlayingTurn;
+				bool FlagLoop = (0 < LoopCount) ? true : false;
+				bool FlagStylePingPong = InstanceRoot.StatusIsPlayStylePingpong;
 				int FrameNoStart = InstanceRoot.FrameNoStart;
 				int FrameNoEnd = InstanceRoot.FrameNoEnd;
 				int FrameNoPrevious = -1;
+
+				/* Decode Top-Frame Get */
 				if(true == FlagFirst)
 				{
 					FrameNoPrevious = FrameNo;
 				}
 				else
 				{
-					/* MEMO: Review this Setting */
-					FrameNoPrevious = InstanceRoot.FrameNoPrevious + ((true == FlagReverse) ? -1 : 1);
+					FrameNoPrevious = InstanceRoot.FrameNoPrevious;
+					if(true== FlagReversePrevious)
+					{
+						FrameNoPrevious--;
+						if((false == FlagTurn) && (FrameNoPrevious < FrameNo))
+						{
+							return(true);
+						}
+					}
+					else
+					{
+						FrameNoPrevious++;
+						if((false == FlagTurn) && (FrameNoPrevious > FrameNo))
+						{
+							return(true);
+						}
+					}
 				}
 
-				if(true == InstanceRoot.StatusIsPlayStylePingpong)
+				/* Decoding User-Datas */
+				if(true == FlagStylePingPong)
 				{	/* Play-Style: PingPong */
 					bool FlagStyleReverse = InstanceRoot.StatusIsPlayStyleReverse;
-					bool FlagTurnBackPingPong = InstanceRoot.StatusIsPlayingTurn;
 
 					/* Decoding Skipped Frame */
 					if(true == FlagStyleReverse)
 					{	/* Reverse */
-						if(0 < LoopCount)
+						if(true == FlagLoop)
 						{
 							/* Part-Head */
 							if(true == FlagReversePrevious)
@@ -3052,7 +3237,7 @@ public static partial class Library_SpriteStudio
 						}
 						else
 						{	/* Normal */
-							if(true == FlagTurnBackPingPong)
+							if(true == FlagTurn)
 							{	/* Turn-Back */
 								/* MEMO: No-Loop & Turn-Back ... Always "Reverse to Foward" */
 								FrameNoPrevious = InstanceRoot.FrameNoPrevious - 1;	/* Force */
@@ -3074,7 +3259,7 @@ public static partial class Library_SpriteStudio
 					}
 					else
 					{	/* Normal */
-						if(0 < LoopCount)
+						if(true == FlagLoop)
 						{
 							/* Part-Head */
 							if(true == FlagReversePrevious)
@@ -3109,7 +3294,7 @@ public static partial class Library_SpriteStudio
 						}
 						else
 						{	/* Normal */
-							if(true == FlagTurnBackPingPong)
+							if(true == FlagTurn)
 							{	/* Turn-Back */
 								/* MEMO: No-Loop & Turn-Back ... Always "Foward to Revese" */
 								FrameNoPrevious = InstanceRoot.FrameNoPrevious + 1;	/* Force */
@@ -3135,7 +3320,7 @@ public static partial class Library_SpriteStudio
 					/* Decoding Skipped Frame */
 					if(true == FlagReverse)
 					{	/* backwards */
-						if((FrameNo > FrameNoPrevious) || (0 < LoopCount))
+						if(true == FlagLoop)
 						{	/* Wrap-Around */
 							/* Part-Head */
 							UpdateUserDataReverse(InstanceRoot, FrameNoPrevious, FrameNoStart, FrameNo, false);
@@ -3156,7 +3341,7 @@ public static partial class Library_SpriteStudio
 					}
 					else
 					{	/* foward */
-						if((FrameNo < FrameNoPrevious) || (0 < LoopCount))
+						if(true == FlagLoop)
 						{	/* Wrap-Around */
 							/* Part-Head */
 							UpdateUserDataFoward(InstanceRoot, FrameNoPrevious, FrameNoEnd, FrameNo, false);
@@ -3328,9 +3513,10 @@ public static partial class Library_SpriteStudio
 				int IndexAttribute;
 				bool FlagInitializeForce = false;
 				bool FlagPlayReverse = (0 == (Status & FlagBitStatus.EFFECT_PLAYING)) ? true : false;
+				bool FlagDecodeEffect = InstanceRoot.StatusIsDecodeEffect;
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 
-				if((true == InstanceRoot.StatusIsPlayingTurn) || ((true == InstanceRoot.StatusIsPlayingStart) && (true == InstanceRoot.StatusIsDecodeEffect)))
+				if((true == InstanceRoot.StatusIsPlayingTurn) || ((true == InstanceRoot.StatusIsPlayingStart) && (true == FlagDecodeEffect)))
 				{
 					FlagInitializeForce = true;
 					FrameNoPreviousUpdateUnderControl = (false == FlagPlayReverse) ? InstanceRoot.FrameNoStart : ((InstanceRoot.FrameNoEnd - InstanceRoot.FrameNoStart) + 1);
@@ -3349,6 +3535,8 @@ public static partial class Library_SpriteStudio
 					{	/* Play */
 						if((true == FlagInitializeForce) || (0 == (Status & FlagBitStatus.EFFECT_PLAYING)))
 						{	/* Stopping */
+							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
+
 							Status |= FlagBitStatus.EFFECT_PLAYING;
 
 							float RateSpeed = InstanceRoot.RateSpeed;	/* Always Plus */
@@ -3364,19 +3552,23 @@ public static partial class Library_SpriteStudio
 							{
 								TimeOffset = ((float)FrameNoPreviousUpdateUnderControl * InstanceRoot.TimePerFrame) - InstanceRoot.TimeElapsed;
 							}
-							InstanceRootUnderControlEffect.TimeElapsedSetForce(TimeOffset, FlagPlayReverse);
 
-							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
+#if false
+							/* MEMO: Avoid the "Effect"'s malfunction in the time error of less than frame. */
+							TimeOffset = Mathf.Floor(TimeOffset / InstanceRoot.TimePerFrame) * InstanceRoot.TimePerFrame;
+#endif
+							InstanceRootUnderControlEffect.TimeElapsedSetForce(TimeOffset, FlagPlayReverse);
 						}
 					}
 					else
 					{	/* Stop */
 						if((true == FlagInitializeForce) || (0 != (Status & FlagBitStatus.EFFECT_PLAYING)))
 						{	/* Playing */
+							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
+
 							Status &= ~FlagBitStatus.EFFECT_PLAYING;
 
 							InstanceRootUnderControlEffect.AnimationStop();
-							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
 						}
 					}
 
@@ -3558,12 +3750,16 @@ public static partial class Library_SpriteStudio
 
 		internal class PoolPartsEffect : PoolEffectData<PartsEffect>
 		{
+			internal int CountIndexEmitter;
+			 
 			internal PoolPartsEffect(int Count)
 			{
 				CountMax = Count;
 				ListDataRunning = null;
 				ListDataWaiting = null;
 				Data = null;
+
+				CountIndexEmitter = 0;
 			}
 
 			internal bool BootUp(Script_SpriteStudio_RootEffect InstanceRoot)
@@ -3600,7 +3796,7 @@ public static partial class Library_SpriteStudio
 				{	/* Has parent ... Generate "Particle" + "(Sub-)Emitter"s */
 					InstanceDataEmitterParticle = InstancePartsParent.DataEmitter;
 					IDPartsParent = InstancePartsParent.DataParts.ID;
-					FlagBitStatusRoot = Library_SpriteStudio.Control.PartsEffect.FlagBitStatus.CLEAR;
+//					FlagBitStatusRoot = Library_SpriteStudio.Control.PartsEffect.FlagBitStatus.CLEAR;
 				}
 
 				Library_SpriteStudio.Data.PartsEffect InstanceDataPartsEffect = null;
@@ -3622,6 +3818,7 @@ public static partial class Library_SpriteStudio
 																							InstanceDataPartsEffect,
 																							InstancePartsParent,
 																							CountEmit,
+																							InstancePartsParent.IndexEmitter,
 																							InstanceRoot,
 																							InstancePartsParent
 																						);
@@ -3658,19 +3855,21 @@ public static partial class Library_SpriteStudio
 																			InstanceDataPartsEffect,
 																			InstanceControlPartsEffectParticle,
 																			0,
+																			CountIndexEmitter,
 																			InstanceRoot,
 																			InstancePartsParent
 																		)
 								)
-							{
+							{	/* Failure */
 								InstanceSetWaiting(InstanceControlPartsEffect);
 								InstanceControlPartsEffectParticle.CountSynchronousDecrease();
 							}
 							else
-							{
+							{	/* Succeed */
 								InstanceControlPartsEffect.Status |= FlagBitStatusRoot;
 								InstanceSetRunning(InstanceControlPartsEffect);
 								Count++;
+								CountIndexEmitter++;
 							}
 						}
 					}
@@ -3722,6 +3921,7 @@ public static partial class Library_SpriteStudio
 			internal Library_SpriteStudio.Control.PartsEffect InstancePartsSynchronous;
 			internal int CountEmitterSynchronous;
 
+			internal float CountFramePerSecond;
 			internal float TimeElapsed;
 			internal float TimeDuration;
 
@@ -3758,9 +3958,12 @@ public static partial class Library_SpriteStudio
 
 			/* WorkArea: (Sub-)Emitter */
 			internal Library_SpriteStudio.Utility.Random.Generator InstanceRandom = null;
+			internal float TimeIntervalData;
 			internal float TimeInterval;
 			internal float TimeDelay;
+			internal int IndexEmitter;
 			internal int CountRemainEmit;
+			internal int CountFramePrevious;
 
 			internal void CleanUp()
 			{
@@ -3773,6 +3976,7 @@ public static partial class Library_SpriteStudio
 				InstancePartsSynchronous = null;
 				CountEmitterSynchronous = 0;
 
+				CountFramePerSecond = 0.0f;
 				TimeElapsed = 0.0f;
 				TimeDuration = 0.0f;
 
@@ -3808,9 +4012,12 @@ public static partial class Library_SpriteStudio
 //				InstanceRandom = null;	/* Initialized in BootUp */
 //				CountParticleMax = 0;
 //				CountParticleEmit = 0;
+				TimeIntervalData = 0.0f;
 				TimeInterval = 0.0f;
 				TimeDelay = 0.0f;
+				IndexEmitter = 0;
 				CountRemainEmit = 0;
+				CountFramePrevious = -1;
 			}
 
 			internal bool BootUp(Script_SpriteStudio_RootEffect InstanceRoot)
@@ -3837,6 +4044,7 @@ public static partial class Library_SpriteStudio
 									Library_SpriteStudio.Data.PartsEffect InstanceDataParts,
 									PartsEffect InstancePartsEffectSynchronousParticle,
 									int CountSynchronousEmitter,
+									int IndexInstanceEmitter,
 									Script_SpriteStudio_RootEffect InstanceRoot,
 									PartsEffect InstancePartsParent
 								)
@@ -3853,6 +4061,18 @@ public static partial class Library_SpriteStudio
 				DataParts = InstanceDataParts;
 				InstancePartsSynchronous = InstancePartsEffectSynchronousParticle;
 				CountEmitterSynchronous = CountSynchronousEmitter;
+				IndexEmitter = IndexInstanceEmitter;
+				float TimePerFrame;
+				if((null != InstanceRoot) && (null != InstanceRoot.InstanceRootParent))
+				{
+					TimePerFrame = InstanceRoot.InstanceRootParent.TimePerFrame;
+					CountFramePerSecond = 1.0f / TimePerFrame;
+				}
+				else
+				{
+					CountFramePerSecond = DataEmitter.CountFramePerSecond;
+					TimePerFrame = 1.0f / CountFramePerSecond;
+				}
 
 				Library_SpriteStudio.Utility.Random.Generator InstanceRandomParent = null;
 				if(null == InstancePartsParent)
@@ -3883,9 +4103,7 @@ public static partial class Library_SpriteStudio
 
 			Awake_Particle:;
 				/* Set Data-"Perticle" */
-				float FPS = DataEmitter.CountFramePerSecond;
-
-				Priority = DataEmitter.Priority;
+				Priority = DataEmitter.Priority + ((float)IndexEmitter * 0.0001f);
 
 				PositionStart = InstancePartsParent.Position;
 				Position = PositionStart;
@@ -3896,8 +4114,8 @@ public static partial class Library_SpriteStudio
 				ColorVertex = ColorVertexStart;
 
 				TimeDuration = RandomGetRange(	InstanceRandomParent,
-												DataEmitter.TimeDurationParticle.Main,
-												DataEmitter.TimeDurationParticle.Sub
+												(DataEmitter.TimeDurationParticle.Main * TimePerFrame),
+												(DataEmitter.TimeDurationParticle.Sub * TimePerFrame)
 											);
 				float temp_angle = RandomGetRangeFin(	InstanceRandomParent,
 														DataEmitter.Angle.Main,	// + (eAngle = 0.0f),
@@ -3907,7 +4125,7 @@ public static partial class Library_SpriteStudio
 				float angle_rad = Mathf.Deg2Rad * (temp_angle + 90.0f);
 				VectorPosition.x = Mathf.Cos(angle_rad);
 				VectorPosition.y = Mathf.Sin(angle_rad);
-				VectorPosition *= DataEmitter.CountFramePerSecond;	/* * FPS */
+				VectorPosition *= CountFramePerSecond;	/* /= TimePerFrame */
 
 				SpeedStart = RandomGetRange(	InstanceRandomParent,
 												DataEmitter.SpeedStart.Main,
@@ -3957,9 +4175,9 @@ public static partial class Library_SpriteStudio
 				{
 					RotationFluctuationEnd = RotationFluctuationStart * DataEmitter.RotationFluctuationRate;
 				}
-				RotationFluctuationEnd *= FPS;
-				RotationFluctuationStart *= FPS;
-				RotationFluctuation *= FPS;
+				RotationFluctuationEnd *= CountFramePerSecond;
+				RotationFluctuationStart *= CountFramePerSecond;
+				RotationFluctuation *= CountFramePerSecond;
 				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_END))
 				{
 					SpeedEnd = RandomGetRange(	InstanceRandomParent,
@@ -4101,14 +4319,16 @@ public static partial class Library_SpriteStudio
 
 				FlagData = DataEmitter.FlagData;
 
-				TimeDuration = DataEmitter.TimeDurationEmitter;
-				TimeDelay = DataEmitter.TimeDelay;
+				TimeDuration = DataEmitter.TimeDurationEmitter * TimePerFrame;
+				TimeDelay = DataEmitter.TimeDelay * TimePerFrame;
 
 				Status |= (0.0f >= TimeDuration) ? FlagBitStatus.EMITTER_LOOP : FlagBitStatus.CLEAR;
 				TimeDuration += TimeDelay;
 
-				TimeInterval = DataEmitter.TimeInterval;
+				TimeIntervalData = DataEmitter.TimeInterval * TimePerFrame;
+				TimeInterval = TimeIntervalData;
 				CountRemainEmit = DataEmitter.CountParticleMax;
+				CountFramePrevious = -1;
 
 				InstanceRandom = Script_SpriteStudio_RootEffect.InstanceCreateRandom();
 				SeedSetRandom();
@@ -4129,7 +4349,6 @@ public static partial class Library_SpriteStudio
 				Status |= FlagBitStatus.GETUP;
 
 				float RateDuration;
-				float FPS = DataEmitter.CountFramePerSecond;
 				Library_SpriteStudio.Data.EmitterEffect.FlagBit FlagData = DataEmitter.FlagData;
 				switch(Kind)
 				{
@@ -4182,7 +4401,7 @@ public static partial class Library_SpriteStudio
 						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_DIRECTION))
 						{
 							GravityDirectional = DataEmitter.GravityDirectional;
-							float TimePowerBase = TimeElapsed * FPS;
+							float TimePowerBase = TimeElapsed * CountFramePerSecond;
 							GravityDirectional *= TimePowerBase;
 						}
 //						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.POSITION))
@@ -4219,11 +4438,11 @@ public static partial class Library_SpriteStudio
 							GravityPointNow.y = DataEmitter.GravityPointPosition.y + PositionStart.y;
 							GravityPointNow -= Position;
 							GravityPointNow.Normalize();
-							GravityPointNow *= (DataEmitter.GravityPointPower * FPS * TimeDelta);
+							GravityPointNow *= (DataEmitter.GravityPointPower * TimeDelta * CountFramePerSecond);
 							GravityPoint += GravityPointNow;
 						}
 
-						Vector2 PositionOffset = (VectorPosition * Speed) + ((Force + GravityDirectional) * FPS);
+						Vector2 PositionOffset = (VectorPosition * Speed) + ((Force + GravityDirectional) * CountFramePerSecond);
 						PositionOffset *= TimeDelta;
 						PositionOffset += GravityPoint;
 
@@ -4336,25 +4555,28 @@ public static partial class Library_SpriteStudio
 				{
 					TimeElapsed += TimeDelta;
 					TimeInterval += TimeDelta;
+					int CountFrameNow = (int)(Mathf.Floor(TimeElapsed * CountFramePerSecond));
 
 					bool FlagValid = ((0.0f > TimeElapsed) || (TimeDuration < TimeElapsed)) ? false : true;
 					if(false == FlagValid)
 					{
+#if false
+						/* MEMO: "Root-Emitter" is not Self-Destruction. */
 						if(0 != (Status & FlagBitStatus.EMITTER_ROOT))
 						{	/* Root-Emitter */
 							/* MEMO: Not count in "Execute", when "Root-Emitter" is at rest. */
-							/* MEMO: "Root-Emitter" is not "Self-Destruction". */
 							CountExecuteIncremental = 0;
+							goto Update_Emitter_End;
 						}
-						else
-						{	/* Sub-Emitter */
-							if(null != InstancePartsSynchronous)
-							{
-								/* Reduce (parent's) Reference-Counter */
-								InstancePartsSynchronous.CountSynchronousDecrease();
-							}
-							return(false);
+#else
+						/* MEMO: "Root-Emitter" is Self-Destruction. */
+#endif
+						if(null != InstancePartsSynchronous)
+						{
+							/* Reduce (parent's) Reference-Counter */
+							InstancePartsSynchronous.CountSynchronousDecrease();
 						}
+						return(false);
 					}
 
 					if(null != InstancePartsSynchronous)
@@ -4362,8 +4584,7 @@ public static partial class Library_SpriteStudio
 						Position = InstancePartsSynchronous.Position;
 					}
 
-					Status = ((TimeDelay > TimeElapsed) || (false == FlagValid)) ? (Status & ~FlagBitStatus.EMITTER_EMITTABLE) : (Status | FlagBitStatus.EMITTER_EMITTABLE);
-
+					Status = ((TimeDelay > TimeElapsed) || (false == FlagValid) || (CountFramePrevious == CountFrameNow)) ? (Status & ~FlagBitStatus.EMITTER_EMITTABLE) : (Status | FlagBitStatus.EMITTER_EMITTABLE);
 					if(0 != (Status & FlagBitStatus.EMITTER_EMITTABLE))
 					{
 #if EFFECTUPDATE_CONFORMtoSS5_5
@@ -4372,7 +4593,6 @@ public static partial class Library_SpriteStudio
 #else
 						/* MEMO: Original */
 						TimeInterval += TimeDelta;
-						float TimeIntervalData = DataEmitter.TimeInterval;
 						while(TimeInterval >= TimeIntervalData)
 						{
 							TimeInterval -= TimeIntervalData;
@@ -4387,9 +4607,11 @@ public static partial class Library_SpriteStudio
 							}
 						}
 #endif
+						CountFramePrevious = CountFrameNow;
 					}
 				}
-
+				/* Fall-Through */
+//			Update_Emitter_End:;
 				CountExecute += CountExecuteIncremental;
 				return(true);
 			}
@@ -4399,8 +4621,6 @@ public static partial class Library_SpriteStudio
 			{
 				int CountCreate = DataEmitter.CountParticleEmit;
 				CountCreate = (0 >= CountCreate) ? 1 : CountCreate;
-
-				float TimeIntervalData = DataEmitter.TimeInterval;
 				for( ; ; )
 				{
 					if(TimeInterval >= TimeIntervalData)
@@ -4447,9 +4667,9 @@ public static partial class Library_SpriteStudio
 			internal void CountSynchronousReturnParticle()
 			{
 				CountRemainEmit++;
-				if(DataEmitter.CountParticleEmit < CountRemainEmit)
+				if(DataEmitter.CountParticleMax < CountRemainEmit)
 				{
-					CountRemainEmit = DataEmitter.CountParticleEmit;
+					CountRemainEmit = DataEmitter.CountParticleMax;
 				}
 			}
 

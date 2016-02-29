@@ -13,7 +13,7 @@ public static partial class Library_SpriteStudio
 		public static partial class TableMaterial
 		{
 			public static readonly int CountTextureBlock = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR - 1;
-			public static readonly int CountTextureBlockEffect = (int)Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1;
+			public static readonly int CountTextureBlockEffect = (int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1;
 
 			/* ******************************************************** */
 			//! Create Material-Table (for "Root")

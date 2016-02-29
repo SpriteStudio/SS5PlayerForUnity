@@ -13,7 +13,25 @@ public class Inspector_SpriteStudio_RootEffect : Editor
 {
 	private static bool FoldOutStaticDatas;
 	private static bool FoldOutMaterialTable;
+	private static bool FoldOutMaterialApplied;
 	private static bool FoldOutPlayInformation;
+
+	private static readonly string[][] ListNameShader = new string[(int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND - 1][]
+	{
+		new string[] {	"MIX",
+					},
+		new string[] {	"ADD (PreMultiplied Alpha)",
+						"ADD2 (Straight Alpha)",
+					},
+	};
+	private static readonly int[][] ListIndexOffsetShader = new int[(int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND - 1][]
+	{
+		new int[] {	(int)(Library_SpriteStudio.KindColorOperationEffect.MIX - Library_SpriteStudio.KindColorOperationEffect.MIX),
+				},
+		new int[] {	(int)(Library_SpriteStudio.KindColorOperationEffect.ADD - Library_SpriteStudio.KindColorOperationEffect.ADD),
+					(int)(Library_SpriteStudio.KindColorOperationEffect.ADD2 - (int)Library_SpriteStudio.KindColorOperationEffect.ADD),
+				},
+	};
 
 	public override void OnInspectorGUI()
 	{
@@ -42,14 +60,14 @@ public class Inspector_SpriteStudio_RootEffect : Editor
 			EditorGUI.indentLevel = LevelIndent + 1;
 			if(null != Data.TableMaterial)
 			{
-				int CountShader = (int)(Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1);
+				int CountShader = (int)(Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1);
 				int Count = Data.TableMaterial.Length / CountShader;
 				int MaterialNoTop = 0;
-				Library_SpriteStudio.KindColorOperation MaterialTableNo = 0;
+				Library_SpriteStudio.KindColorOperationEffect MaterialTableNo = 0;
 				string NameField = "";
 				for(int i=0; i<Count; i++)
 				{
-					MaterialNoTop = i * (int)(Library_SpriteStudio.KindColorOperation.TERMINATOR_EFFECT - 1);
+					MaterialNoTop = i * (int)(Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1);
 					EditorGUILayout.LabelField(	"Material No ["
 												+ MaterialNoTop
 												+ "-"
@@ -61,7 +79,7 @@ public class Inspector_SpriteStudio_RootEffect : Editor
 					EditorGUI.indentLevel = LevelIndent + 2;
 					for(int j=0; j<CountShader; j++)
 					{
-						MaterialTableNo = (Library_SpriteStudio.KindColorOperation)(j+1);
+						MaterialTableNo = (Library_SpriteStudio.KindColorOperationEffect)(j+1);
 						NameField = "Shader [" + MaterialTableNo.ToString() + "]";
 						Data.TableMaterial[MaterialNoTop + j] = (Material)(EditorGUILayout.ObjectField(NameField, Data.TableMaterial[MaterialNoTop + j], typeof(Material), false));
 					}
@@ -71,8 +89,24 @@ public class Inspector_SpriteStudio_RootEffect : Editor
 			}
 			EditorGUI.indentLevel = LevelIndent;
 		}
-		EditorGUILayout.Space();
 
+		EditorGUILayout.Space();
+		FoldOutMaterialApplied = EditorGUILayout.Foldout(FoldOutMaterialApplied, "Applied-Material Setting");
+		if(true == FoldOutMaterialApplied)
+		{
+			if((null == Data.IndexMaterialBlendOffset) || (0 >= Data.IndexMaterialBlendOffset.Length))
+			{
+				Data.TableCreateBlendOffset();
+			}
+
+			int CountBlendKind = (int)(Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND - 1);
+			for(int i=0; i<CountBlendKind; i++)
+			{
+				Data.IndexMaterialBlendOffset[i] = EditorGUILayout.IntPopup(((Library_SpriteStudio.KindColorOperationEffect)(i + 1)).ToString() + "-Shader", Data.IndexMaterialBlendOffset[i], ListNameShader[i], ListIndexOffsetShader[i]);
+			}
+		}
+
+		EditorGUILayout.Space();
 		FoldOutPlayInformation = EditorGUILayout.Foldout(FoldOutPlayInformation, "Initial/Preview Play Setting");
 		if(true == FoldOutPlayInformation)
 		{
