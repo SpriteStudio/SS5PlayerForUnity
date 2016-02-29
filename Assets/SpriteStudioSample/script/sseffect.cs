@@ -19,6 +19,10 @@ public class sseffect : MonoBehaviour {
 		{
 			//初期化.
 			ScriptRoot = Library_SpriteStudio.Utility.Parts.RootGetChild(gameObject);
+			//配置されているviweを取得し設定する.
+			var go = GameObject.Find("View (Manager-Draw)");
+			ScriptRoot.InstanceManagerDraw = go.GetComponent<Script_SpriteStudio_ManagerDraw>();
+
 			//アニメーション終了コールバックを設定.
 			ScriptRoot.FunctionPlayEnd = AnimEnd;
 			//アニメーション再生
