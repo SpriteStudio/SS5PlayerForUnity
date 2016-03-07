@@ -558,7 +558,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		}
 
 		bool FlagPongPong = (0 != (Status & FlagBitStatus.STYLE_PINGPONG)) ? true : false;
-		float TimeRange = (float)(FrameNoEnd - FrameNoStart) * TimePerFrame;
+		float TimeRange = (float)((FrameNoEnd - FrameNoStart) - 1) * TimePerFrame;
 		float TimeLoop = TimeRange * ((true == FlagPongPong) ? 2.0f : 1.0f);
 		float TimeCursor = TimeElapsedForce;
 		int CountLoop = 0;
