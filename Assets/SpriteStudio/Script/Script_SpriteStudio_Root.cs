@@ -1456,6 +1456,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		ControlParts.NameAnimationUnderControl = NameAnimation;
 
 		/* Refresh Instance */
+		ControlParts.Status |= Library_SpriteStudio.Control.Parts.FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 		return(ControlParts.RebootPrefabInstance(this, IDParts));
 	}
 }

@@ -2532,7 +2532,7 @@ public static partial class Library_SpriteStudio
 					/* Create UnderControl-Instance */
 					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
 					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, true);
+						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, true);
 						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 					}
 					if(null != InstanceGameObjectUnderControl)
@@ -2557,7 +2557,7 @@ public static partial class Library_SpriteStudio
 					/* Create UnderControl-Instance */
 					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
 					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, true);
+						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, true);
 						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 					}
 					if(null != InstanceGameObjectUnderControl)
@@ -5841,6 +5841,7 @@ public static partial class Library_SpriteStudio
 
 			public static GameObject PrefabInstantiateChild(	GameObject InstanceGameObjectParent,
 																GameObject GameObjectPrefab,
+																GameObject InstanceGameObjectOld,
 																bool FlagInstanceUnderControlRenew
 															)
 			{
@@ -5848,6 +5849,12 @@ public static partial class Library_SpriteStudio
 				if(null == GameObjectPrefab)
 				{
 					return(null);
+				}
+
+				if(null != InstanceGameObjectOld)
+				{
+					Object.DestroyImmediate(InstanceGameObjectOld);
+					InstanceGameObjectOld = null;
 				}
 
 				GameObject InstanceGameObject = null;
@@ -5858,7 +5865,7 @@ public static partial class Library_SpriteStudio
 				InstanceTransform = InstanceTransformParent.Find(GameObjectPrefab.name);
 				if((null == InstanceTransform) || (true == FlagInstanceUnderControlRenew))
 				{
-					/* Delete Old UnderControl-Instance */
+					/* Delete Old UnderControl-Instance (Same Name) */
 					if(null != InstanceTransform)
 					{
 						Object.DestroyImmediate(InstanceTransform.gameObject);
