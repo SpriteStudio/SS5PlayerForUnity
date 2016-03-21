@@ -1947,7 +1947,7 @@ public static partial class Library_SpriteStudio
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(true == ColorOverlay[i].Equals(TargetData.ColorOverlay[i]))
+					if(false == ColorOverlay[i].Equals(TargetData.ColorOverlay[i]))
 					{
 						return(false);
 					}
