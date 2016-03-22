@@ -4938,6 +4938,7 @@ public static partial class Library_SpriteStudio
 
 		internal struct DataDrawParts
 		{
+			internal Library_SpriteStudio.KindParts Kind;
 			internal Transform InstanceTransform;
 			internal Library_SpriteStudio.Script.Root InstanceRoot;
 //			internal FragmentClusterDrawParts InstanceFragmentClusterDrawPartsPartsPair;
@@ -4948,6 +4949,7 @@ public static partial class Library_SpriteStudio
 			internal void CleanUp()
 			{
 				ChainCleanUp();
+				Data.Kind = KindParts.NON;
 				Data.InstanceTransform = null;
 				Data.InstanceRoot = null;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = null;
@@ -4959,6 +4961,7 @@ public static partial class Library_SpriteStudio
 									GameObject InstanceGameObjectInitial
 								)
 			{
+				Data.Kind = KindParts;
 				Data.InstanceTransform = InstanceGameObjectInitial.transform;
 				Data.InstanceRoot = InstanceRootInitial;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = InstanceFragmentClusterDrawPartsPartsPairInitial;
@@ -5490,7 +5493,7 @@ public static partial class Library_SpriteStudio
 			Matrix4x4 MatrixCollect = (null != InstanceTrasnformDrawManager) ? InstanceTrasnformDrawManager.localToWorldMatrix.inverse : Matrix4x4.identity;
 
 			CombineInstance[] CombineMesh = new CombineInstance[CountMesh];
-			int[] TableIndexVertex = new int[CountMaterial];
+//			int[] TableIndexVertex = new int[CountMaterial];
 			int[] TableIndexTriangle = new int[CountMaterial + 1];	/* +1 ... Total Data */
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
@@ -5500,7 +5503,7 @@ public static partial class Library_SpriteStudio
 			for(int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
-				TableIndexVertex[i] = IndexVertex;
+//				TableIndexVertex[i] = IndexVertex;
 				TableIndexTriangle[i] = IndexTriangle;
 
 				while(null != DataPartsNow)
@@ -5510,8 +5513,13 @@ public static partial class Library_SpriteStudio
 						CombineMesh[Index].mesh = DataPartsNow.Data.InstanceMesh;
 						CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
 						Index++;
+#if false
 						IndexVertex += DataPartsNow.Data.InstanceMesh.vertices.Length;
 						IndexTriangle += DataPartsNow.Data.InstanceMesh.triangles.Length / 3;
+#else
+						IndexVertex += DataPartsNow.Data.InstanceMesh.vertexCount;
+						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
+#endif
 					}
 
 					DataPartsNow = DataPartsNow.ChainNext;
