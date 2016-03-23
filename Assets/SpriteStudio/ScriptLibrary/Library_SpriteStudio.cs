@@ -2631,11 +2631,11 @@ public static partial class Library_SpriteStudio
 				}
 				else
 				{	/* Has no Data */
-					if(0 != (Status = FlagBitStatus.CHANGE_TRANSFORM_POSITION))
+					if(0 != (Status & FlagBitStatus.CHANGE_TRANSFORM_POSITION))
 					{
 						InstanceTransform.localPosition = Vector3.zero;
+						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_POSITION;
 					}
-					Status &= ~FlagBitStatus.CHANGE_TRANSFORM_POSITION;
 				}
 				IndexAttribute = DataAnimationParts.Rotation.IndexGetValue(out FrameNoOrigin, FrameNo);
 				if(0 <= IndexAttribute)
@@ -2650,11 +2650,11 @@ public static partial class Library_SpriteStudio
 				}
 				else
 				{	/* Has no Data */
-					if(0 != (Status = FlagBitStatus.CHANGE_TRANSFORM_ROTATION))
+					if(0 != (Status & FlagBitStatus.CHANGE_TRANSFORM_ROTATION))
 					{
 						InstanceTransform.localRotation = Quaternion.identity;
+						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_ROTATION;
 					}
-					Status &= ~FlagBitStatus.CHANGE_TRANSFORM_ROTATION;
 				}
 				IndexAttribute = DataAnimationParts.Scaling.IndexGetValue(out FrameNoOrigin, FrameNo);
 				if(0 <= IndexAttribute)
@@ -2668,11 +2668,11 @@ public static partial class Library_SpriteStudio
 				}
 				else
 				{	/* Has no Data */
-					if(0 != (Status = FlagBitStatus.CHANGE_TRANSFORM_SCALING))
+					if(0 != (Status & FlagBitStatus.CHANGE_TRANSFORM_SCALING))
 					{
 						InstanceTransform.localScale = Vector3.one;
+						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_SCALING;
 					}
-					Status &= ~FlagBitStatus.CHANGE_TRANSFORM_SCALING;
 				}
 #endif
 
@@ -3573,7 +3573,8 @@ public static partial class Library_SpriteStudio
 				int FrameNoOrigin;
 				int IndexAttribute;
 				bool FlagInitializeForce = false;
-				bool FlagPlayReverse = (0 == (Status & FlagBitStatus.EFFECT_PLAYING)) ? true : false;
+//				bool FlagPlayReverse = (0 == (Status & FlagBitStatus.EFFECT_PLAYING)) ? true : false;
+				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
 				bool FlagDecodeEffect = InstanceRoot.StatusIsDecodeEffect;
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 
