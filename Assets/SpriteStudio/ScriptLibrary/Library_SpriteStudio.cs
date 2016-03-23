@@ -2245,6 +2245,10 @@ public static partial class Library_SpriteStudio
 
 				HIDEFORCE = 0x08000000,
 
+				CHANGE_TRANSFORM_POSITION = 0x00100000,
+				CHANGE_TRANSFORM_ROTATION = 0x00200000,
+				CHANGE_TRANSFORM_SCALING = 0x00400000,
+
 				INSTANCE_VALID = 0x00008000,
 				INSTANCE_PLAYINDEPENDENT = 0x00004000,
 
@@ -2596,6 +2600,7 @@ public static partial class Library_SpriteStudio
 				/* Update Transform */
 				/* MEMO: No Transform-Datas, Not Changing "Transform" */
 				IndexAttribute = DataAnimationParts.Position.IndexGetValue(out FrameNoOrigin, FrameNo);
+#if false
 				if((0 <= IndexAttribute) && (IndexPreviousPosition != IndexAttribute))
 				{
 					InstanceTransform.localPosition = DataAnimationParts.Position.ListValue[IndexAttribute];
@@ -2614,6 +2619,62 @@ public static partial class Library_SpriteStudio
 					InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
 					IndexPreviousScaling = IndexAttribute;
 				}
+#else
+				if(0 <= IndexAttribute)
+				{	/* Has Data */
+					if(IndexPreviousPosition != IndexAttribute)
+					{
+						InstanceTransform.localPosition = DataAnimationParts.Position.ListValue[IndexAttribute];
+						IndexPreviousPosition = IndexAttribute;
+						Status |= FlagBitStatus.CHANGE_TRANSFORM_POSITION;
+					}
+				}
+				else
+				{	/* Has no Data */
+					if(0 != (Status = FlagBitStatus.CHANGE_TRANSFORM_POSITION))
+					{
+						InstanceTransform.localPosition = Vector3.zero;
+					}
+					Status &= ~FlagBitStatus.CHANGE_TRANSFORM_POSITION;
+				}
+				IndexAttribute = DataAnimationParts.Rotation.IndexGetValue(out FrameNoOrigin, FrameNo);
+				if(0 <= IndexAttribute)
+				{	/* Has Data */
+					if(IndexPreviousRotation != IndexAttribute)
+					{
+						Quaternion QuaternionTemp = Quaternion.Euler(DataAnimationParts.Rotation.ListValue[IndexAttribute]);
+						InstanceTransform.localRotation = QuaternionTemp;
+						IndexPreviousRotation = IndexAttribute;
+						Status |= FlagBitStatus.CHANGE_TRANSFORM_ROTATION;
+					}
+				}
+				else
+				{	/* Has no Data */
+					if(0 != (Status = FlagBitStatus.CHANGE_TRANSFORM_ROTATION))
+					{
+						InstanceTransform.localRotation = Quaternion.identity;
+					}
+					Status &= ~FlagBitStatus.CHANGE_TRANSFORM_ROTATION;
+				}
+				IndexAttribute = DataAnimationParts.Scaling.IndexGetValue(out FrameNoOrigin, FrameNo);
+				if(0 <= IndexAttribute)
+				{	/* Has Data */
+					if(IndexPreviousScaling != IndexAttribute)
+					{
+						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						IndexPreviousScaling = IndexAttribute;
+						Status |= FlagBitStatus.CHANGE_TRANSFORM_SCALING;
+					}
+				}
+				else
+				{	/* Has no Data */
+					if(0 != (Status = FlagBitStatus.CHANGE_TRANSFORM_SCALING))
+					{
+						InstanceTransform.localScale = Vector3.one;
+					}
+					Status &= ~FlagBitStatus.CHANGE_TRANSFORM_SCALING;
+				}
+#endif
 
 				/* Status Get */
 				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
