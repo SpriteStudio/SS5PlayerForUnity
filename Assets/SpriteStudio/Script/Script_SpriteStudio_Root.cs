@@ -558,7 +558,8 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		}
 
 		bool FlagPongPong = (0 != (Status & FlagBitStatus.STYLE_PINGPONG)) ? true : false;
-		float TimeRange = (float)(FrameNoEnd - FrameNoStart) * TimePerFrame;
+		int FrameRange = (FrameNoEnd - FrameNoStart) + 1;
+		float TimeRange = (float)FrameRange * TimePerFrame;
 		float TimeLoop = TimeRange * ((true == FlagPongPong) ? 2.0f : 1.0f);
 		float TimeCursor = TimeElapsedForce;
 		int CountLoop = 0;
@@ -653,6 +654,8 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		}
 		TimeElapsed = TimeCursor;
 		FrameNoNow = (int)(TimeElapsed / TimePerFrame);
+		FrameNoNow = (0 > FrameNoNow) ? 0 : FrameNoNow;
+		FrameNoNow = (FrameRange <= FrameNoNow) ? (FrameRange - 1) : FrameNoNow;
 		FrameNoNow += FrameNoStart;
 	}
 
@@ -1456,6 +1459,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		ControlParts.NameAnimationUnderControl = NameAnimation;
 
 		/* Refresh Instance */
+		ControlParts.Status |= Library_SpriteStudio.Control.Parts.FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 		return(ControlParts.RebootPrefabInstance(this, IDParts));
 	}
 }

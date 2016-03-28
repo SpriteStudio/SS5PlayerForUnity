@@ -21,7 +21,7 @@ public partial class Script_SpriteStudio_ControlPrefab : MonoBehaviour
 	{
 		if(null != PrefabUnderControl)
 		{
-			GameObject InstanceGameObjectChild = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(gameObject, (GameObject)PrefabUnderControl, false);
+			GameObject InstanceGameObjectChild = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(gameObject, (GameObject)PrefabUnderControl, null, false);
 			if(null != InstanceGameObjectChild)
 			{
 				/* Instantiate Under-Control Prefab */
