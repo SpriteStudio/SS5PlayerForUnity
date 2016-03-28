@@ -15,6 +15,7 @@
 ? NameBaseFolderAsset > Assets/SpriteStudioSample/SSdata
 
 character_template_sample1/character_template1.sspj
+instance_sample/instance_test.sspj
 
 * ++++++++++++++++++++++++++++++++++++++++
 ? NameBaseFolderAsset > Assets/SpriteStudioSample/Resources/prefabs/hiteffect
