@@ -31,6 +31,10 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 			/* MEMO: Default-Values are same SSPJ-Importer's Default. (except "FlagConfirmOverWriteXXX") */
 			LibraryEditor_SpriteStudio.SettingImport DataSettingImport = new LibraryEditor_SpriteStudio.SettingImport();
 			DataSettingImport.FlagNameDataRuleOld = true;
+			DataSettingImport.FlagNameDataAttachSpecific = false;
+			DataSettingImport.FlagNameDataAttachSpecificToPrefab = false;
+			DataSettingImport.FlagNameDataAttachSpecificToTexture = false;
+			DataSettingImport.FlagNameDataAttachSpecificSSPJ = false;
 			DataSettingImport.TextureSizePixelMaximum = 4096;
 			DataSettingImport.FlagAttachControlGameObject = true;
 			DataSettingImport.FlagCreateProjectFolder = true;
@@ -120,6 +124,11 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 		private const string CommandNameBaseFolderAsset = "NameBaseFolderAsset";
 
 		private const string CommandFlagNameDataRuleOld = "FlagNameDataRuleOld";
+		private const string CommandFlagNameDataAttachSpecific = "FlagNameDataAttachSpecific";
+		private const string CommandFlagNameDataAttachSpecificToPrefab = "FlagNameDataAttachSpecificToPrefab";
+		private const string CommandFlagNameDataAttachSpecificToTexture = "FlagNameDataAttachSpecificToTexture";
+		private const string CommandFlagNameDataAttachSpecificSSPJ = "FlagNameDataAttachSpecificSSPJ";
+
 		private const string CommandTextureSizePixelMaximum = "TextureSizePixelMaximum";
 		private const string CommandFlagAttachControlGameObject = "FlagAttachControlGameObject";
 		private const string CommandFlagCreateProjectFolder = "FlagCreateProjectFolder";
@@ -173,6 +182,36 @@ public static partial class LibraryEditor_SpriteStudio_Sample_BachImport
 					/* NameBaseFolderSS5Data [Base Folder Name] */
 					TextParameter = String.Copy(Arguments[1]);
 					NameBaseFolderSS5Data = TextTrim(TextParameter);
+					break;
+
+				case CommandFlagNameDataRuleOld:	/* FlagNameDataRuleOld */
+					/* FlagNameDataRuleOld [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagNameDataRuleOld = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagNameDataAttachSpecific:	/* FlagNameDataAttachSpecific */
+					/* FlagNameDataAttachSpecific [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagNameDataAttachSpecific = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagNameDataAttachSpecificToPrefab: /* FlagNameDataAttachSpecificToPrefab */
+					/* FlagNameDataAttachSpecificToPrefab [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagNameDataAttachSpecificToPrefab = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagNameDataAttachSpecificToTexture:    /* FlagNameDataAttachSpecificToTexture */
+					/* FlagNameDataAttachSpecificToTexture [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagNameDataAttachSpecificToTexture = FlagGetChangeSetting(TextParameter);
+					break;
+
+				case CommandFlagNameDataAttachSpecificSSPJ:	/* FlagNameDataAttachSpecificSSPJ */
+					/* FlagNameDataAttachSpecificSSPJ [true/false] */
+					TextParameter = String.Copy(Arguments[1]);
+					DataSettingImport.FlagNameDataAttachSpecificSSPJ = FlagGetChangeSetting(TextParameter);
 					break;
 
 				case CommandTextureSizePixelMaximum:	/* TextureSizePixelMaximum */

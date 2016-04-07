@@ -30,6 +30,15 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static string NamePathSubImportPrefabEffect = "Prefab_Effect";
 	internal readonly static string NamePathSubImportMaterialEffect = "Material_Effect";
 
+	internal readonly static string NamePrefixPrefab = "pa_";
+	internal readonly static string NamePrefixPrefabEffect = "pe_";
+	internal readonly static string NamePrefixAnimation = "da_";
+	internal readonly static string NamePrefixEffect = "de_";
+	internal readonly static string NamePrefixCellMap = "dc_";
+	internal readonly static string NamePrefixMaterial = "ma_";
+	internal readonly static string NamePrefixMaterialEffect = "me_";
+	internal readonly static string NamePrefixTexture = "tx_";
+
 	internal readonly static string NameExtensionPrefab = ".prefab";
 	internal readonly static string NameExtensionPrefabEffect = ".prefab";
 	internal readonly static string NameExtensionAnimation = ".asset";
@@ -44,6 +53,12 @@ public static partial class LibraryEditor_SpriteStudio
 	public struct SettingImport
 	{
 		public bool FlagNameDataRuleOld;
+		public bool FlagNameDataAttachSpecific;
+		public bool FlagNameDataAttachSpecificToPrefab;
+//		public bool FlagNameDataAttachSpecificToCellMap;
+		public bool FlagNameDataAttachSpecificToTexture;
+		public bool FlagNameDataAttachSpecificSSPJ;
+
 		public int TextureSizePixelMaximum;
 		public bool FlagAttachControlGameObject;
 		public bool FlagCreateProjectFolder;
@@ -70,6 +85,11 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagGetTextureMaterial;
 	}
 	internal readonly static string PrefsKeyFlagNameDataRuleOld = "SS5PU_Importer_FlagNameDataRuleOld";
+	internal readonly static string PrefsKeyFlagNameDataAttachSpecific = "SS5PU_Importer_FlagNameDataAttachSpecific";
+	internal readonly static string PrefsKeyFlagNameDataAttachSpecificToPrefab = "SS5PU_Importer_FlagNameDataAttachSpecificToPrefab";
+//	internal readonly static string PrefsKeyFlagNameDataAttachSpecificToCellMap = "SS5PU_Importer_FlagNameDataAttachSpecificToCellMap";
+	internal readonly static string PrefsKeyFlagNameDataAttachSpecificToTexture = "SS5PU_Importer_FlagNameDataAttachSpecificToTexture";
+	internal readonly static string PrefsKeyFlagNameDataAttachSpecificSSPJ = "SS5PU_Importer_FlagNameDataAttachSpecificSSPJ";
 	internal readonly static string PrefsKeyTextureSizePixelMaximum = "SS5PU_Importer_TextureSizePixelMaximum";
 	internal readonly static string PrefsKeyFlagAttachControlGameObject = "SS5PU_Importer_FlagAttachControlGameObject";
 	internal readonly static string PrefsKeyFlagCreateProjectFolder = "SS5PU_Importer_FlagCreateProjectFolder";
@@ -94,6 +114,11 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static string PrefsKeyFlagGetTextureMaterial = "SS5PU_Importer_FlagGetTextureMaterial";
 
 	internal readonly static bool DefaultFlagNameDataRuleOld = false;
+	internal readonly static bool DefaultFlagNameDataAttachSpecific = false;
+	internal readonly static bool DefaultFlagNameDataAttachSpecificToPrefab = false;
+//	internal readonly static bool DefaultFlagNameDataAttachSpecificToCellMap = false;
+	internal readonly static bool DefaultFlagNameDataAttachSpecificToTexture = false;
+	internal readonly static bool DefaultFlagNameDataAttachSpecificSSPJ = true;
 	internal readonly static int DefaultTextureSizePixelMaximum = 4096;
 	internal readonly static bool DefaultFlagAttachControlGameObject = true;
 	internal readonly static bool DefaultFlagCreateProjectFolder = true;
@@ -125,6 +150,11 @@ public static partial class LibraryEditor_SpriteStudio
 		internal static void SettingClearImport()
 		{
 			EditorPrefs.SetBool(PrefsKeyFlagNameDataRuleOld, DefaultFlagNameDataRuleOld);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecific, DefaultFlagNameDataAttachSpecific);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificToPrefab, DefaultFlagNameDataAttachSpecificToPrefab);
+//			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificToCellMap, DefaultFlagNameDataAttachSpecificToCellMap);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificToTexture, DefaultFlagNameDataAttachSpecificToTexture);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificSSPJ, DefaultFlagNameDataAttachSpecificSSPJ);
 			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, DefaultTextureSizePixelMaximum);
 			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, DefaultCollisionThicknessZ);
 			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, DefaultFlagCreateProjectFolder);
@@ -156,6 +186,11 @@ public static partial class LibraryEditor_SpriteStudio
 		internal static void SettingGetImport(out SettingImport DataSettingImport)
 		{
 			DataSettingImport.FlagNameDataRuleOld = EditorPrefs.GetBool(PrefsKeyFlagNameDataRuleOld, DefaultFlagNameDataRuleOld);
+			DataSettingImport.FlagNameDataAttachSpecific = EditorPrefs.GetBool(PrefsKeyFlagNameDataAttachSpecific, DefaultFlagNameDataAttachSpecific);
+			DataSettingImport.FlagNameDataAttachSpecificToPrefab = EditorPrefs.GetBool(PrefsKeyFlagNameDataAttachSpecificToPrefab, DefaultFlagNameDataAttachSpecificToPrefab);
+//			DataSettingImport.FlagNameDataAttachSpecificToCellMap = EditorPrefs.GetBool(PrefsKeyFlagNameDataAttachSpecificToCellMap, DefaultFlagNameDataAttachSpecificToCellMap);
+			DataSettingImport.FlagNameDataAttachSpecificToTexture = EditorPrefs.GetBool(PrefsKeyFlagNameDataAttachSpecificToTexture, DefaultFlagNameDataAttachSpecificToTexture);
+			DataSettingImport.FlagNameDataAttachSpecificSSPJ = EditorPrefs.GetBool(PrefsKeyFlagNameDataAttachSpecificSSPJ, DefaultFlagNameDataAttachSpecificSSPJ);
 			DataSettingImport.TextureSizePixelMaximum = EditorPrefs.GetInt(PrefsKeyTextureSizePixelMaximum, DefaultTextureSizePixelMaximum);
 			DataSettingImport.FlagAttachControlGameObject = EditorPrefs.GetBool(PrefsKeyFlagAttachControlGameObject, DefaultFlagAttachControlGameObject);
 			DataSettingImport.FlagCreateProjectFolder = EditorPrefs.GetBool(PrefsKeyFlagCreateProjectFolder, DefaultFlagCreateProjectFolder);
@@ -184,6 +219,11 @@ public static partial class LibraryEditor_SpriteStudio
 		internal static void SettingSetImport(ref SettingImport DataSettingImport)
 		{
 			EditorPrefs.SetBool(PrefsKeyFlagNameDataRuleOld, DataSettingImport.FlagNameDataRuleOld);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecific, DataSettingImport.FlagNameDataAttachSpecific);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificToPrefab, DataSettingImport.FlagNameDataAttachSpecificToPrefab);
+//			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificToCellMap, DataSettingImport.FlagNameDataAttachSpecificToCellMap);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificToTexture, DataSettingImport.FlagNameDataAttachSpecificToTexture);
+			EditorPrefs.SetBool(PrefsKeyFlagNameDataAttachSpecificSSPJ, DataSettingImport.FlagNameDataAttachSpecificSSPJ);
 			EditorPrefs.SetInt(PrefsKeyTextureSizePixelMaximum, DataSettingImport.TextureSizePixelMaximum);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, DataSettingImport.FlagAttachControlGameObject);
 			EditorPrefs.SetBool(PrefsKeyFlagCreateProjectFolder, DataSettingImport.FlagCreateProjectFolder);
@@ -594,7 +634,12 @@ public static partial class LibraryEditor_SpriteStudio
 					InformationParts = InformationAnimationSet.ListParts[j];
 					if(Library_SpriteStudio.KindParts.INSTANCE == InformationParts.Kind)
 					{
+#if false
 						IndexSSAE = InformationProject.IndexGetFileName(InformationProject.ListNameSSAE, InformationParts.NameSSAEInstance);
+#else
+						/* MEMO: Determine the target data, from the file name stored in SSPJ. */
+						IndexSSAE = InformationProject.IndexGetFileNameBody(InformationProject.ListNameSSAE, InformationParts.NameSSAEInstance);
+#endif
 						if(-1 == IndexSSAE)
 						{
 							MessageError = "Instance[" + InformationParts.NameSSAEInstance + "] Not Found."
@@ -657,7 +702,12 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{
+#if false
 							IndexSSEE = InformationProject.IndexGetFileName(InformationProject.ListNameSSEE, InformationParts.NameSSEEEffect);
+#else
+							/* MEMO: Determine the target data, from the file name stored in SSPJ. */
+							IndexSSEE = InformationProject.IndexGetFileNameBody(InformationProject.ListNameSSEE, InformationParts.NameSSEEEffect);
+#endif
 							if(-1 == IndexSSEE)
 							{
 								MessageError = "Effect[" + InformationParts.NameSSEEEffect + "] Not Found."
@@ -914,7 +964,13 @@ public static partial class LibraryEditor_SpriteStudio
 				/* MEMO: This data is specified in the Asset-Path. */
 				NamePathAsset = NameBaseAssetPath + "/"
 								+ NamePathSubImportPrefab + "/"
-								+ InformationAnimationSet.Name + NameExtensionPrefab;
+								+ Utility.File.NameAssetBodyGet(	InformationAnimationSet.Name,
+																	null,	/* NamePrefixPrefab */
+																	InformationProject.NameFileBody,
+																	DataSettingImport.FlagNameDataAttachSpecificToPrefab,
+																	ref DataSettingImport
+																)
+								+ NameExtensionPrefab;
 
 				AssetGameObjectRoot = AssetDatabase.LoadAssetAtPath(NamePathAsset, typeof(GameObject)) as GameObject;
 				ScriptRootAsset = (null != AssetGameObjectRoot) ? (AssetGameObjectRoot.GetComponent<Script_SpriteStudio_Root>()) : null;
@@ -924,7 +980,13 @@ public static partial class LibraryEditor_SpriteStudio
 				/* Create Default-Asset-Name (Static Animation-Data) */
 				NamePathAsset = NameBaseAssetPath + "/"
 								+ NamePathSubImportAnimation + "/"
-								+ InformationAnimationSet.Name + NameExtensionAnimation;
+								+ Utility.File.NameAssetBodyGet(	InformationAnimationSet.Name,
+																	NamePrefixAnimation,
+																	InformationProject.NameFileBody,
+																	true,
+																	ref DataSettingImport
+																)
+								+ NameExtensionAnimation;
 
 				ScriptableObject AssetDataAnimation = null;
 				if(true == DataSettingImport.FlagGetAnimationReferencedPartsRoot)
@@ -950,6 +1012,12 @@ public static partial class LibraryEditor_SpriteStudio
 				/* MEMO: This data is specified in the Asset-Path. */
 				NamePathAsset = NameBaseAssetPath + "/"
 								+ NamePathSubImportPrefabEffect + "/"
+								+ Utility.File.NameAssetBodyGet(	InformationEffectSet.Name,
+																	NamePrefixPrefabEffect,
+																	InformationProject.NameFileBody,
+																	DataSettingImport.FlagNameDataAttachSpecificToPrefab,
+																	ref DataSettingImport
+																)
 								+ InformationEffectSet.Name + NameExtensionPrefabEffect;
 
 				AssetGameObjectRoot = AssetDatabase.LoadAssetAtPath(NamePathAsset, typeof(GameObject)) as GameObject;
@@ -960,8 +1028,13 @@ public static partial class LibraryEditor_SpriteStudio
 				/* Create Default-Asset-Name (Static Effect-Data) */
 				NamePathAsset = NameBaseAssetPath + "/"
 								+ NamePathSubImportEffect + "/"
-								+ InformationEffectSet.Name + NameExtensionEffect;
-
+								+ Utility.File.NameAssetBodyGet(	InformationEffectSet.Name,
+																	NamePrefixEffect,
+																	InformationProject.NameFileBody,
+																	true,
+																	ref DataSettingImport
+																)
+								+ NameExtensionEffect;
 				ScriptableObject AssetDataEffect = null;
 				if(true == DataSettingImport.FlagGetAnimationReferencedPartsRoot)
 				{
@@ -982,8 +1055,13 @@ public static partial class LibraryEditor_SpriteStudio
 				/* Create Default-Asset-Name (Static CellMap-Data) */
 				NamePathAsset = NameBaseAssetPath + "/"
 								+ NamePathSubImportCellMap + "/"
-								+ InformationProject.NameFileBody + NameExtensionCellMap;
-
+								+ Utility.File.NameAssetBodyGet(	InformationProject.NameFileBody,
+																	null,	/* NamePrefixCellMap, */
+																	null,
+																	false,
+																	ref DataSettingImport
+																)
+								+ NameExtensionCellMap;
 				InformationProject.PrefabCell = null;
 				InformationProject.NamePrefabCell = NamePathAsset;
 			}
@@ -998,7 +1076,13 @@ public static partial class LibraryEditor_SpriteStudio
 				/* Create Default-Asset-Name */
 				NamePathAsset = NameBaseAssetPath + "/"
 								+ NamePathSubImportTexture + "/"
-								+ InformationTexture.Name + InformationTexture.NameFileExtension;
+								+ Utility.File.NameAssetBodyGet(	InformationTexture.Name,
+																	null,	/* NamePrefixTexture */
+																	InformationProject.NameFileBody,
+																	DataSettingImport.FlagNameDataAttachSpecificToTexture,
+																	ref DataSettingImport
+																)
+								+ InformationTexture.NameFileExtension;
 
 				InformationTexture.PrefabTexture = null;
 				InformationTexture.NamePrefabTexture = NamePathAsset;
@@ -1010,8 +1094,13 @@ public static partial class LibraryEditor_SpriteStudio
 					KindColorOperation = (Library_SpriteStudio.KindColorOperation)(j + 1);	/* +1 == ".NON" */
 					NamePathAsset = NameBaseAssetPath + "/"
 									+ NamePathSubImportMaterial + "/"
-									+ InformationTexture.Name + "_" + (KindColorOperation.ToString()) + NameExtensionMaterial;
-
+									+ Utility.File.NameAssetBodyGet(	InformationTexture.Name,
+																		NamePrefixMaterial,
+																		InformationProject.NameFileBody,
+																		true,
+																		ref DataSettingImport
+																	) + "_" + (KindColorOperation.ToString())
+									+ NameExtensionMaterial;
 					InformationTexture.ListPrefabMaterial[j] = null;
 					InformationTexture.ListNamePrefabMaterial[j] = NamePathAsset;
 				}
@@ -1021,8 +1110,13 @@ public static partial class LibraryEditor_SpriteStudio
 					KindColorOperationEffect = (Library_SpriteStudio.KindColorOperationEffect)(j + 1);	/* +1 == ".NON" */
 					NamePathAsset = NameBaseAssetPath + "/"
 									+ NamePathSubImportMaterialEffect + "/"
-									+ InformationTexture.Name + "_" + (KindColorOperationEffect.ToString()) + NameExtensionMaterialEffect;
-
+									+ Utility.File.NameAssetBodyGet(	InformationTexture.Name,
+																		NamePrefixMaterialEffect,
+																		InformationProject.NameFileBody,
+																		true,
+																		ref DataSettingImport
+																	) + "_" + (KindColorOperationEffect.ToString())
+									+ NameExtensionMaterialEffect;
 					InformationTexture.ListPrefabMaterialEffect[j] = null;
 					InformationTexture.ListNamePrefabMaterialEffect[j] = NamePathAsset;
 				}
@@ -2230,7 +2324,12 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 			else
 			{
+#if false
 				InformationParts.NameSSAEInstance = InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssae");
+#else
+				/* MEMO: Without confirming the file-path, search at the time of reference. */
+				InformationParts.NameSSAEInstance = ValueText;
+#endif
 			}
 			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "refAnime", ManagerNameSpace);
 			InformationParts.NameAnimationUnderControl = (null != ValueText) ? String.Copy(ValueText) : "";
@@ -2244,7 +2343,12 @@ public static partial class LibraryEditor_SpriteStudio
 			else
 			{
 				/* MEMO: Even if Tag is present, it may value is empty. */
+#if false
 				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssee") : "";
+#else
+					/* MEMO: Without confirming the file-path, search at the time of reference. */
+				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? ValueText : "";
+#endif
 			}
 
 			/* Color-Label Get */
@@ -6968,7 +7072,13 @@ public static partial class LibraryEditor_SpriteStudio
 			LibraryEditor_SpriteStudio.ParseOPSS.InformationSSAE InformationAnimationSet = InformationProject.ListInformationSSAE[Index];
 
 			/* Asset Path Generate */
-			string NameObjectControl = InformationAnimationSet.NameFileBody + LibraryEditor_SpriteStudio.NameSuffixPrefabControl;
+//			string NameObjectControl = InformationAnimationSet.NameFileBody + LibraryEditor_SpriteStudio.NameSuffixPrefabControl;
+			string NameObjectControl = Utility.File.NameAssetBodyGet(	InformationAnimationSet.Name,	/* InformationAnimationSet.NameFileBody, */
+																		null,	/* NamePrefixPrefab */
+																		InformationProject.NameFileBody,
+																		DataSettingImport.FlagNameDataAttachSpecificToPrefab,
+																		ref DataSettingImport
+																	) + LibraryEditor_SpriteStudio.NameSuffixPrefabControl;
 			string NamePathAssetControl = NameBaseAssetPath + "/"
 											+ NameObjectControl + LibraryEditor_SpriteStudio.NameExtensionPrefab;
 
@@ -8111,6 +8221,59 @@ public static partial class LibraryEditor_SpriteStudio
 					AssetDatabase.SaveAssets();
 				}
 				return(true);
+			}
+
+			internal static string NameAssetBodyGet(	string NameAssetBase,
+														string NamePrefixBase,
+														string NameSSPJ,
+														bool FlagApply,
+														ref SettingImport DataSettingImport
+													)
+			{
+				if(true == DataSettingImport.FlagNameDataAttachSpecific)
+				{
+					if(null == NamePrefixBase)
+					{
+						if(true == DataSettingImport.FlagNameDataAttachSpecificSSPJ)
+						{	/* SSPJ_... */
+							if(true == FlagApply)
+							{
+								return(NameSSPJ + "_" + NameAssetBase);
+							}
+						}
+						goto NameAssetBodyGet_AsItIs;	/* Option Error = .... */
+					}
+					else
+					{	/* xx_... */
+						if(true == DataSettingImport.FlagNameDataAttachSpecificSSPJ)
+						{
+							if(null == NameSSPJ)
+							{
+								if(true == FlagApply)
+								{
+									return(NamePrefixBase + NameAssetBase);
+								}
+							}
+							else
+							{
+								if(true == FlagApply)
+								{
+									return(NamePrefixBase + NameSSPJ + "_" + NameAssetBase);
+								}
+							}
+						}
+						else
+						{
+							if(true == FlagApply)
+							{
+								return(NamePrefixBase + NameAssetBase);
+							}
+						}
+					}
+				}
+
+			NameAssetBodyGet_AsItIs:;
+				return(NameAssetBase);
 			}
 		}
 

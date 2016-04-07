@@ -58,6 +58,92 @@
 * FlagNameDataRuleOld > false
 * 
 * ---------------------
+* FlagNameDataAttachSpecific > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Naming Add Prefix" in the import settings.
+* So that the Asset-Name does not conflict when stored in the Asset-Bundle,
+* add the data identification string to the top.
+* 
+* Each prefix is the following .
+* - Animation Object (Prefab) : ""=[None]
+* - Effect Object (Prefab)    : "pe_" or ""=[none]
+* - Static Animation-Data     : "da_"
+* - Static Effect-Data        : "de_"
+* - Static CellMapData        : ""=[none] (SSPJ's BodyName, force)
+* - Static Material-Animation : "ma_"
+* - Static Material-Effect    : "me_"
+* - Static Texture            : ""=[None]
+* 
+* ex.
+* FlagNameDataAttachSpecific > false
+* 
+* ---------------------
+* FlagNameDataAttachSpecificSSPJ > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Add SSPJ-Name" in the import settings.
+* When the value is "true", the prefix will change to the following.
+* 
+* - Animation Object (Prefab) : "(SSPJ's BodyName)_" or ""=[None]
+* - Effect Object (Prefab)    : "pe_(SSPJ's BodyName)_"
+* - Static Animation-Data     : "da_(SSPJ's BodyName)_"
+* - Static Effect-Data        : "de_(SSPJ's BodyName)_"
+* - Static CellMapData        : ""=[None] (SSPJ's BodyName, force)
+* - Static Material-Animation : "ma_(SSPJ's BodyName)_"
+* - Static Material-Effect    : "me_(SSPJ's BodyName)_"
+* - Static Texture            : "(SSPJ's BodyName)_" or ""=[None]
+* 
+* If "FlagNameDataAttachSpecific" set "false", this setting does not effect.
+* 
+* ex.
+* FlagNameDataAttachSpecificSSPJ > true
+* 
+* ---------------------
+* FlagNameDataAttachSpecificToPrefab > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Apply to Prefabs" in the import settings.
+* Append prefix to the Asset-Name for Animation-Object prefab.
+* 
+* The prefix is following.
+* - Animation Object : ""=[None]
+* - Effect Object    : "pe_"
+* 
+* When the value of the "FlagNameDataAttachSpecificSSPJ" is "true",
+*  the prefix will change to the following.
+* - Animation Object : "(SSPJ-Name)_"
+* - Effect Object    : "pe_(SSPJ-Name)_"
+* 
+* If "FlagNameDataAttachSpecific" set "false", this setting does not effect.
+* 
+* ex.
+* FlagNameDataAttachSpecificToPrefab > false
+* 
+* ---------------------
+* FlagNameDataAttachSpecificToTexture > Flag
+*   Flag ... true / false (bool)
+*            default == false
+* 
+* This is the same function as "Apply to Textures" in the import settings.
+* Append prefix to the Asset-Name for Texture-Assets.
+* 
+* The prefix is following.
+* - Texture : ""=[none]
+* 
+* When the value of the "FlagNameDataAttachSpecificSSPJ" is "true",
+*  the prefix will change to the following.
+* - Texture : "(SSPJ-Name)_""
+* 
+* If "FlagNameDataAttachSpecific" set "false", this setting does not effect.
+* 
+* ex.
+* FlagNameDataAttachSpecificToTexture > true
+* 
+* ---------------------
 * TextureSizePixelMaximum > PixelSize
 *   PixelSize ... Max Texture Pixel-Size (int)
 *                 default == 8192

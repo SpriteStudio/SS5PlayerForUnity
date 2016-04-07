@@ -1947,7 +1947,7 @@ public static partial class Library_SpriteStudio
 				}
 				for(int i=0; i<Count; i++)
 				{
-					if(true == ColorOverlay[i].Equals(TargetData.ColorOverlay[i]))
+					if(false == ColorOverlay[i].Equals(TargetData.ColorOverlay[i]))
 					{
 						return(false);
 					}
@@ -2245,6 +2245,10 @@ public static partial class Library_SpriteStudio
 
 				HIDEFORCE = 0x08000000,
 
+				CHANGE_TRANSFORM_POSITION = 0x00100000,
+				CHANGE_TRANSFORM_ROTATION = 0x00200000,
+				CHANGE_TRANSFORM_SCALING = 0x00400000,
+
 				INSTANCE_VALID = 0x00008000,
 				INSTANCE_PLAYINDEPENDENT = 0x00004000,
 
@@ -2532,7 +2536,7 @@ public static partial class Library_SpriteStudio
 					/* Create UnderControl-Instance */
 					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
 					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, true);
+						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, true);
 						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 					}
 					if(null != InstanceGameObjectUnderControl)
@@ -2557,7 +2561,7 @@ public static partial class Library_SpriteStudio
 					/* Create UnderControl-Instance */
 					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
 					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, true);
+						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, true);
 						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 					}
 					if(null != InstanceGameObjectUnderControl)
@@ -2596,6 +2600,7 @@ public static partial class Library_SpriteStudio
 				/* Update Transform */
 				/* MEMO: No Transform-Datas, Not Changing "Transform" */
 				IndexAttribute = DataAnimationParts.Position.IndexGetValue(out FrameNoOrigin, FrameNo);
+#if false
 				if((0 <= IndexAttribute) && (IndexPreviousPosition != IndexAttribute))
 				{
 					InstanceTransform.localPosition = DataAnimationParts.Position.ListValue[IndexAttribute];
@@ -2614,6 +2619,62 @@ public static partial class Library_SpriteStudio
 					InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
 					IndexPreviousScaling = IndexAttribute;
 				}
+#else
+				if(0 <= IndexAttribute)
+				{	/* Has Data */
+					if(IndexPreviousPosition != IndexAttribute)
+					{
+						InstanceTransform.localPosition = DataAnimationParts.Position.ListValue[IndexAttribute];
+						IndexPreviousPosition = IndexAttribute;
+						Status |= FlagBitStatus.CHANGE_TRANSFORM_POSITION;
+					}
+				}
+				else
+				{	/* Has no Data */
+					if(0 != (Status & FlagBitStatus.CHANGE_TRANSFORM_POSITION))
+					{
+						InstanceTransform.localPosition = Vector3.zero;
+						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_POSITION;
+					}
+				}
+				IndexAttribute = DataAnimationParts.Rotation.IndexGetValue(out FrameNoOrigin, FrameNo);
+				if(0 <= IndexAttribute)
+				{	/* Has Data */
+					if(IndexPreviousRotation != IndexAttribute)
+					{
+						Quaternion QuaternionTemp = Quaternion.Euler(DataAnimationParts.Rotation.ListValue[IndexAttribute]);
+						InstanceTransform.localRotation = QuaternionTemp;
+						IndexPreviousRotation = IndexAttribute;
+						Status |= FlagBitStatus.CHANGE_TRANSFORM_ROTATION;
+					}
+				}
+				else
+				{	/* Has no Data */
+					if(0 != (Status & FlagBitStatus.CHANGE_TRANSFORM_ROTATION))
+					{
+						InstanceTransform.localRotation = Quaternion.identity;
+						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_ROTATION;
+					}
+				}
+				IndexAttribute = DataAnimationParts.Scaling.IndexGetValue(out FrameNoOrigin, FrameNo);
+				if(0 <= IndexAttribute)
+				{	/* Has Data */
+					if(IndexPreviousScaling != IndexAttribute)
+					{
+						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						IndexPreviousScaling = IndexAttribute;
+						Status |= FlagBitStatus.CHANGE_TRANSFORM_SCALING;
+					}
+				}
+				else
+				{	/* Has no Data */
+					if(0 != (Status & FlagBitStatus.CHANGE_TRANSFORM_SCALING))
+					{
+						InstanceTransform.localScale = Vector3.one;
+						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_SCALING;
+					}
+				}
+#endif
 
 				/* Status Get */
 				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
@@ -3512,7 +3573,8 @@ public static partial class Library_SpriteStudio
 				int FrameNoOrigin;
 				int IndexAttribute;
 				bool FlagInitializeForce = false;
-				bool FlagPlayReverse = (0 == (Status & FlagBitStatus.EFFECT_PLAYING)) ? true : false;
+//				bool FlagPlayReverse = (0 == (Status & FlagBitStatus.EFFECT_PLAYING)) ? true : false;
+				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
 				bool FlagDecodeEffect = InstanceRoot.StatusIsDecodeEffect;
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 
@@ -4938,6 +5000,7 @@ public static partial class Library_SpriteStudio
 
 		internal struct DataDrawParts
 		{
+			internal Library_SpriteStudio.KindParts Kind;
 			internal Transform InstanceTransform;
 			internal Library_SpriteStudio.Script.Root InstanceRoot;
 //			internal FragmentClusterDrawParts InstanceFragmentClusterDrawPartsPartsPair;
@@ -4948,6 +5011,7 @@ public static partial class Library_SpriteStudio
 			internal void CleanUp()
 			{
 				ChainCleanUp();
+				Data.Kind = KindParts.NON;
 				Data.InstanceTransform = null;
 				Data.InstanceRoot = null;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = null;
@@ -4959,6 +5023,7 @@ public static partial class Library_SpriteStudio
 									GameObject InstanceGameObjectInitial
 								)
 			{
+				Data.Kind = KindParts;
 				Data.InstanceTransform = InstanceGameObjectInitial.transform;
 				Data.InstanceRoot = InstanceRootInitial;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = InstanceFragmentClusterDrawPartsPartsPairInitial;
@@ -5490,7 +5555,7 @@ public static partial class Library_SpriteStudio
 			Matrix4x4 MatrixCollect = (null != InstanceTrasnformDrawManager) ? InstanceTrasnformDrawManager.localToWorldMatrix.inverse : Matrix4x4.identity;
 
 			CombineInstance[] CombineMesh = new CombineInstance[CountMesh];
-			int[] TableIndexVertex = new int[CountMaterial];
+//			int[] TableIndexVertex = new int[CountMaterial];
 			int[] TableIndexTriangle = new int[CountMaterial + 1];	/* +1 ... Total Data */
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
@@ -5500,7 +5565,7 @@ public static partial class Library_SpriteStudio
 			for(int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
-				TableIndexVertex[i] = IndexVertex;
+//				TableIndexVertex[i] = IndexVertex;
 				TableIndexTriangle[i] = IndexTriangle;
 
 				while(null != DataPartsNow)
@@ -5510,8 +5575,13 @@ public static partial class Library_SpriteStudio
 						CombineMesh[Index].mesh = DataPartsNow.Data.InstanceMesh;
 						CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
 						Index++;
+#if false
 						IndexVertex += DataPartsNow.Data.InstanceMesh.vertices.Length;
 						IndexTriangle += DataPartsNow.Data.InstanceMesh.triangles.Length / 3;
+#else
+						IndexVertex += DataPartsNow.Data.InstanceMesh.vertexCount;
+						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
+#endif
 					}
 
 					DataPartsNow = DataPartsNow.ChainNext;
@@ -5841,6 +5911,7 @@ public static partial class Library_SpriteStudio
 
 			public static GameObject PrefabInstantiateChild(	GameObject InstanceGameObjectParent,
 																GameObject GameObjectPrefab,
+																GameObject InstanceGameObjectOld,
 																bool FlagInstanceUnderControlRenew
 															)
 			{
@@ -5848,6 +5919,12 @@ public static partial class Library_SpriteStudio
 				if(null == GameObjectPrefab)
 				{
 					return(null);
+				}
+
+				if(null != InstanceGameObjectOld)
+				{
+					Object.DestroyImmediate(InstanceGameObjectOld);
+					InstanceGameObjectOld = null;
 				}
 
 				GameObject InstanceGameObject = null;
@@ -5858,7 +5935,7 @@ public static partial class Library_SpriteStudio
 				InstanceTransform = InstanceTransformParent.Find(GameObjectPrefab.name);
 				if((null == InstanceTransform) || (true == FlagInstanceUnderControlRenew))
 				{
-					/* Delete Old UnderControl-Instance */
+					/* Delete Old UnderControl-Instance (Same Name) */
 					if(null != InstanceTransform)
 					{
 						Object.DestroyImmediate(InstanceTransform.gameObject);
