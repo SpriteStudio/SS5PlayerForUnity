@@ -634,7 +634,12 @@ public static partial class LibraryEditor_SpriteStudio
 					InformationParts = InformationAnimationSet.ListParts[j];
 					if(Library_SpriteStudio.KindParts.INSTANCE == InformationParts.Kind)
 					{
+#if false
 						IndexSSAE = InformationProject.IndexGetFileName(InformationProject.ListNameSSAE, InformationParts.NameSSAEInstance);
+#else
+						/* MEMO: Determine the target data, from the file name stored in SSPJ. */
+						IndexSSAE = InformationProject.IndexGetFileNameBody(InformationProject.ListNameSSAE, InformationParts.NameSSAEInstance);
+#endif
 						if(-1 == IndexSSAE)
 						{
 							MessageError = "Instance[" + InformationParts.NameSSAEInstance + "] Not Found."
@@ -697,7 +702,12 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 						else
 						{
+#if false
 							IndexSSEE = InformationProject.IndexGetFileName(InformationProject.ListNameSSEE, InformationParts.NameSSEEEffect);
+#else
+							/* MEMO: Determine the target data, from the file name stored in SSPJ. */
+							IndexSSEE = InformationProject.IndexGetFileNameBody(InformationProject.ListNameSSEE, InformationParts.NameSSEEEffect);
+#endif
 							if(-1 == IndexSSEE)
 							{
 								MessageError = "Effect[" + InformationParts.NameSSEEEffect + "] Not Found."
@@ -2314,7 +2324,12 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 			else
 			{
+#if false
 				InformationParts.NameSSAEInstance = InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssae");
+#else
+				/* MEMO: Without confirming the file-path, search at the time of reference. */
+				InformationParts.NameSSAEInstance = ValueText;
+#endif
 			}
 			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "refAnime", ManagerNameSpace);
 			InformationParts.NameAnimationUnderControl = (null != ValueText) ? String.Copy(ValueText) : "";
@@ -2328,7 +2343,12 @@ public static partial class LibraryEditor_SpriteStudio
 			else
 			{
 				/* MEMO: Even if Tag is present, it may value is empty. */
+#if false
 				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssee") : "";
+#else
+					/* MEMO: Without confirming the file-path, search at the time of reference. */
+				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? ValueText : "";
+#endif
 			}
 
 			/* Color-Label Get */
