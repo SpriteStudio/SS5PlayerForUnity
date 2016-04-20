@@ -474,7 +474,8 @@ public static partial class Library_SpriteStudio
 					return(-1);
 				}
 
-				if((0 <= Index) && (ListLabel.Length > Index))
+//				if((0 <= Index) && (ListLabel.Length > Index))
+				if((0 > Index) || (ListLabel.Length <= Index))
 				{
 					return(-1);
 				}
