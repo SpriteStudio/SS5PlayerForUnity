@@ -474,7 +474,8 @@ public static partial class Library_SpriteStudio
 					return(-1);
 				}
 
-				if((0 <= Index) && (ListLabel.Length > Index))
+//				if((0 <= Index) && (ListLabel.Length > Index))
+				if((0 > Index) || (ListLabel.Length <= Index))
 				{
 					return(-1);
 				}
@@ -4200,9 +4201,9 @@ public static partial class Library_SpriteStudio
 				Direction = 0.0f;
 				Status &= ~FlagBitStatus.PARTICLE_TURNDIRECTION;
 
-				RotationFluctuation = 0;
-				RotationFluctuationStart = 0;
-				RotationFluctuationEnd = 0;
+				RotationFluctuation = 0.0f;
+				RotationFluctuationStart = 0.0f;
+				RotationFluctuationEnd = 0.0f;
 
 				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_DIRECTION))
 				{
@@ -4471,7 +4472,12 @@ public static partial class Library_SpriteStudio
 						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_END))
 						{
 							float RotationTimeRate = DataEmitter.RotationFluctuationRateTime;
+#if false
+							float RateRotation = (0.0f < RotationTimeRate) ? (RateDuration / RotationTimeRate) : 1.0f;
+#else
 							float RateRotation = RateDuration / RotationTimeRate;
+							RateRotation = ((true == float.IsNaN(RateRotation)) || (true == float.IsInfinity(RateRotation))) ? 1.0f : Mathf.Clamp01(RateRotation);
+#endif
 							RotationFluctuation = Mathf.Lerp(RotationFluctuationStart, RotationFluctuationEnd, RateRotation);
 						}
 						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_END))

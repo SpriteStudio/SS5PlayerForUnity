@@ -175,6 +175,14 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	/* CallBack-s */
 	internal Library_SpriteStudio.FunctionCallBackPlayEndEffect FunctionPlayEnd = null;
 
+	void Awake()
+	{
+		foreach(Material MaterialNow in TableMaterial)
+		{
+			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
+		}
+	}
+
 	void Start()
 	{
 		/* Base Start */
