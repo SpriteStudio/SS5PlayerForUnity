@@ -199,9 +199,13 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 	internal Library_SpriteStudio.FunctionCallBackCollision FunctionCollisionExit = null;
 	internal Library_SpriteStudio.FunctionCallBackCollision FunctionCollisionStay = null;
 
-//	void Awake()
-//	{
-//	}
+	void Awake()
+	{
+		foreach(Material MaterialNow in TableMaterial)
+		{
+			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
+		}
+	}
 
 	void Start()
 	{
