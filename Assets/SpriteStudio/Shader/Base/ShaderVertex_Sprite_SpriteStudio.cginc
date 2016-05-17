@@ -19,6 +19,7 @@ struct	InputVS	{
 
 struct	InputPS	{
 	float4	Position : POSITION;
+//	float4	Position : SV_POSITION;
 	float4	ColorMain : COLOR0;
 	float4	ColorOverlay : COLOR1;
 	float4	Texture00UV : TEXCOORD0;

@@ -9,6 +9,7 @@
 sampler2D	_MainTex;
 
 fixed4	PS_main(InputPS Input) : COLOR0
+// fixed4	PS_main(InputPS Input) : SV_Target
 {
 	fixed4	Output;
 
