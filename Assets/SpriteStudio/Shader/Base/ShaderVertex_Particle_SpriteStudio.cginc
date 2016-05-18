@@ -4,6 +4,7 @@
 //	Copyright(C) Web Technology Corp.
 //	All rights reserved.
 //
+
 float4	_OverlayParameter_Non;
 float4	_OverlayParameter_Mix;
 float4	_OverlayParameter_Add;
@@ -18,8 +19,11 @@ struct	InputVS	{
 };
 
 struct	InputPS	{
+#ifdef SV_POSITION
+	float4	Position : SV_POSITION;
+#else
 	float4	Position : POSITION;
-//	float4	Position : SV_POSITION;
+#endif
 	float4	ColorMain : COLOR0;
 	float4	Texture00UV : TEXCOORD0;
 	float4	PositionDraw : TEXCOORD7;

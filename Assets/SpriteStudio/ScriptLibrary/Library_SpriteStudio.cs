@@ -2662,7 +2662,10 @@ public static partial class Library_SpriteStudio
 				{	/* Has Data */
 					if(IndexPreviousScaling != IndexAttribute)
 					{
-						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+//						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						Vector3 VectorTemp = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						VectorTemp.z = 1.0f;
+						InstanceTransform.localScale = VectorTemp;
 						IndexPreviousScaling = IndexAttribute;
 						Status |= FlagBitStatus.CHANGE_TRANSFORM_SCALING;
 					}
