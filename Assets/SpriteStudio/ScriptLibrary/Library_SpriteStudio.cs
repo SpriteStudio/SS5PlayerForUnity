@@ -1203,9 +1203,9 @@ public static partial class Library_SpriteStudio
 				Count--;    /* Last Data */
 				StatusTemp = ListStatus[Count];
 				ValueTemp = StatusTemp & FlagBit.FRAMENO;
-				FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
+				FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
 				ValueTemp = StatusTemp & FlagBit.INDEX;
-				Index = (FlagBit.INDEX == StatusTemp) ? -1 : ((int)StatusTemp >> 15);
+				Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
 
 			IndexGetValue_End:;
 				FrameNoOrigin = FrameNoKey;
