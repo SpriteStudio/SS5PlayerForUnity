@@ -1184,22 +1184,27 @@ public static partial class Library_SpriteStudio
 
 				int Count = ListStatus.Length;
 				FlagBit StatusTemp;
+				FlagBit ValueTemp;
 				for(int i=1; i<Count; i++)
 				{
 					StatusTemp = ListStatus[i] & FlagBit.FRAMENO;
 					FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
 					if(FrameNo < FrameNoKey)
 					{
-						StatusTemp = ListStatus[i - 1] & FlagBit.INDEX;
-						Index = (FlagBit.INDEX == StatusTemp) ? -1 : ((int)StatusTemp >> 15);
+						StatusTemp = ListStatus[i - 1];
+						ValueTemp = StatusTemp & FlagBit.INDEX;
+						Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
+						ValueTemp = StatusTemp & FlagBit.FRAMENO;
+						FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
 						goto IndexGetValue_End;
 					}
 				}
 
-				Count--;	/* Last Data */
-				StatusTemp = ListStatus[Count] & FlagBit.FRAMENO;
+				Count--;    /* Last Data */
+				StatusTemp = ListStatus[Count];
+				ValueTemp = StatusTemp & FlagBit.FRAMENO;
 				FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
-				StatusTemp = ListStatus[Count] & FlagBit.INDEX;
+				ValueTemp = StatusTemp & FlagBit.INDEX;
 				Index = (FlagBit.INDEX == StatusTemp) ? -1 : ((int)StatusTemp >> 15);
 
 			IndexGetValue_End:;
