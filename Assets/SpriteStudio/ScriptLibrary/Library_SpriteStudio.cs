@@ -5958,6 +5958,11 @@ public static partial class Library_SpriteStudio
 					/* Instantiate UnderControl-Instance */
 #if UNITY_EDITOR
 					InstanceGameObject = UnityEditor.PrefabUtility.InstantiatePrefab(GameObjectPrefab) as GameObject;
+					if(null == InstanceGameObject)
+					{
+						InstanceGameObject = Object.Instantiate(GameObjectPrefab) as GameObject;
+						InstanceGameObject.name = GameObjectPrefab.name;	/* Remove "(clone)" */
+					}
 #else
 					InstanceGameObject = Object.Instantiate(GameObjectPrefab) as GameObject;
 					InstanceGameObject.name = GameObjectPrefab.name;	/* Remove "(clone)" */
