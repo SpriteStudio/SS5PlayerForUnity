@@ -22,8 +22,10 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 	internal Library_SpriteStudio.ManagerDraw.TerminalDrawObject ChainDrawObject = null;
 	internal Library_SpriteStudio.ManagerDraw.TerminalClusterDrawParts ChainClusterDrawParts = null;
 
+	public bool FlagDelayFrame;
 	private int IndexParameterMesh = -1;
 	private Mesh[] InstanceMesh = null;
+	private Material[][] InstanceMaterial = null;
 
 //	void Awake()
 //	{
@@ -34,12 +36,8 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 		int CountMeshBuffer = (int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER;
 		IndexParameterMesh = CountMeshBuffer - 1;
 		IndexParameterMesh %= CountMeshBuffer;
-		InstanceMesh = new Mesh[CountMeshBuffer];
-		for(int i=0; i<CountMeshBuffer; i++)
-		{
-			InstanceMesh[i] = new Mesh();
-			InstanceMesh[i].Clear();
-		}
+		CreateInstanceMesh(CountMeshBuffer);
+		CreateInstanceMaterial(CountMeshBuffer);
 
 		InstanceTransform = transform;
 	}
@@ -93,8 +91,22 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 				Library_SpriteStudio.ManagerDraw.ClusterFix(ChainClusterDrawParts);
 
 				/* Meshes Combine */
+//				FlagDelayFrame = true;
+				int IndexParameterMeshWrite = IndexParameterMesh;
+				int IndexParameterMeshDraw = (true == FlagDelayFrame) ? ((IndexParameterMesh + 1) % (int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER) : IndexParameterMesh; 
+				if(null == InstanceMesh)
+				{
+					CreateInstanceMesh((int)(int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER);
+				}
+				if(null == InstanceMaterial)
+				{
+					CreateInstanceMaterial((int)(int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER);
+				}
 				Library_SpriteStudio.ManagerDraw.MeshCreate(	ChainClusterDrawParts,
-																InstanceMesh[IndexParameterMesh],
+																ref InstanceMesh[IndexParameterMeshWrite],
+																ref InstanceMaterial[IndexParameterMeshWrite],
+																ref InstanceMesh[IndexParameterMeshDraw],
+																ref InstanceMaterial[IndexParameterMeshDraw],
 																InstanceMeshRenderer,
 																InstanceMeshFilter,
 																InstanceTransform,
@@ -102,7 +114,6 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 															);
 				IndexParameterMesh++;
 				IndexParameterMesh %= (int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER;
-				InstanceMesh[IndexParameterMesh].Clear();
 
 				/* Draw-Object Clear */
 //				ChainDrawObject.ChainCleanUp();
@@ -111,6 +122,26 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 			/* Draw-Object Clear */
 			ChainDrawObject.ChainCleanUp();
 		}
+	}
+
+	private bool CreateInstanceMesh(int CountBuffer)
+	{
+		InstanceMesh = new Mesh[CountBuffer];
+		for(int i=0; i<CountBuffer; i++)
+		{
+			InstanceMesh[i] = new Mesh();
+			InstanceMesh[i].Clear();
+		}
+		return(true);
+	}
+	private bool CreateInstanceMaterial(int CountBuffer)
+	{
+		InstanceMaterial = new Material[CountBuffer][];
+		for(int i=0; i<CountBuffer; i++)
+		{
+			InstanceMaterial[i] = null;
+		}
+		return(true);
 	}
 
 	/* ******************************************************** */
