@@ -14,7 +14,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 {
 	public enum Constants : int
 	{
-		LIMIT_PARTICLE = 2048,          // 512,
+		LIMIT_PARTICLE = 1024,
 
 		LIMIT_SUBEMITTER_DEPTH = 2,
 		LIMIT_SUBEMITTER_COUNT = 10,
