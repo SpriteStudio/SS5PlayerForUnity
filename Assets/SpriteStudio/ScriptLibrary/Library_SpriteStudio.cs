@@ -1184,23 +1184,28 @@ public static partial class Library_SpriteStudio
 
 				int Count = ListStatus.Length;
 				FlagBit StatusTemp;
+				FlagBit ValueTemp;
 				for(int i=1; i<Count; i++)
 				{
 					StatusTemp = ListStatus[i] & FlagBit.FRAMENO;
 					FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
 					if(FrameNo < FrameNoKey)
 					{
-						StatusTemp = ListStatus[i - 1] & FlagBit.INDEX;
-						Index = (FlagBit.INDEX == StatusTemp) ? -1 : ((int)StatusTemp >> 15);
+						StatusTemp = ListStatus[i - 1];
+						ValueTemp = StatusTemp & FlagBit.INDEX;
+						Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
+						ValueTemp = StatusTemp & FlagBit.FRAMENO;
+						FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
 						goto IndexGetValue_End;
 					}
 				}
 
-				Count--;	/* Last Data */
-				StatusTemp = ListStatus[Count] & FlagBit.FRAMENO;
-				FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
-				StatusTemp = ListStatus[Count] & FlagBit.INDEX;
-				Index = (FlagBit.INDEX == StatusTemp) ? -1 : ((int)StatusTemp >> 15);
+				Count--;    /* Last Data */
+				StatusTemp = ListStatus[Count];
+				ValueTemp = StatusTemp & FlagBit.FRAMENO;
+				FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
+				ValueTemp = StatusTemp & FlagBit.INDEX;
+				Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
 
 			IndexGetValue_End:;
 				FrameNoOrigin = FrameNoKey;
@@ -2662,7 +2667,10 @@ public static partial class Library_SpriteStudio
 				{	/* Has Data */
 					if(IndexPreviousScaling != IndexAttribute)
 					{
-						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+//						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						Vector3 VectorTemp = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						VectorTemp.z = 1.0f;
+						InstanceTransform.localScale = VectorTemp;
 						IndexPreviousScaling = IndexAttribute;
 						Status |= FlagBitStatus.CHANGE_TRANSFORM_SCALING;
 					}
@@ -5950,6 +5958,11 @@ public static partial class Library_SpriteStudio
 					/* Instantiate UnderControl-Instance */
 #if UNITY_EDITOR
 					InstanceGameObject = UnityEditor.PrefabUtility.InstantiatePrefab(GameObjectPrefab) as GameObject;
+					if(null == InstanceGameObject)
+					{
+						InstanceGameObject = Object.Instantiate(GameObjectPrefab) as GameObject;
+						InstanceGameObject.name = GameObjectPrefab.name;	/* Remove "(clone)" */
+					}
 #else
 					InstanceGameObject = Object.Instantiate(GameObjectPrefab) as GameObject;
 					InstanceGameObject.name = GameObjectPrefab.name;	/* Remove "(clone)" */
