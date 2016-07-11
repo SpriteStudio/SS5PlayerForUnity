@@ -8,7 +8,11 @@
 
 sampler2D	_MainTex;
 
+#ifdef SV_Target
+fixed4	PS_main(InputPS Input) : SV_Target
+#else
 fixed4	PS_main(InputPS Input) : COLOR0
+#endif
 {
 	fixed4	Output;
 

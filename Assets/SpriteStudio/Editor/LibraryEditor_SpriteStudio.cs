@@ -3172,6 +3172,9 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
+			/* Erase attributes that must not be set */
+			ImportSSAEAnimationPartsIgnoreAttributes(InformationAnimationSet, InformationAnimationPart, Index);
+
 			return(true);
 
 		ParseOPSS_InformationSSAEAnimationParts_ErrorEnd:;
@@ -3206,6 +3209,34 @@ public static partial class LibraryEditor_SpriteStudio
 			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeKey, NameTagBase + "/rate", ManagerNameSpace);
 			ColorA = (float)(LibraryEditor_SpriteStudio.Utility.Text.ValueGetDouble(ValueText));
 		}
+		private static void ImportSSAEAnimationPartsIgnoreAttributes(	LibraryEditor_SpriteStudio.ParseOPSS.InformationSSAE InformationAnimationSet,
+																		LibraryEditor_SpriteStudio.ParseOPSS.InformationSSAEAnimationParts InformationAnimationPart,
+																		int IDParts
+																	)
+		{
+			InformationSSAEParts InformationPart = InformationAnimationSet.ListParts[IDParts];
+			LibraryEditor_SpriteStudio.KeyFrame.KindPartsIgnoreAttribute KindIgnore = LibraryEditor_SpriteStudio.KeyFrame.KindPartsToIgnore[(int)InformationPart.Kind];
+			LibraryEditor_SpriteStudio.KeyFrame.KindAttribute[] ListAttributeIgnore = LibraryEditor_SpriteStudio.KeyFrame.ListKindAttributeIgnore[(int)KindIgnore];
+			int Count = ListAttributeIgnore.Length;
+			int IndexAttribute;
+			ArrayList ListAttribute = null;
+			for(int i=0; i<Count; i++)
+			{
+				/* Key-Datas Purge & Erase */
+				IndexAttribute = (int)ListAttributeIgnore[i];
+				ListAttribute = InformationAnimationPart.Attribute[IndexAttribute];
+#if false
+				InformationAnimationPart.Attribute[IndexAttribute] = null;
+				if(null != ListAttribute)
+				{
+					ListAttribute.Clear();
+				}
+#else
+				ListAttribute.Clear();
+#endif
+			}
+		}
+
 		internal enum KindVersionSSAE
 		{
 			ERROR = 0x00000000,
@@ -5232,7 +5263,7 @@ public static partial class LibraryEditor_SpriteStudio
 																							)
 		{
 			Library_SpriteStudio.Data.ListAttributeFloat Rv = null;
-			int CountAttributeList = AttributeList.Count;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			if(0 >= CountAttributeList)
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeFloat();
@@ -5301,8 +5332,8 @@ public static partial class LibraryEditor_SpriteStudio
 																								)
 		{
 			Library_SpriteStudio.Data.ListAttributeVector2 Rv = null;
-			int CountAttributeListX = AttributeListX.Count;
-			int CountAttributeListY = AttributeListY.Count;
+			int CountAttributeListX = (null != AttributeListX) ? AttributeListX.Count : 0;
+			int CountAttributeListY = (null != AttributeListY) ? AttributeListY.Count : 0;
 			if((0 >= CountAttributeListX) && (0 >= CountAttributeListY))
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeVector2();
@@ -5406,9 +5437,9 @@ public static partial class LibraryEditor_SpriteStudio
 																								)
 		{
 			Library_SpriteStudio.Data.ListAttributeVector3 Rv = null;
-			int CountAttributeListX = AttributeListX.Count;
-			int CountAttributeListY = AttributeListY.Count;
-			int CountAttributeListZ = AttributeListZ.Count;
+			int CountAttributeListX = (null != AttributeListX) ? AttributeListX.Count : 0;
+			int CountAttributeListY = (null != AttributeListY) ? AttributeListY.Count : 0;
+			int CountAttributeListZ = (null != AttributeListZ) ? AttributeListZ.Count : 0;
 			if((0 >= CountAttributeListX) && (0 >= CountAttributeListY) && (0 >= CountAttributeListZ))
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeVector3();
@@ -5544,8 +5575,8 @@ public static partial class LibraryEditor_SpriteStudio
 																									)
 		{	/* MEMO: Specialization "ListVector2GetSSAEAttribute" for SizeForce */
 			Library_SpriteStudio.Data.ListAttributeVector2 Rv = null;
-			int CountAttributeListX = AttributeListX.Count;
-			int CountAttributeListY = AttributeListY.Count;
+			int CountAttributeListX = (null != AttributeListX) ? AttributeListX.Count : 0;
+			int CountAttributeListY = (null != AttributeListY) ? AttributeListY.Count : 0;
 			if((0 >= CountAttributeListX) && (0 >= CountAttributeListY))
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeVector2();
@@ -5676,11 +5707,11 @@ public static partial class LibraryEditor_SpriteStudio
 																								)
 		{
 			Library_SpriteStudio.Data.ListAttributeStatus Rv = null;
-			int CountAttributeListHide = AttributeListHide.Count;
-			int CountAttributeListFlipX = AttributeListFlipX.Count;
-			int CountAttributeListFlipY = AttributeListFlipY.Count;
-			int CountAttributeListFlipXTexture = AttributeListFlipXTexture.Count;
-			int CountAttributeListFlipYTexture = AttributeListFlipYTexture.Count;
+			int CountAttributeListHide = (null != AttributeListHide) ? AttributeListHide.Count : 0;
+			int CountAttributeListFlipX = (null != AttributeListFlipX) ? AttributeListFlipX.Count : 0;
+			int CountAttributeListFlipY = (null != AttributeListFlipY) ? AttributeListFlipY.Count : 0;
+			int CountAttributeListFlipXTexture = (null != AttributeListFlipXTexture) ? AttributeListFlipXTexture.Count : 0;
+			int CountAttributeListFlipYTexture = (null != AttributeListFlipYTexture) ? AttributeListFlipYTexture.Count : 0;
 			/* MEMO: Force-Create */
 
 			/* Data Initialize */
@@ -5822,7 +5853,7 @@ public static partial class LibraryEditor_SpriteStudio
 																									)
 		{
 			Library_SpriteStudio.Data.ListAttributeUserData Rv = null;
-			int CountAttributeList = AttributeList.Count;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			if(0 >= CountAttributeList)
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeUserData();
@@ -5860,7 +5891,7 @@ public static partial class LibraryEditor_SpriteStudio
 		{
 			Library_SpriteStudio.Data.ListAttributeInstance Rv = null;
 			LibraryEditor_SpriteStudio.KeyFrame.DataInstance DataInstance = null;
-			int CountAttributeList = AttributeList.Count;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			bool FlagDummyDataInsert = false;
 			if(0 >= CountAttributeList)
 			{
@@ -5973,7 +6004,7 @@ public static partial class LibraryEditor_SpriteStudio
 																							)
 		{
 			Library_SpriteStudio.Data.ListAttributeCell Rv = null;
-			int CountAttributeList = AttributeList.Count;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			if(0 >= CountAttributeList)
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeCell();
@@ -6023,7 +6054,7 @@ public static partial class LibraryEditor_SpriteStudio
 																										)
 		{
 			Library_SpriteStudio.Data.ListAttributeColorBlend Rv = null;
-			int CountAttributeList = AttributeList.Count;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			if(0 >= CountAttributeList)
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeColorBlend();
@@ -6096,7 +6127,7 @@ public static partial class LibraryEditor_SpriteStudio
 																													)
 		{
 			Library_SpriteStudio.Data.ListAttributeVertexCorrection Rv = null;
-			int CountAttributeList = AttributeList.Count;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			if(0 >= CountAttributeList)
 			{
 				Rv = new Library_SpriteStudio.Data.ListAttributeVertexCorrection();
@@ -7221,6 +7252,207 @@ public static partial class LibraryEditor_SpriteStudio
 			INSTANCE,
 			EFFECT
 		}
+
+		public enum KindPartsIgnoreAttribute
+		{
+			NON = -1,				/* ERROR-Code */
+
+			NULL = 0,				/* NULL-Parts */
+			SPRITE,					/* Sprite-Parts */
+			INSTANCE,				/* Instance-Parts */
+			EFFECT,					/* Effect-Parts */
+
+			TERMINATOR
+		}
+		internal readonly static KindPartsIgnoreAttribute[] KindPartsToIgnore = new KindPartsIgnoreAttribute[]
+		{
+			KindPartsIgnoreAttribute.NULL,		/* ROOT */
+			KindPartsIgnoreAttribute.NULL,		/* NULL */
+			KindPartsIgnoreAttribute.SPRITE,	/* NORMAL_TRIANGLE2 */
+			KindPartsIgnoreAttribute.SPRITE,	/* NORMAL_TRIANGLE4 */
+			KindPartsIgnoreAttribute.INSTANCE,	/* INSTANCE */
+			KindPartsIgnoreAttribute.EFFECT,	/* EFFECT */
+			KindPartsIgnoreAttribute.SPRITE		/* NORMAL */
+		};
+		internal readonly static KindAttribute[][] ListKindAttributeIgnore = new KindAttribute[(int)KindPartsIgnoreAttribute.TERMINATOR][]
+		{
+			new KindAttribute[]
+			{	/* NULL */
+//				KindAttribute.POSITION_X,
+//				KindAttribute.POSITION_Y,
+//				KindAttribute.POSITION_Z,
+//				KindAttribute.ROTATION_X,
+//				KindAttribute.ROTATION_Y,
+//				KindAttribute.ROTATION_Z,
+//				KindAttribute.SCALING_X,
+//				KindAttribute.SCALING_Y,
+
+//				KindAttribute.RATE_OPACITY,
+//				KindAttribute.PRIORITY,
+
+//				KindAttribute.FLIP_X,
+//				KindAttribute.FLIP_Y,
+//				KindAttribute.HIDE,
+
+//				KindAttribute.ANCHOR_POSITION_X,
+//				KindAttribute.ANCHOR_POSITION_Y,
+				KindAttribute.SIZE_FORCE_X,
+				KindAttribute.SIZE_FORCE_Y,
+
+				KindAttribute.TEXTURE_POSITION_X,
+				KindAttribute.TEXTURE_POSITION_Y,
+				KindAttribute.TEXTURE_ROTATION,
+				KindAttribute.TEXTURE_SCALING_X,
+				KindAttribute.TEXTURE_SCALING_Y,
+				KindAttribute.TEXTURE_FLIP_X,
+				KindAttribute.TEXTURE_FLIP_Y,
+
+				KindAttribute.PIVOT_OFFSET_X,
+				KindAttribute.PIVOT_OFFSET_Y,
+
+//				KindAttribute.COLLISION_RADIUS,
+
+//				KindAttribute.USERDATA,
+//				KindAttribute.CELL,
+//				KindAttribute.COLORBLEND,
+//				KindAttribute.VERTEXCORRECTION,
+
+				KindAttribute.INSTANCE,
+				KindAttribute.EFFECT,
+			},
+			new KindAttribute[]
+			{	/* SPRITE */
+//				KindAttribute.POSITION_X,
+//				KindAttribute.POSITION_Y,
+//				KindAttribute.POSITION_Z,
+//				KindAttribute.ROTATION_X,
+//				KindAttribute.ROTATION_Y,
+//				KindAttribute.ROTATION_Z,
+//				KindAttribute.SCALING_X,
+//				KindAttribute.SCALING_Y,
+
+//				KindAttribute.RATE_OPACITY,
+//				KindAttribute.PRIORITY,
+
+//				KindAttribute.FLIP_X,
+//				KindAttribute.FLIP_Y,
+//				KindAttribute.HIDE,
+
+//				KindAttribute.ANCHOR_POSITION_X,
+//				KindAttribute.ANCHOR_POSITION_Y,
+//				KindAttribute.SIZE_FORCE_X,
+//				KindAttribute.SIZE_FORCE_Y,
+
+//				KindAttribute.TEXTURE_POSITION_X,
+//				KindAttribute.TEXTURE_POSITION_Y,
+//				KindAttribute.TEXTURE_ROTATION,
+//				KindAttribute.TEXTURE_SCALING_X,
+//				KindAttribute.TEXTURE_SCALING_Y,
+//				KindAttribute.TEXTURE_FLIP_X,
+//				KindAttribute.TEXTURE_FLIP_Y,
+
+//				KindAttribute.PIVOT_OFFSET_X,
+//				KindAttribute.PIVOT_OFFSET_Y,
+
+//				KindAttribute.COLLISION_RADIUS,
+
+//				KindAttribute.USERDATA,
+//				KindAttribute.CELL,
+//				KindAttribute.COLORBLEND,
+//				KindAttribute.VERTEXCORRECTION,
+
+				KindAttribute.INSTANCE,
+				KindAttribute.EFFECT,
+			},
+			new KindAttribute[]
+			{	/* INSTANCE */
+//				KindAttribute.POSITION_X,
+//				KindAttribute.POSITION_Y,
+//				KindAttribute.POSITION_Z,
+//				KindAttribute.ROTATION_X,
+//				KindAttribute.ROTATION_Y,
+//				KindAttribute.ROTATION_Z,
+//				KindAttribute.SCALING_X,
+//				KindAttribute.SCALING_Y,
+
+//				KindAttribute.RATE_OPACITY,
+//				KindAttribute.PRIORITY,
+
+				KindAttribute.FLIP_X,
+				KindAttribute.FLIP_Y,
+//				KindAttribute.HIDE,
+
+				KindAttribute.ANCHOR_POSITION_X,
+				KindAttribute.ANCHOR_POSITION_Y,
+				KindAttribute.SIZE_FORCE_X,
+				KindAttribute.SIZE_FORCE_Y,
+
+				KindAttribute.TEXTURE_POSITION_X,
+				KindAttribute.TEXTURE_POSITION_Y,
+				KindAttribute.TEXTURE_ROTATION,
+				KindAttribute.TEXTURE_SCALING_X,
+				KindAttribute.TEXTURE_SCALING_Y,
+				KindAttribute.TEXTURE_FLIP_X,
+				KindAttribute.TEXTURE_FLIP_Y,
+
+				KindAttribute.PIVOT_OFFSET_X,
+				KindAttribute.PIVOT_OFFSET_Y,
+
+//				KindAttribute.COLLISION_RADIUS,
+
+//				KindAttribute.USERDATA,
+				KindAttribute.CELL,
+				KindAttribute.COLORBLEND,
+				KindAttribute.VERTEXCORRECTION,
+
+//				KindAttribute.INSTANCE,
+				KindAttribute.EFFECT,
+			},
+			new KindAttribute[]
+			{	/* EFFECT */
+//				KindAttribute.POSITION_X,
+//				KindAttribute.POSITION_Y,
+//				KindAttribute.POSITION_Z,
+//				KindAttribute.ROTATION_X,
+//				KindAttribute.ROTATION_Y,
+//				KindAttribute.ROTATION_Z,
+//				KindAttribute.SCALING_X,
+//				KindAttribute.SCALING_Y,
+
+//				KindAttribute.RATE_OPACITY,
+//				KindAttribute.PRIORITY,
+
+				KindAttribute.FLIP_X,
+				KindAttribute.FLIP_Y,
+//				KindAttribute.HIDE,
+
+				KindAttribute.ANCHOR_POSITION_X,
+				KindAttribute.ANCHOR_POSITION_Y,
+				KindAttribute.SIZE_FORCE_X,
+				KindAttribute.SIZE_FORCE_Y,
+
+				KindAttribute.TEXTURE_POSITION_X,
+				KindAttribute.TEXTURE_POSITION_Y,
+				KindAttribute.TEXTURE_ROTATION,
+				KindAttribute.TEXTURE_SCALING_X,
+				KindAttribute.TEXTURE_SCALING_Y,
+				KindAttribute.TEXTURE_FLIP_X,
+				KindAttribute.TEXTURE_FLIP_Y,
+
+				KindAttribute.PIVOT_OFFSET_X,
+				KindAttribute.PIVOT_OFFSET_Y,
+
+//				KindAttribute.COLLISION_RADIUS,
+
+//				KindAttribute.USERDATA,
+				KindAttribute.CELL,
+				KindAttribute.COLORBLEND,
+				KindAttribute.VERTEXCORRECTION,
+
+				KindAttribute.INSTANCE,
+//				KindAttribute.EFFECT,
+			},
+		};
 
 		public class Data_Base<_Type>
 		{
