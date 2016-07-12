@@ -115,18 +115,18 @@ public class Inspector_SpriteStudio_RootEffect : Editor
 			Data.FlagHideForce = EditorGUILayout.Toggle("Hide Force", Data.FlagHideForce);
 			EditorGUILayout.Space();
 
-			int CountLimitParts = EditorGUILayout.IntField("Count Limit Parts", Data.CountLimitPartsInitial);
-			EditorGUILayout.LabelField("(-1: Default-Value Set)");
-			if(-1 != CountLimitParts)
+			int CountLimitParticle = EditorGUILayout.IntField("Count Limit Particle", Data.CountLimitParticleInitial);
+			EditorGUILayout.LabelField("(0: Default-Value Set)");
+			if(-1 != CountLimitParticle)
 			{
-				if(0 > CountLimitParts)
+				if(0 > CountLimitParticle)
 				{
-					CountLimitParts = -1;
+					CountLimitParticle = -1;
 				}
 			}
-			if(CountLimitParts != Data.CountLimitPartsInitial)
+			if(CountLimitParticle != Data.CountLimitParticleInitial)
 			{
-				Data.CountLimitPartsInitial = CountLimitParts;
+				Data.CountLimitParticleInitial = CountLimitParticle;
 			}
 
 			EditorGUI.indentLevel = LevelIndent;

@@ -6,15 +6,18 @@
 */
 using UnityEngine;
 
-using RandomGenerator = Library_SpriteStudio.Utility.Random.MersenneTwister;
+using RandomGenerator = Library_SpriteStudio.Utility.Random.XorShift32;
 
 [ExecuteInEditMode]
 [System.Serializable]
 public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 {
-	private enum Constants : int
+	public enum Constants : int
 	{
-		LIMIT_PARTS = 256,
+		LIMIT_PARTICLE = 1024,
+
+		LIMIT_SUBEMITTER_DEPTH = 2,
+		LIMIT_SUBEMITTER_COUNT = 10,
 	}
 
 	public enum PlayStyle
@@ -38,13 +41,14 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		PLAYING_REVERSE = 0x00400000,	/* Reserved */
 		PLAYING_REVERSEPREVIOUS = 0x00200000,	/* Reserved */
 		PLAYING_TURN = 0x00100000,	/* Reserved */
+		PLAYING_FIRSTUPDATE = 0x00080000,	/* Reserved */
 
-//		DECODE_USERDATA = 0x00080000,	/* Reserved & Disuse */
-//		DECODE_INSTANCE = 0x00040000,	/* Reserved & Disuse */
-//		DECODE_EFFECT = 0x00020000,	/* Reserved & Disuse */
+//		DECODE_USERDATA = 0x00008000,	/* Reserved & Disuse */
+//		DECODE_INSTANCE = 0x00004000,	/* Reserved & Disuse */
+//		DECODE_EFFECT = 0x00002000,	/* Reserved & Disuse */
 
-		REQUEST_DESTROY = 0x00008000,	/* Reserved */
-		REQUEST_PLAYEND = 0x00004000,
+		REQUEST_DESTROY = 0x00000800,	/* Reserved */
+		REQUEST_PLAYEND = 0x00000400,
 
 		CLEAR = 0x00000000,
 	}
@@ -68,18 +72,17 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	public int[] IndexMaterialBlendOffset;
 
 	/* Effect Datas */
-	public int SeedRandomInitialize;	/* uint *//* 0xffffffff: Not Initialize (default Seed) */
-	internal uint SeedRandom;
-	internal Library_SpriteStudio.Utility.Random.Generator InstanceRandom;
+	internal float RateTimeToFrame;
+	internal float FrameNow;
+	internal float FrameLength;
 
 	/* Control Datas */
-	public int CountLimitPartsInitial;
-	internal int CountLimitParts;
+	public int CountLimitParticleInitial;
 	internal Library_SpriteStudio.Control.PoolPartsEffect PoolParts = null;
 	internal bool FlagUnderControl = false;
 
 	/* Playing Datas: for Runtime (WorkArea) */
-	private FlagBitStatus Status = FlagBitStatus.CLEAR;
+	private FlagBitStatus Status = FlagBitStatus.CLEAR;	
 	public bool StatusIsPlaying
 	{
 		get
@@ -186,18 +189,24 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	void Start()
 	{
 		/* Base Start */
-		StartBase((int)Constants.LIMIT_PARTS);
+		StartBase((int)Constants.LIMIT_PARTICLE);
 
-		/* Parts-WorkArea Start */
-		PoolBootUpParts();
-
-		/* Status Set */
-		Status |= FlagBitStatus.VALID;
-
-		/* Play Animation Initialize */
-		if(false == FlagUnderControl)
+		/* Initialize */
+		if(null != DataEffect)
 		{
-			AnimationPlay();
+			/* WorkArea BootUp */
+			RateTimeToFrame = (float)DataEffect.CountFramePerSecond;	/* Provisional */
+			TimePerFrame = 1.0f / RateTimeToFrame;
+			PoolBootUpParts();
+
+			/* Status Set */
+			Status |= FlagBitStatus.VALID;
+
+			/* Play Animation Initialize */
+			if(false == FlagUnderControl)
+			{
+				AnimationPlay();
+			}
 		}
 	}
 
@@ -224,18 +233,9 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		LateUpdateBase();
 
 		/* Animation Play-Check */
-		if(0 == (Status & FlagBitStatus.PLAYING))
+		if(0 == (Status & FlagBitStatus.PLAYING)) 
 		{	/* Not-Playing */
 			return;
-		}
-		bool FlagPause = (0 != (Status & FlagBitStatus.PAUSING)) ? true : false;
-
-		/* Random Create */
-		if(null == InstanceRandom)
-		{
-			InstanceRandom = new RandomGenerator();
-			SeedRandom = (uint)SeedRandomInitialize;
-			InstanceRandom.InitSeed(SeedRandom);
 		}
 
 		/* Particle&Emitter Control WorkArea Create */
@@ -243,84 +243,72 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		{
 			PoolBootUpParts();
 		}
-		if(0 != (Status & FlagBitStatus.PLAYING_START))
-		{	/* Root's Emitter Generate */
-			PoolParts.PartsGenerate(null, this);
-		}
 
 		/* Update Emitter & Particle */
-		ChainClusterDrawParts.ChainCleanUp();	/* DrawParts-Cluster-Chain Clear */
+		ChainClusterDrawParts.ChainCleanUp();   /* DrawParts-Cluster-Chain Clear */
+		TimeElapsed += ((0 != (Status & FlagBitStatus.PAUSING)) || (0 != (Status & FlagBitStatus.PLAYING_START))) ? 0.0f : TimeDelta;
+		FrameNow = TimeElapsed * RateTimeToFrame;
+		FrameNow = Mathf.Clamp(FrameNow, 0.0f, FrameLength);
+		PoolParts.Update(this);
 
-		TimeElapsed += TimeDelta;
-		int Index = 0;
-		int CountExecuteParts = 0;
-		Library_SpriteStudio.Control.PartsEffect InstanceParts = null;
-		for( ; ; )
+		/* Set to DrawManager */
+		/* MEMO: Test */
+		if(((null != InstanceManagerDraw) && (null != DrawObject)) && (false == FlagHideForce))
 		{
-			InstanceParts = PoolParts.InstancePeekRunning(ref Index);
-			if(null == InstanceParts)
-			{
-				break;
-			}
-			if(false == InstanceParts.Update(ref CountExecuteParts, TimeDelta, PoolParts, FlagPause))
-			{	/* Duration is over. (Delete) */
-				PoolParts.InstanceSetWaiting(ref Index);
-			}
+			/* Set To Draw-Manager */
+			InstanceManagerDraw.DrawSet(this);
 		}
+
+		/* Status Update */
 		Status &= ~FlagBitStatus.PLAYING_START;
-
-		/* End Check */
-		if(0 >= CountExecuteParts)
-		{	/* All Emitter & Particle is waiting ... Play-End */
-			if(null != FunctionPlayEnd)
-			{
-				if(false == FunctionPlayEnd(this))
-				{	/* Destroy (Request) */
-					/* MEMO: Destroy at end of "LateUpdate" */
-					Status |= FlagBitStatus.REQUEST_DESTROY;
-				}
-			}
-			AnimationStop();
-		}
-		else
-		{
-			/* Set to DrawManager */
-			/* MEMO: Test */
-			if(((null != InstanceManagerDraw) && (null != DrawObject)) && (false == FlagHideForce))
-			{
-				/* Set To Draw-Manager */
-				InstanceManagerDraw.DrawSet(this);
-			}
-		}
-
-		/* Checking Destroy-Request */
-		if(0 != (Status & FlagBitStatus.REQUEST_DESTROY))
-		{
-			Object.Destroy(gameObject);
-		}
 	}
 	internal void TimeElapsedSetForce(float TimeElapsedForce, bool FlagReverseParent)
-	{	/* MEMO: In principle, This Function is for calling from "(Control.PartsEffect.)Update". */
+	{   /* MEMO: In principle, This Function is for calling from "(Control.PartsEffect.)Update". */
 		TimeElapsed = TimeElapsedForce;
 	}
 
 	private bool PoolBootUpParts()
 	{
-		CountLimitParts = CountLimitPartsInitial;
-		if(0 >= CountLimitParts)
+		int Count = CountLimitParticleInitial;
+		if(0 >= Count)
 		{
-			CountLimitParts = (int)Constants.LIMIT_PARTS;
+			Count = (int)Constants.LIMIT_PARTICLE;
 		}
 
-		PoolParts = new Library_SpriteStudio.Control.PoolPartsEffect(CountLimitParts);
+		PoolParts = new Library_SpriteStudio.Control.PoolPartsEffect();
+		PoolParts.BootUpWorkArea(this, Count);
 		PoolParts.BootUp(this);
+
+		FrameLength = (float)(PoolParts.EffectDurationFull);
 
 		return(true);
 	}
 
-	internal static Library_SpriteStudio.Utility.Random.Generator InstanceCreateRandom()
+	public static Library_SpriteStudio.Utility.Random.Generator InstanceCreateRandom()
 	{
 		return(new RandomGenerator());
+	}
+
+	private readonly static System.DateTime TimeUnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+	private static uint RandomKeyMakeID = 123456;
+	public static uint KeyCreateRandom()
+	{
+		RandomKeyMakeID++;
+
+		/* MEMO: time(0) at C++ */
+		System.DateTime TimeNow = System.DateTime.Now;
+		TimeNow.ToUniversalTime();
+		System.TimeSpan SecNow = TimeNow - TimeUnixEpoch;
+		
+		return(RandomKeyMakeID + (uint)SecNow.TotalSeconds);
+	}
+
+	internal void SeedOffsetSet(uint Value)
+	{
+		if(null != PoolParts)
+		{
+			PoolParts.SeedOffsetSet(Value);
+		}
 	}
 
 	public void TableCreateBlendOffset()
@@ -349,11 +337,6 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		Minus Value is given, Animation is played backwards.<br>
 		0.0f is given, the now-setting is not changed) <br>
 		default: 0.0f (Setting is not changed)
-	@param	KindStylePlay
-		PlayStyle.NOMAL == Animation is played One-Way.<br>
-		PlayStyle.PINGPONG == Animation is played Wrap-Around.<br>
-		PlayStyle.NO_CHANGE == use "Play-Pingpong" Setting.
-		default: PlayStyle.NO_CHANGE
 	@retval	Return-Value
 		true == Success <br>
 		false == Failure (Error)
@@ -362,7 +345,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	<br>
 	The update speed of animation quickens when you give a value that is bigger than 1.0f to "RateTime".
 	*/
-	public bool AnimationPlay(	int PlayTimes = 0,
+	public bool AnimationPlay(	bool PlayLoop = false,
 								float RateSpeedTimeProgress = 1.0f
 							)
 	{
@@ -373,13 +356,14 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		}
 
 		/* Pool Refresh */
-		if(null != PoolParts)
+		if(null == PoolParts)
 		{
-			PoolParts.PartsFlush();
+			PoolBootUpParts();
 		}
 
-		TimeElapsed = 0.0f;
 		RateSpeed = RateSpeedTimeProgress;
+		RateTimeToFrame = (null != InstanceRootParent) ? (1.0f / InstanceRootParent.TimePerFrame) : (float)DataEffect.CountFramePerSecond;
+		TimeElapsed = (0.0f > RateSpeed) ? (FrameLength * TimePerFrame) : 0.0f; 
 
 		/* Status Set */
 		Status |= FlagBitStatus.PLAYING;
@@ -406,7 +390,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		/* Pool Refresh */
 		if(null != PoolParts)
 		{
-			PoolParts.PartsFlush();
+			PoolParts.ParticleReset();
 		}
 
 		/* Status Set */
