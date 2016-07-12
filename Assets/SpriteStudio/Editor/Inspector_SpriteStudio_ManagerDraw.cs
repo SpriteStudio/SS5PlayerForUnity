@@ -39,6 +39,11 @@ public class Inspector_SpriteStudio_ManagerDraw : Editor
 		EditorGUILayout.LabelField("  are Z-sort based on of this camera.");
 
 		EditorGUILayout.Space();
+		Data.FlagDelayFrame = EditorGUILayout.Toggle("Delay 1 Cycle", Data.FlagDelayFrame);
+		EditorGUILayout.LabelField(" Checked: A reflection of drawing is 1 cycle late.");
+		EditorGUILayout.LabelField(" Unchecked: Not delay.");
+
+		EditorGUILayout.Space();
 		FoldOutCameraTarget = EditorGUILayout.Foldout(FoldOutCameraTarget, "\"Camera\" Setting");
 		if(true == FoldOutCameraTarget)
 		{

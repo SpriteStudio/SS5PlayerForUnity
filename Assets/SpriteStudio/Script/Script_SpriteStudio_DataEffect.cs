@@ -9,6 +9,26 @@ using UnityEngine;
 [System.Serializable]
 public partial class Script_SpriteStudio_DataEffect : ScriptableObject
 {
+	/* Parameters */
+	[System.Flags]
+	public enum FlagBit
+	{
+		SEEDRANDOM_LOCK = 0x00000001,
+
+		IMPORTED_BY_VER1_4_ORLATER = 0x70000000,
+
+		CLEAR = 0x00000000
+	}
+	public FlagBit FlagData;
+
+	public int SeedRandom;
+	public int VersionRenderer;
+
+	public int CountMaxParticle;
+	public int CountFramePerSecond;
+
+	public Vector2 ScaleLayout;
+
 	/* Parts-Relation Data */
 	public Library_SpriteStudio.Data.PartsEffect[] ListDataParts;
 

@@ -4,7 +4,7 @@
 	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
-#define EFFECTUPDATE_CONFORMtoSS5_5
+#define DRAWPARTS_POOLEFFECT_GENERATEJUSTINTIME
 
 using UnityEngine;
 using System.Collections;
@@ -280,7 +280,7 @@ public static partial class Library_SpriteStudio
 		"_end",
 	};
 
-	public class Data
+	public partial class Data
 	{
 		/* Dummy Attribute Datas */
 		public readonly static AttributeStatus DummyStatus = new AttributeStatus
@@ -1107,6 +1107,416 @@ public static partial class Library_SpriteStudio
 			}
 		}
 
+		[System.Serializable]
+		public class EmitterEffect
+		{
+			[System.Serializable]
+			public class PatternEmit
+			{
+				public int IndexGenerate;
+//				public int Offset;
+				public int Duration;
+				public int Cycle;
+
+				public void CleanUp()
+				{
+					IndexGenerate = -1;
+//					Offset = -1;
+					Duration = -1;
+					Cycle = -1;
+				}
+			}
+
+			public enum Constant
+			{
+				SEED_MAGIC = 7573,
+
+				LIFE_EXTEND_SCALE = 8,
+				LIFE_EXTEND_MIN = 64,
+			}
+
+			[System.Flags]
+			public enum FlagBit
+			{
+				/* for Particle */
+				BASIC = 0x00000001,	/* Reserved */
+				TANGENTIALACCELATION = 0x00000002,
+				TURNDIRECTION = 0x00000004,
+				SEEDRANDOM = 0x00000008,
+				DELAY = 0x00000010,
+
+				POSITION = 0x00000100,
+				POSITION_FLUCTUATION = 0x00000200,	/* Reserved */
+				ROTATION = 0x00000400,
+				ROTATION_FLUCTUATION = 0x00000800,
+				SCALE_START = 0x00001000,
+				SCALE_END = 0x00002000,
+
+				SPEED = 0x00010000,	/* Reserved */
+				SPEED_FLUCTUATION = 0x00020000,
+				GRAVITY_DIRECTION = 0x00040000,
+				GRAVITY_POINT = 0x00080000,
+
+				COLORVERTEX = 0x00100000,
+				COLORVERTEX_FLUCTUATION = 0x00200000,
+				FADEALPHA = 0x00400000,
+
+				/* for Emitter */
+				EMIT_INFINITE = 0x01000000,
+
+				/* Mask-Bit and etc. */
+				CLEAR = 0x00000000,
+				MASK_EMITTER = 0x7f000000,
+				MASK_PARTICLE = 0x00ffffff,
+				MASK_VALID = 0x7fffffff,
+			}
+			public FlagBit FlagData;
+
+			/* Datas for Particle */
+			public Library_SpriteStudio.KindColorOperationEffect KindBlendTarget;
+			public int IndexCellMap;
+			public int IndexCell;
+
+			public AttributeEffectRangeFloat Angle;
+
+			public Vector2 GravityDirectional;
+			public Vector2 GravityPointPosition;
+			public float GravityPointPower;
+
+			public AttributeEffectRangeVector2 Position;
+
+			public AttributeEffectRangeFloat Rotation;
+			public AttributeEffectRangeFloat RotationFluctuation;
+			public float RotationFluctuationRate;
+			public float RotationFluctuationRateTime;
+
+			public AttributeEffectRangeFloat RateTangentialAcceleration;
+	
+			public AttributeEffectRangeVector2 ScaleStart;
+			public AttributeEffectRangeFloat ScaleRateStart;
+
+			public AttributeEffectRangeVector2 ScaleEnd;
+			public AttributeEffectRangeFloat ScaleRateEnd;
+
+			public int Delay;
+
+			public AttributeEffectRangeColor ColorVertex;
+			public AttributeEffectRangeColor ColorVertexFluctuation;
+
+			public float AlphaFadeStart;
+			public float AlphaFadeEnd;
+
+			public AttributeEffectRangeFloat Speed;
+			public AttributeEffectRangeFloat SpeedFluctuation;
+
+			public float TurnDirectionFluctuation;
+
+			public long SeedRandom;
+
+			/* Datas for Emitter */
+			public int DurationEmitter;
+			public int Interval;
+			public AttributeEffectRangeFloat DurationParticle;
+
+			public float PriorityParticle;
+			public int CountParticleMax;
+			public int CountParticleEmit;
+
+			public int CountPartsMaximum;	/* DisUse?? */
+			public PatternEmit[] TablePatternEmit;
+			public int[] TablePatternOffset;
+			public long[] TableSeedParticle;
+
+			public void CleanUp()
+			{
+				FlagData = FlagBit.CLEAR;
+
+				KindBlendTarget = KindColorOperationEffect.MIX;
+				IndexCellMap = -1;
+				IndexCell = -1;
+
+				DurationParticle = new AttributeEffectRangeFloat();
+				DurationParticle.Main = 0.0f;
+				DurationParticle.Sub = 0.0f;
+
+				Angle = new AttributeEffectRangeFloat();
+				Angle.Main = 0.0f;
+				Angle.Sub = 0.0f;
+
+				GravityDirectional = Vector2.zero;
+				GravityPointPosition = Vector2.zero;
+				GravityPointPower = 0.0f;
+
+				Position = new AttributeEffectRangeVector2();
+				Position.Main = Vector2.zero;
+				Position.Sub = Vector2.zero;
+
+				Rotation = new AttributeEffectRangeFloat();
+				Rotation.Main = 0.0f;
+				Rotation.Sub = 0.0f;
+
+				RotationFluctuation = new AttributeEffectRangeFloat();
+				RotationFluctuation.Main = 0.0f;
+				RotationFluctuation.Sub = 0.0f;
+				RotationFluctuationRate = 0.0f;
+				RotationFluctuationRateTime = 0.0f;
+
+				RateTangentialAcceleration = new AttributeEffectRangeFloat();
+				RateTangentialAcceleration.Main = 0.0f;
+				RateTangentialAcceleration.Sub = 0.0f;
+	
+				ScaleStart = new AttributeEffectRangeVector2();
+				ScaleStart.Main = Vector2.zero;
+				ScaleStart.Sub = Vector2.zero;
+				ScaleRateStart = new AttributeEffectRangeFloat();
+				ScaleRateStart.Main = 0.0f;
+				ScaleRateStart.Sub = 0.0f;
+
+				ScaleEnd = new AttributeEffectRangeVector2();
+				ScaleEnd.Main = Vector2.zero;
+				ScaleEnd.Sub = Vector2.zero;
+				ScaleRateEnd = new AttributeEffectRangeFloat();
+				ScaleRateEnd.Main = 0.0f;
+				ScaleRateEnd.Sub = 0.0f;
+
+				Delay = 0;
+
+				ColorVertex = new AttributeEffectRangeColor();
+				ColorVertex.Main = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+				ColorVertex.Sub = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+				ColorVertexFluctuation = new AttributeEffectRangeColor();
+				ColorVertexFluctuation.Main = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+				ColorVertexFluctuation.Sub = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+
+				AlphaFadeStart = 0.0f;
+				AlphaFadeEnd = 0.0f;
+
+				Speed = new AttributeEffectRangeFloat();
+				Speed.Main = 0.0f;
+				Speed.Sub = 0.0f;
+				SpeedFluctuation = new AttributeEffectRangeFloat();
+				SpeedFluctuation.Main = 0.0f;
+				SpeedFluctuation.Sub = 0.0f;
+
+				TurnDirectionFluctuation = 0.0f;
+
+				SeedRandom = (int)Constant.SEED_MAGIC;
+
+				DurationEmitter = 15;
+				Interval = 1;
+				DurationParticle = new AttributeEffectRangeFloat();
+				DurationParticle.Main = 15.0f;
+				DurationParticle.Sub = 15.0f;
+
+				PriorityParticle = 64.0f;
+				CountParticleEmit = 2;
+				CountParticleMax = 32;
+
+				CountPartsMaximum = 0;
+				TablePatternEmit = null;
+				TablePatternOffset = null;
+				TableSeedParticle = null;
+			}
+
+			public void Copy(Library_SpriteStudio.Data.EmitterEffect Source)
+			{
+				FlagData = Source.FlagData;
+
+				KindBlendTarget = Source.KindBlendTarget;
+				IndexCellMap = Source.IndexCellMap;
+				IndexCell = Source.IndexCell;
+
+				DurationParticle = Source.DurationParticle;
+
+				Angle = Source.Angle;
+
+				GravityDirectional = Source.GravityDirectional;
+				GravityPointPosition = Source.GravityPointPosition;
+				GravityPointPower = Source.GravityPointPower;
+
+				Position = Source.Position;
+
+				Rotation = Source.Rotation;
+				RotationFluctuation = Source.RotationFluctuation;
+				RotationFluctuationRate = Source.RotationFluctuationRate;
+				RotationFluctuationRateTime = Source.RotationFluctuationRateTime;
+
+				RateTangentialAcceleration = Source.RateTangentialAcceleration;
+
+				ScaleStart = Source.ScaleStart;
+				ScaleRateStart = Source.ScaleRateStart;
+				ScaleEnd = Source.ScaleEnd;
+				ScaleRateEnd = Source.ScaleRateEnd;
+			
+				Delay = Source.Delay;
+
+				ColorVertex = Source.ColorVertex;
+				ColorVertexFluctuation = Source.ColorVertexFluctuation;
+
+				AlphaFadeStart = Source.AlphaFadeStart;
+				AlphaFadeEnd = Source.AlphaFadeEnd;
+
+				Speed = Source.Speed;
+				SpeedFluctuation = Source.SpeedFluctuation;
+
+				TurnDirectionFluctuation = Source.TurnDirectionFluctuation;
+				SeedRandom = Source.SeedRandom;
+
+				DurationEmitter = Source.DurationEmitter;
+				Interval = Source.Interval;
+				DurationParticle = Source.DurationParticle;
+
+				PriorityParticle = Source.PriorityParticle;
+				CountParticleMax = Source.CountParticleMax;
+				CountParticleEmit = Source.CountParticleEmit;
+
+				CountPartsMaximum = Source.CountPartsMaximum;
+				TablePatternEmit = Source.TablePatternEmit;
+				TablePatternOffset = Source.TablePatternOffset;
+				TableSeedParticle = Source.TableSeedParticle;
+			}
+
+			public static void TableGetOffset(	ref int[] DataTablePatternOffset,
+												EmitterEffect DataEmitter
+											)
+			{
+				int CountEmitMax = DataEmitter.CountParticleMax;
+				int CountEmit = DataEmitter.CountParticleEmit;
+				CountEmit = (1 > CountEmit) ? 1 : CountEmit;
+
+				/* Create Offset-Pattern Table */
+				/* MEMO: This Table will be solved at Importing. */
+				int Shot = 0;
+				int Offset = DataEmitter.Delay;
+				int Count = CountEmitMax;
+				DataTablePatternOffset = new int[Count];
+				for(int i=0; i<Count; i++)
+				{
+					if(Shot >= CountEmit)
+					{
+						Shot = 0;
+						Offset += DataEmitter.Interval;
+					}
+					DataTablePatternOffset[i] = Offset;
+					Shot++;
+				}
+			}
+			public static void TableGet(	ref PatternEmit[] DataTablePatternEmit,
+											ref long[] DataTableSeedParticle,
+											EmitterEffect DataEmitter,
+											Library_SpriteStudio.Utility.Random.Generator InstanceRandom,
+											uint SeedRandom
+									)
+			{	/* CAUTION!: Obtain "TablePatternOffset" before executing this function. */
+				int CountEmitMax = DataEmitter.CountParticleMax;
+
+				List<Library_SpriteStudio.Data.EmitterEffect.PatternEmit> ListPatternEmit = new List<Library_SpriteStudio.Data.EmitterEffect.PatternEmit>();
+				ListPatternEmit.Clear();
+
+				int CountEmit = DataEmitter.CountParticleEmit;
+				CountEmit = (1 > CountEmit) ? 1 : CountEmit;
+
+				int Cycle = (int)(((float)(CountEmitMax * DataEmitter.Interval) / (float)CountEmit) + 0.5f);
+				int Count;
+
+				/* Create Emit-Pattern Table */
+				/* MEMO: This Table will be solved at Importing (at SeedRandom is fixed). */
+				InstanceRandom.InitSeed(SeedRandom);
+				Count = CountEmitMax * (int)Constant.LIFE_EXTEND_SCALE;
+				if((int)Constant.LIFE_EXTEND_MIN > Count)
+				{
+					Count = (int)Constant.LIFE_EXTEND_MIN;
+				}
+				DataTablePatternEmit = new PatternEmit[Count];
+				int Duration;
+				for(int i=0; i<Count; i++)
+				{
+					DataTablePatternEmit[i] = new PatternEmit();
+					DataTablePatternEmit[i].IndexGenerate = i;
+					Duration = (int)((float)DataEmitter.DurationParticle.Main + InstanceRandom.RandomFloat((float)DataEmitter.DurationParticle.Sub));
+					DataTablePatternEmit[i].Duration = Duration;
+					DataTablePatternEmit[i].Cycle = (Duration > Cycle) ? Duration : Cycle;
+				}
+
+				/* Create Random-Seed Table */
+				/* MEMO: This Table will be solved at Importing (at SeedRandom is fixed). */
+				Count = CountEmitMax * 3;
+				DataTableSeedParticle = new long[Count];
+				InstanceRandom.InitSeed(SeedRandom);
+				for(int i=0; i<Count; i++)
+				{
+					DataTableSeedParticle[i] = (long)((ulong)InstanceRandom.RandomUint32());
+				}
+			}
+			private static int TableGetSortPattern(Library_SpriteStudio.Data.EmitterEffect.PatternEmit Left, Library_SpriteStudio.Data.EmitterEffect.PatternEmit Right)
+			{
+				int KeyDuration = Left.Duration - Right.Duration;
+				int KeyID = Left.IndexGenerate - Right.IndexGenerate;
+				if(0 > KeyDuration)
+				{
+					return(-1);
+				}
+				if(0 < KeyDuration)
+				{
+					return(1);
+				}
+				/* MEMO: Left.Duration == Right.Duration */
+				if(0 > KeyID)
+				{
+					return(-1);
+				}
+				if(0 < KeyID)
+				{
+					return(1);
+				}
+				return(0);			 
+			}
+		}
+
+		[System.Serializable]
+		public class AttributeEffectRangeFloat
+		{
+			public float Main;
+			public float Sub;
+		}
+		[System.Serializable]
+		public class AttributeEffectRangeVector2
+		{
+			public Vector2 Main;
+			public Vector2 Sub;
+		}
+		[System.Serializable]
+		public class AttributeEffectRangeColor
+		{
+			public Color Main;
+			public Color Sub;
+		}
+
+		[System.Serializable]
+		public class PartsEffect
+		{
+			public string Name;
+
+			public int ID;
+			public int IDParent;
+			public int[] ListIDChild;
+
+			public Library_SpriteStudio.KindPartsEffect Kind;	/* Preliminary ... "Root"or"Emitter" */
+			public int IndexEmitter;	/* -1 == Not "Emitter" */
+
+			public void CleanUp()
+			{
+				Name = "";
+
+				ID = -1;
+				IDParent = -1;
+				ListIDChild = null;
+
+				Kind = Library_SpriteStudio.KindPartsEffect.NON;
+				IndexEmitter = -1;
+			}
+		}
+
 		public class ListAttribute_Base<_TypeValue>
 		{
 			[System.Flags]
@@ -1358,6 +1768,7 @@ public static partial class Library_SpriteStudio
 		public class ListAttributeEffect : ListAttribute_Base<Library_SpriteStudio.Data.AttributeEffect>
 		{
 		}
+
 		[System.Serializable]
 		public class ListAttributeIndexCellMapFix : ListAttribute_Base<int>
 		{
@@ -1816,19 +2227,28 @@ public static partial class Library_SpriteStudio
 			[System.Flags]
 			public enum FlagBit
 			{
+				PINGPONG = 0x00000001,	/* Reserved. */
+				INDEPENDENT = 0x00000002,
+
 				CLEAR = 0x00000000,
 			}
 
 			public FlagBit Flags;
+			public int FrameStart;
+			public float RateTime;
 
 			public void CleanUp()
 			{
 				Flags = FlagBit.CLEAR;
+				FrameStart = 0;
+				RateTime = 1.0f;
 			}
 
 			public void Duplicate(AttributeEffect Original)
 			{
 				Flags = Original.Flags;
+				FrameStart = Original.FrameStart;
+				RateTime = Original.RateTime;
 			}
 
 			public override bool Equals(System.Object Target)
@@ -1839,7 +2259,7 @@ public static partial class Library_SpriteStudio
 				}
 
 				AttributeEffect TargetData = (AttributeEffect)Target;
-				return(((Flags == TargetData.Flags)) ? true : false);
+				return(((Flags == TargetData.Flags) && (FrameStart == TargetData.FrameStart) && (RateTime == TargetData.RateTime)) ? true : false);
 			}
 
 			public override int GetHashCode()
@@ -1847,6 +2267,7 @@ public static partial class Library_SpriteStudio
 				return(base.GetHashCode());
 			}
 		}
+
 		[System.Serializable]
 		public class AttributeCoordinateMeshFix
 		{
@@ -1981,263 +2402,9 @@ public static partial class Library_SpriteStudio
 			}
 			return(-1);
 		}
-
-		[System.Serializable]
-		public class EmitterEffect
-		{
-			[System.Flags]
-			public enum FlagBit
-			{
-				BASIC = 0x00000001,
-				DELAY = 0x00000002,
-				SEEDRANDOM = 0x00000004,
-//				LOCKRANDOMSEED = 0x00000008,	/* Reserved */
-
-				POSITION = 0x00000010,
-//				POSITION_FLUCTUATION = 0x00000020,	/* Reserved */
-				ROTATIONFLUCTUATION_START = 0x00000040,
-				ROTATIONFLUCTUATION_END = 0x00000080,
-				SCALE_START = 0x00000100,
-				SCALE_END = 0x00000200,
-				SPEED_START = 0x00000400,	/* Reserved */
-				SPEED_END = 0x00000800,
-
-				GRAVITY_DIRECTION = 0x00001000,
-				GRAVITY_POINT = 0x00002000,
-				TANGENTIALACCELATION = 0x00004000,
-				TURNDIRECTION = 0x00008000,
-
-				COLORVERTEX_START = 0x01000000,
-				COLORVERTEX_END = 0x02000000,
-				FADEALPHA = 0x04000000,
-
-				CLEAR = 0x00000000
-			}
-			public FlagBit FlagData;
-
-			public Library_SpriteStudio.KindColorOperationEffect KindBlendTarget;
-			public int IndexCellMap;
-			public int IndexCell;
-
-			public float CountFramePerSecond;
-			public float TimeInterval;
-			public float TimeDurationEmitter;
-			public AttributeEffectRangeFloat TimeDurationParticle;
-
-			public float Priority;
-			public int CountParticleMax;
-			public int CountParticleEmit;
-
-			public AttributeEffectRangeVector2 PositionStart;
-
-			public AttributeEffectRangeFloat RotationStart;
-			public AttributeEffectRangeFloat RotationFluctuation;
-			public float RotationFluctuationRate;
-			public float RotationFluctuationRateTime;
-
-			public AttributeEffectRangeVector2 ScaleStart;
-			public AttributeEffectRangeFloat ScaleStartRate;
-			public AttributeEffectRangeVector2 ScaleEnd;
-			public AttributeEffectRangeFloat ScaleEndRate;
-
-			public AttributeEffectRangeFloat SpeedStart;
-			public AttributeEffectRangeFloat SpeedEnd;
-
-			public int RandomSeed;
-			public float TimeDelay;
-			public AttributeEffectRangeFloat RateTangentialAcceleration;
-			public Vector2 GravityDirectional;
-			public Vector2 GravityPointPosition;
-			public float GravityPointPower;
-
-			public AttributeEffectRangeColor ColorVertexStart;
-			public AttributeEffectRangeColor ColorVertexEnd;
-			public float AlphaRateStart;
-			public float AlphaRateEnd;
-
-			public AttributeEffectRangeFloat Angle;
-			public bool FlagTurnDirection;
-
-			public void CleanUp()
-			{
-				FlagData = FlagBit.CLEAR;
-
-				IndexCellMap = -1;
-				IndexCell = -1;
-				KindBlendTarget = Library_SpriteStudio.KindColorOperationEffect.NON;
-
-				CountFramePerSecond = 60.0f;
-				TimeDurationEmitter = 30.0f;
-				TimeInterval = 1.0f;
-
-				Priority = 64.0f;
-				CountParticleMax = 50;
-				CountParticleEmit = 1;
-
-				SpeedStart = new AttributeEffectRangeFloat();
-				SpeedStart.Main = 5.0f;
-				SpeedStart.Sub = 5.0f;
-				TimeDurationParticle = new AttributeEffectRangeFloat();
-				TimeDurationParticle.Main = 30.0f;
-				TimeDurationParticle.Sub = 30.0f;
-				Angle = new AttributeEffectRangeFloat();
-				Angle.Main = 0.0f;
-				Angle.Sub = 0.0f;	// 45.0f;
-
-				RandomSeed = -1;	// 0;
-				TimeDelay = 0;
-				GravityDirectional = Vector2.zero;	// new Vector2(0.0f, -3.0f);
-				PositionStart = new AttributeEffectRangeVector2();
-				PositionStart.Main = new Vector2(0.0f, 0.0f);
-				PositionStart.Sub = new Vector2(0.0f, 0.0f);
-				SpeedEnd = new AttributeEffectRangeFloat();
-				SpeedEnd.Main = 0.0f;
-				SpeedEnd.Sub = 0.0f;
-				RotationStart = new AttributeEffectRangeFloat();
-				RotationStart.Main = 0.0f;
-				RotationStart.Sub = 0.0f;
-				RotationFluctuation = new AttributeEffectRangeFloat();
-				RotationFluctuation.Main = 0.0f;
-				RotationFluctuation.Sub = 0.0f;
-				RotationFluctuationRate = 0.0f;
-				RotationFluctuationRateTime = 1.0f;	// 0.75f;
-				RateTangentialAcceleration = new AttributeEffectRangeFloat();
-				RateTangentialAcceleration.Main = 0.0f;
-				RateTangentialAcceleration.Sub = 0.0f;
-				GravityPointPosition = new Vector2(0.0f, 0.0f);
-				GravityPointPower = 0.0f;
-
-				ColorVertexStart = new AttributeEffectRangeColor();
-				ColorVertexStart.Main = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-				ColorVertexStart.Sub = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-				ColorVertexEnd = new AttributeEffectRangeColor();
-				ColorVertexEnd.Main = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-				ColorVertexEnd.Sub = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-
-				ScaleStart = new AttributeEffectRangeVector2();
-				ScaleStart.Main = new Vector2(1.0f, 1.0f);
-				ScaleStart.Sub = new Vector2(1.0f, 1.0f);
-				ScaleStartRate = new AttributeEffectRangeFloat();
-				ScaleStartRate.Main = 1.0f;
-				ScaleStartRate.Sub = 1.0f;
-				ScaleEnd = new AttributeEffectRangeVector2();
-				ScaleEnd.Main = new Vector2(1.0f, 1.0f);
-				ScaleEnd.Sub = new Vector2(1.0f, 1.0f);
-				ScaleEndRate = new AttributeEffectRangeFloat();
-				ScaleEndRate.Main = 1.0f;
-				ScaleEndRate.Sub = 1.0f;
-
-				AlphaRateStart = 0.0f;	// 0.25f;
-				AlphaRateEnd = 1.0f;	// 0.75f;
-				FlagTurnDirection = false;
-			}
-
-			public void Copy(Library_SpriteStudio.Data.EmitterEffect Source)
-			{
-				FlagData = Source.FlagData;
-
-				CountFramePerSecond = Source.CountFramePerSecond;
-				IndexCellMap = Source.IndexCellMap;
-				IndexCell = Source.IndexCell;
-				KindBlendTarget = Source.KindBlendTarget;
-
-				TimeInterval = Source.TimeInterval;
-				TimeDurationEmitter = Source.TimeDurationEmitter;
-
-				Priority = Source.Priority;
-				CountParticleMax = Source.CountParticleMax;
-				CountParticleEmit = Source.CountParticleEmit;
-
-				SpeedStart.Main = Source.SpeedStart.Main;
-				SpeedStart.Sub = Source.SpeedStart.Sub;
-				TimeDurationParticle.Main = Source.TimeDurationParticle.Main;
-				TimeDurationParticle.Sub = Source.TimeDurationParticle.Sub;
-				Angle.Main = Source.Angle.Main;
-				Angle.Sub = Source.Angle.Sub;
-
-				RandomSeed = Source.RandomSeed;
-				TimeDelay = Source.TimeDelay;
-				GravityDirectional = Source.GravityDirectional;
-				PositionStart.Main = Source.PositionStart.Main;
-				PositionStart.Sub = Source.PositionStart.Sub;
-				SpeedEnd.Main = Source.SpeedEnd.Main;
-				SpeedEnd.Sub = Source.SpeedEnd.Sub;
-				RotationStart.Main = Source.RotationStart.Main;
-				RotationStart.Sub = Source.RotationStart.Sub;
-				RotationFluctuation.Main = Source.RotationFluctuation.Main;
-				RotationFluctuation.Sub = Source.RotationFluctuation.Sub;
-				RotationFluctuationRate = Source.RotationFluctuationRate;
-				RotationFluctuationRateTime = Source.RotationFluctuationRateTime;
-				RateTangentialAcceleration.Main = Source.RateTangentialAcceleration.Main;
-				RateTangentialAcceleration.Sub = Source.RateTangentialAcceleration.Sub;
-				GravityPointPosition = Source.GravityPointPosition;
-				GravityPointPower = Source.GravityPointPower;
-
-				ColorVertexStart.Main = Source.ColorVertexStart.Main;
-				ColorVertexStart.Sub = Source.ColorVertexStart.Sub;
-				ColorVertexEnd.Main = Source.ColorVertexEnd.Main;
-				ColorVertexEnd.Sub = Source.ColorVertexEnd.Sub;
-
-				ScaleStart.Main = Source.ScaleStart.Main;
-				ScaleStart.Sub = Source.ScaleStart.Sub;
-				ScaleStartRate.Main = Source.ScaleStartRate.Main;
-				ScaleStartRate.Sub = Source.ScaleStartRate.Sub;
-				ScaleEnd.Main = Source.ScaleEnd.Main;
-				ScaleEnd.Sub = Source.ScaleEnd.Sub;
-				ScaleEndRate.Main = Source.ScaleEndRate.Main;
-				ScaleEndRate.Sub = Source.ScaleEndRate.Sub;
-
-				AlphaRateStart = Source.AlphaRateStart;
-				AlphaRateEnd = Source.AlphaRateEnd;
-				FlagTurnDirection = Source.FlagTurnDirection;
-			}
-		}
-		[System.Serializable]
-		public class AttributeEffectRangeFloat
-		{
-			public float Main;
-			public float Sub;
-		}
-		[System.Serializable]
-		public class AttributeEffectRangeVector2
-		{
-			public Vector2 Main;
-			public Vector2 Sub;
-		}
-		[System.Serializable]
-		public class AttributeEffectRangeColor
-		{
-			public Color Main;
-			public Color Sub;
-		}
-
-		[System.Serializable]
-		public class PartsEffect
-		{
-			public string Name;
-
-			public int ID;
-			public int IDParent;
-			public int[] ListIDChild;
-
-			public Library_SpriteStudio.KindPartsEffect Kind;	/* Preliminary ... "Root"or"Emitter" */
-			public int IndexEmitter;	/* -1 == Not "Emitter" */
-
-			public void CleanUp()
-			{
-				Name = "";
-
-				ID = -1;
-				IDParent = -1;
-				ListIDChild = null;
-
-				Kind = Library_SpriteStudio.KindPartsEffect.NON;
-				IndexEmitter = -1;
-			}
-		}
 	}
 
-	public class Control
+	public partial class Control
 	{
 		[System.Serializable]
 		public class Parts
@@ -2247,7 +2414,7 @@ public static partial class Library_SpriteStudio
 			{
 				VALID = 0x40000000,
 				RUNNING = 0x20000000,
-				REFRESH_INSTANCEUNDERCONTROL = 0x10000000,
+				REFRESH_INSTANCEUNDERCONTROL = 0x10000000,	/* disuse */
 
 				HIDEFORCE = 0x08000000,
 
@@ -2258,7 +2425,8 @@ public static partial class Library_SpriteStudio
 				INSTANCE_VALID = 0x00008000,
 				INSTANCE_PLAYINDEPENDENT = 0x00004000,
 
-				EFFECT_PLAYING = 0x000000800,
+				EFFECT_VALID = 0x00000800,
+				EFFECT_PLAYINDEPENDENT = 0x00000400,
 
 				CLEAR = 0x00000000
 			}
@@ -2302,9 +2470,9 @@ public static partial class Library_SpriteStudio
 
 			public Object PrefabUnderControl;
 			public string NameAnimationUnderControl;
-			internal GameObject InstanceGameObjectUnderControl;
+			public GameObject InstanceGameObjectUnderControl;
 			internal Script_SpriteStudio_Root InstanceRootUnderControl;
-			internal Script_SpriteStudio_RootEffect InstanceRootUnderControlEffect;	/* Interim */
+			internal Script_SpriteStudio_RootEffect InstanceRootUnderControlEffect;
 			internal int FrameNoPreviousUpdateUnderControl;
 
 			public void CleanUp()
@@ -2335,7 +2503,6 @@ public static partial class Library_SpriteStudio
 //				InstanceRootUnderControlEffect =
 
 //				FrameNoPreviousUpdateUnderControl = -1;
-
 				CleanUpWorkArea();
 			}
 
@@ -2362,9 +2529,9 @@ public static partial class Library_SpriteStudio
 
 //				PrefabUnderControl =
 //				NameAnimationUnderControl =
-				InstanceGameObjectUnderControl = null;
-				InstanceRootUnderControl = null;
-				InstanceRootUnderControlEffect = null;
+//				InstanceGameObjectUnderControl = 
+//				InstanceRootUnderControl = 
+//				InstanceRootUnderControlEffect = 
 
 //				FrameNoPreviousUpdateUnderControl =
 				CleanUpWorkAreaAnimationSet();
@@ -2442,9 +2609,9 @@ public static partial class Library_SpriteStudio
 
 				BufferParameterMesh = null;
 				DataPartsDrawManager = null;
-				InstanceGameObjectUnderControl = null;
-				InstanceRootUnderControl = null;
-				InstanceRootUnderControlEffect = null;
+//				InstanceGameObjectUnderControl = null;
+//				InstanceRootUnderControl = null;
+//				InstanceRootUnderControlEffect = null;
 
 				return(true);
 
@@ -2495,8 +2662,8 @@ public static partial class Library_SpriteStudio
 							{
 								NameAnimationUnderControl = DataParts.NameAnimationUnderControl;
 							}
-							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-							RebootPrefabInstance(InstanceRootInitial, IDPartsInitial);
+//							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
+							RebootPrefabInstance(InstanceRootInitial, IDPartsInitial, false);
 						}
 						break;
 
@@ -2512,8 +2679,8 @@ public static partial class Library_SpriteStudio
 							{
 								PrefabUnderControl = (InstanceRootInitial.DataAnimation.DataGetParts(IDPartsInitial)).PrefabUnderControl;
 							}
-							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-							RebootPrefabInstanceEffect(InstanceRootInitial, IDPartsInitial);
+//							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
+							RebootPrefabInstanceEffect(InstanceRootInitial, IDPartsInitial, false);
 						}
 						break;
 
@@ -2534,17 +2701,18 @@ public static partial class Library_SpriteStudio
 
 			}
 			internal bool RebootPrefabInstance(	Script_SpriteStudio_Root InstanceRootInitial,
-												int IDPartsInitial
+												int IDPartsInitial,
+												bool FlagRenew = false
 											)
 			{
 				if(null != PrefabUnderControl)
 				{
 					/* Create UnderControl-Instance */
-					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
-					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, true);
-						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-					}
+//					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
+//					{
+						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
+//						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
+//					}
 					if(null != InstanceGameObjectUnderControl)
 					{
 						InstanceRootUnderControl = InstanceGameObjectUnderControl.GetComponent<Script_SpriteStudio_Root>();
@@ -2559,17 +2727,18 @@ public static partial class Library_SpriteStudio
 				return(true);
 			}
 			internal bool RebootPrefabInstanceEffect(	Script_SpriteStudio_Root InstanceRootInitial,
-														int IDPartsInitial
+														int IDPartsInitial,
+														bool FlagRenew = false
 													)
 			{
 				if(null != PrefabUnderControl)
 				{
 					/* Create UnderControl-Instance */
-					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
-					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, true);
-						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-					}
+//					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
+//					{
+						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
+//						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
+//					}
 					if(null != InstanceGameObjectUnderControl)
 					{
 						InstanceRootUnderControlEffect = InstanceGameObjectUnderControl.GetComponent<Script_SpriteStudio_RootEffect>();
@@ -3483,30 +3652,54 @@ public static partial class Library_SpriteStudio
 				int FrameNoOrigin;
 				int IndexAttribute;
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
+				Library_SpriteStudio.Data.AttributeInstance DataInstance = null;
+				bool FlagDecode = InstanceRoot.StatusIsDecodeInstance;
+				bool FlagPlayIndependentNowInstance = (0 != (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)) ? true : false;
 				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
+				bool FlagPlayTurn = InstanceRoot.StatusIsPlayingTurn;
+				bool FlagTopFrame = false;	// (FrameNo == ((true == FlagPlayReverse) ? InstanceRoot.FrameNoEnd : InstanceRoot.FrameNoStart)) ? true : false;
+				bool FlagTimeWrap = false;
 				float TimeOffset = 0.0f;
 
-				if((true == InstanceRoot.StatusIsPlayingTurn) && (0 == (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)))
+				if(null == InstanceRootUnderControl)
 				{
-					FrameNoPreviousUpdateUnderControl = -1;
+					return(true);
 				}
 
-				/* Status-Data Get */
-				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
-				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
+				/* Top Frame Check */
+				if (true == FlagPlayReverse)
+				{
+					FlagTopFrame = (InstanceRoot.TimeRange <= (InstanceRoot.TimeElapsed + InstanceRoot.TimePerFrameConsideredRateSpeed)) ? true : false;
+				}
+				else
+				{
+					FlagTopFrame = (0.0f > (InstanceRoot.TimeElapsed - InstanceRoot.TimePerFrameConsideredRateSpeed)) ? true : false;
+				}
 
-				/* Decode Instance-Data */
-				if(true == InstanceRoot.StatusIsDecodeInstance)
+				/* Force-Applying Check */
+				if(true == FlagPlayTurn)
+				{	/* Turn */
+					if(false == FlagPlayIndependentNowInstance)
+					{	/* Instance-Animation is depending on parent. */
+						FrameNoPreviousUpdateUnderControl = -1;
+					}
+				}
+
+				/* Decode Instance-Attribute */
+//				if(true == FlagDecode)
+				if((true == FlagDecode) || (-1 == FrameNoPreviousUpdateUnderControl))
 				{
 					/* Data Index (& Frame-No) Get */
 					IndexAttribute = DataAnimationParts.Instance.IndexGetValue(out FrameNoOrigin, FrameNo);
-
-					/* MEMO: Play-Foward */
 					if(0 <= IndexAttribute)
-					{	/* Valid Data */
+					{   /* Valid Data */
 						if(FrameNoPreviousUpdateUnderControl != FrameNoOrigin)
-						{	/* Animation Set */
-							Library_SpriteStudio.Data.AttributeInstance DataInstance = DataAnimationParts.Instance.ListValue[IndexAttribute];
+						{	/* Different Attribute */
+							DataInstance = DataAnimationParts.Instance.ListValue[IndexAttribute];
+
+							bool FlagPlayReverseInstanceData = (0.0f > DataInstance.RateTime) ? true : false;
+							bool FlagPlayReverseInstance = FlagPlayReverseInstanceData ^ FlagPlayReverse;
+
 							InstanceRootUnderControl.AnimationPlay(	InstanceRootUnderControl.IndexAnimation,
 																	DataInstance.PlayCount,
 																	0,
@@ -3518,43 +3711,69 @@ public static partial class Library_SpriteStudio
 																	DataInstance.OffsetEnd
 																);
 
+							/* Adjust Starting-Time */
+							/* MEMO: Necessary to set time, not frame. Because parent's elapsed time has a small excess. */
 							if(true == FlagPlayReverse)
-							{	/* Reverse */
+							{   /* Play-Reverse */
+								FlagTimeWrap = FlagTopFrame & FlagPlayReverseInstanceData;
 								if(FrameNoOrigin <= FrameNo)
-								{	/* Immediately */
-									TimeOffset = InstanceRoot.TimeElapsed - ((float)(FrameNoOrigin - InstanceRoot.FrameNoStart) * InstanceRoot.TimePerFrame);
-									InstanceRootUnderControl.TimeElapsedSetForce(TimeOffset, true);
-//									InstanceRootUnderControl.TimeDelayStart =
-								}
-								else
-								{	/* Wait (Stop-Motion) */
-									InstanceRootUnderControl.TimeElapsedSetForce(0.0f, true);
-									InstanceRootUnderControl.TimeDelay = 0.0f;
-									InstanceRootUnderControl.AnimationStop();
-								}
-							}
-							else
-							{	/* Foward */
-								/* Wait Set */
-								if(FrameNoOrigin <= FrameNo)
-								{	/* Immediately */
-									TimeOffset = InstanceRoot.TimeElapsed - ((float)(FrameNoOrigin - InstanceRoot.FrameNoStart) * InstanceRoot.TimePerFrame);
-									InstanceRootUnderControl.TimeElapsedSetForce(TimeOffset, false);
-									InstanceRootUnderControl.TimeDelay = 0.0f;
+								{   /* Immediately */
+									TimeOffset = (float)(FrameNoOrigin - InstanceRoot.FrameNoStart);
+									TimeOffset = InstanceRoot.TimeElapsed - (TimeOffset * InstanceRoot.TimePerFrame);
+									InstanceRootUnderControl.TimeElapsedSetForce(TimeOffset, FlagPlayReverse, FlagTimeWrap);
 								}
 								else
 								{	/* Wait */
-									TimeOffset = (float)FrameNoOrigin * InstanceRoot.TimePerFrame - InstanceRoot.TimeElapsed;
-									InstanceRootUnderControl.TimeElapsedSetForce(0.0f, false);
-									InstanceRootUnderControl.TimeDelay = TimeOffset;
+									if(true == FlagPlayReverseInstance)
+									{	/* Instance: Play-Reverse */
+										InstanceRootUnderControl.TimeElapsedSetForce(0.0f, FlagPlayReverse, FlagTimeWrap);
+										InstanceRootUnderControl.TimeDelay = 0.0f;
+										InstanceRootUnderControl.AnimationStop();
+									}
+									else
+									{	/* Instance: Play-Foward */
+										TimeOffset = (float)FrameNoOrigin * InstanceRoot.TimePerFrame - InstanceRoot.TimeElapsed;
+										InstanceRootUnderControl.TimeElapsedSetForce(0.0f, FlagPlayReverse, FlagTimeWrap);
+										InstanceRootUnderControl.TimeDelay = TimeOffset;
+									}
+								}
+							}
+							else
+							{   /* Play-Foward */
+								FlagTimeWrap = FlagTopFrame & FlagPlayReverseInstanceData;
+								if(FrameNoOrigin <= FrameNo)
+								{   /* Immediately */
+									TimeOffset = (float)(FrameNoOrigin - InstanceRoot.FrameNoStart);
+									TimeOffset = InstanceRoot.TimeElapsed - (TimeOffset * InstanceRoot.TimePerFrame);
+									InstanceRootUnderControl.TimeElapsedSetForce(TimeOffset, FlagPlayReverse, FlagTimeWrap);
+								}
+								else
+								{	/* Wait */
+									if(true == FlagPlayReverseInstance)
+									{	/* Instance: Play-Reverse */
+										InstanceRootUnderControl.TimeElapsedSetForce(0.0f, FlagPlayReverse, FlagTimeWrap);
+										InstanceRootUnderControl.TimeDelay = 0.0f;
+										InstanceRootUnderControl.AnimationStop();
+									}
+									else
+									{	/* Instance: Play-Foward */
+										TimeOffset = (float)FrameNoOrigin * InstanceRoot.TimePerFrame - InstanceRoot.TimeElapsed;
+										InstanceRootUnderControl.TimeElapsedSetForce(0.0f, FlagPlayReverse, FlagTimeWrap);
+										InstanceRootUnderControl.TimeDelay = TimeOffset;
+									}
 								}
 							}
 
+							/* Status Update */
 							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
 							Status = (0 != (DataInstance.Flags & Library_SpriteStudio.Data.AttributeInstance.FlagBit.INDEPENDENT)) ? (Status | FlagBitStatus.INSTANCE_PLAYINDEPENDENT) : (Status & ~FlagBitStatus.INSTANCE_PLAYINDEPENDENT);
 						}
 					}
 				}
+
+				/* Status-Data Get */
+				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
+				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
 
 				/* Draw Instance */
 				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager) && (false == DataStatus.IsHide))
@@ -3579,86 +3798,76 @@ public static partial class Library_SpriteStudio
 
 			internal bool UpdateEffect(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
+				/* CAUTION!: Ver.SS5.6 Unsupported. */
+				/* Ver.SS5.7 */
 				int FrameNoOrigin;
 				int IndexAttribute;
-				bool FlagInitializeForce = false;
-//				bool FlagPlayReverse = (0 == (Status & FlagBitStatus.EFFECT_PLAYING)) ? true : false;
-				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
-				bool FlagDecodeEffect = InstanceRoot.StatusIsDecodeEffect;
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
+				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
+				float TimeOffset = 0.0f;
 
-				if((true == InstanceRoot.StatusIsPlayingTurn) || ((true == InstanceRoot.StatusIsPlayingStart) && (true == FlagDecodeEffect)))
+				bool FlagUpdatingForce = InstanceRoot.StatusIsPlayingTurn;
+				if((true == FlagUpdatingForce) && (0 == (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)))
 				{
-					FlagInitializeForce = true;
-					FrameNoPreviousUpdateUnderControl = (false == FlagPlayReverse) ? InstanceRoot.FrameNoStart : ((InstanceRoot.FrameNoEnd - InstanceRoot.FrameNoStart) + 1);
-					Status &= ~FlagBitStatus.EFFECT_PLAYING;
+					FrameNoPreviousUpdateUnderControl = -1;
 				}
 
 				/* Status-Data Get */
 				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
 				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
-				bool FlagHide = DataStatus.IsHide;
 
-				/* Playing Control */
-				if(null != InstanceRootUnderControlEffect)
+				/* Decode Instance-Data */
+				if(true == InstanceRoot.StatusIsDecodeEffect)
 				{
-					if(false == FlagHide)
-					{	/* Play */
-						if((true == FlagInitializeForce) || (0 == (Status & FlagBitStatus.EFFECT_PLAYING)))
-						{	/* Stopping */
-							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
+					/* Data Index (& Frame-No) Get */
+					IndexAttribute = DataAnimationParts.Effect.IndexGetValue(out FrameNoOrigin, FrameNo);
 
-							Status |= FlagBitStatus.EFFECT_PLAYING;
+					/* MEMO: Play-Foward */
+					if(0 <= IndexAttribute)
+					{	/* Valid Data */
+						if(FrameNoPreviousUpdateUnderControl != FrameNoOrigin)
+						{	/* Animation Set */
+							Library_SpriteStudio.Data.AttributeEffect DataEffect = null;
 
-							float RateSpeed = InstanceRoot.RateSpeed;	/* Always Plus */
-							InstanceRootUnderControlEffect.TimePerFrame = InstanceRoot.TimePerFrame;
-							InstanceRootUnderControlEffect.AnimationPlay(0, RateSpeed);
+							/* Wait Set */
+							if(FrameNoOrigin <= FrameNo)
+							{	/* Immediately */
+								/* Play-Start */
+								DataEffect = DataAnimationParts.Effect.ListValue[IndexAttribute];
+								InstanceRootUnderControlEffect.AnimationPlay(	false,
+																				(DataEffect.RateTime * InstanceRoot.RateSpeed) * ((true == FlagPlayReverse) ? -1.0f : 1.0f)
+																			);
+								InstanceRootUnderControlEffect.SeedOffsetSet((uint)InstanceRoot.CountLoop);
 
-							float TimeOffset;
-							if(false == FlagPlayReverse)
-							{	/* Play-Foward */
-								TimeOffset = InstanceRoot.TimeElapsed - ((float)FrameNoOrigin * InstanceRoot.TimePerFrame);
+								/* Adjust Time */
+								TimeOffset = InstanceRoot.TimeElapsed - ((float)((FrameNoOrigin - InstanceRoot.FrameNoStart) - DataEffect.FrameStart) * InstanceRoot.TimePerFrame);
+								InstanceRootUnderControlEffect.TimeElapsedSetForce(TimeOffset, false);
+								InstanceRootUnderControlEffect.TimeDelay = 0.0f;
+
+								/* Status Update */
+								FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
+								Status = (0 != (DataEffect.Flags & Library_SpriteStudio.Data.AttributeEffect.FlagBit.INDEPENDENT)) ? (Status | FlagBitStatus.EFFECT_PLAYINDEPENDENT) : (Status & ~FlagBitStatus.EFFECT_PLAYINDEPENDENT);
 							}
-							else
-							{
-								TimeOffset = ((float)FrameNoPreviousUpdateUnderControl * InstanceRoot.TimePerFrame) - InstanceRoot.TimeElapsed;
-							}
-
-#if false
-							/* MEMO: Avoid the "Effect"'s malfunction in the time error of less than frame. */
-							TimeOffset = Mathf.Floor(TimeOffset / InstanceRoot.TimePerFrame) * InstanceRoot.TimePerFrame;
-#endif
-							InstanceRootUnderControlEffect.TimeElapsedSetForce(TimeOffset, FlagPlayReverse);
 						}
 					}
-					else
-					{	/* Stop */
-						if((true == FlagInitializeForce) || (0 != (Status & FlagBitStatus.EFFECT_PLAYING)))
-						{	/* Playing */
-							FrameNoPreviousUpdateUnderControl = FrameNoOrigin;
+				}
 
-							Status &= ~FlagBitStatus.EFFECT_PLAYING;
+				/* Draw Instance */
+				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager) && (false == DataStatus.IsHide))
+				{
+					/* Alpha Get */
+					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+					float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+					InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
 
-							InstanceRootUnderControlEffect.AnimationStop();
-						}
-					}
+					/* Priority Get */
+					IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+					float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+					KeyPriority += (float)DataParts.ID * 0.00001f;
 
-					if((null != DataPartsDrawManager) && ((0 == (Status & FlagBitStatus.HIDEFORCE)) && (0 != (Status & FlagBitStatus.EFFECT_PLAYING))))
-					{
-						/* Alpha Get */
-						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
-						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
-						InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
-
-						/* Priority Get */
-						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
-						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
-						KeyPriority += (float)DataParts.ID * 0.00001f;
-
-						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
-						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
-						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
-					}
+					/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
+					DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
 				}
 				return(true);
 			}
@@ -3759,1119 +3968,1072 @@ public static partial class Library_SpriteStudio
 			}
 		}
 
-		internal class PoolEffectData<_TypeData>
-			where _TypeData : class, new()
+		internal class PoolPartsEffect
 		{
-			internal int CountMax;
-			internal List<_TypeData> ListDataRunning;
-			internal List<_TypeData> ListDataWaiting;
-			internal _TypeData[] Data;
+			internal struct ParameterMesh
+			{
+				internal Vector3[] Coordinate;
+				internal Color32[] ColorVertex;
+				internal Vector2[] UV;
+				internal Vector2[] UV2;
+				internal Library_SpriteStudio.ManagerDraw.DataParts DataPartsDrawManager;
 
-			internal _TypeData InstanceGetWaiting()
-			{	/* MEMO: This Function is "Pop" (not Peek). */
-				if(0 >= ListDataWaiting.Count)
+				internal void CleanUp()
 				{
-					return(null);
+					Coordinate = null;
+					ColorVertex = null;
+					UV = null;
+					UV2 = null;
+					DataPartsDrawManager = null;
 				}
 
-				_TypeData InstanceData = ListDataWaiting[0];
-				ListDataWaiting.RemoveAt(0);
-				return(InstanceData);
-			}
-
-			internal bool InstanceSetRunning(_TypeData InstanceData)
-			{
-				if(CountMax <= ListDataRunning.Count)
+				internal bool BootUp(Script_SpriteStudio_RootEffect InstanceRoot)
 				{
+					int Count = (int)Library_SpriteStudio.KindVertexNo.TERMINATOR2;
+
+					Coordinate = new Vector3[Count];
+					if(null == Coordinate)
+					{
+						goto BootUp_ErrorEnd;
+					}
+
+					ColorVertex = new Color32[Count];
+					if(null == ColorVertex)
+					{
+						goto BootUp_ErrorEnd;
+					}
+
+					UV = new Vector2[Count];
+					if(null == UV)
+					{
+						goto BootUp_ErrorEnd;
+					}
+
+					UV2 = new Vector2[Count];
+					if(null == UV2)
+					{
+						goto BootUp_ErrorEnd;
+					}
+#if DRAWPARTS_POOLEFFECT_GENERATEJUSTINTIME
+					DataPartsDrawManager = null;
+#else
+					DataPartsDrawManager = new Library_SpriteStudio.ManagerDraw.DataParts();
+					DataPartsDrawManager.CleanUp();
+					DataPartsDrawManager.BootUp(InstanceRoot, Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2, InstanceRoot.gameObject);
+#endif
+					return(true);
+
+				BootUp_ErrorEnd:;
+					CleanUp();
 					return(false);
 				}
-				ListDataRunning.Add(InstanceData);
-				return(true);
-			}
 
-			internal void InstanceSetWaiting(_TypeData InstanceData)
-			{
-				ListDataRunning.Remove(InstanceData);
-				ListDataWaiting.Add(InstanceData);
-			}
-
-			internal void InstanceSetWaiting(ref int Index)
-			{
-				if(0 >= Index)
-				{	/* Error */
-					return;
-				}
-				Index--;
-				_TypeData InstanceData = ListDataRunning[Index];
-				ListDataRunning.RemoveAt(Index);
-				ListDataWaiting.Add(InstanceData);
-			}
-
-			internal _TypeData InstancePeekRunning(ref int Index)
-			{	/* MEMO: Use for Updating. */
-				_TypeData InstanceData = null;
-				if((null != ListDataRunning) && (Index < ListDataRunning.Count))
+				internal void DrawSet(	Script_SpriteStudio_RootEffect InstanceRoot,
+										ref PartsEffect2Emitter InstanceEmitter,
+										ref PartsEffect2Emitter.ParameterParticle InstanceParameterParticle,
+										ref Matrix4x4 MatrixTransform
+									)
 				{
-					InstanceData = ListDataRunning[Index];
-					Index++;
-				}
-				return(InstanceData);
-			}
-		}
+					/* Transform & Set Parameter-Mesh */
+					Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] = MatrixTransform.MultiplyPoint3x4(InstanceEmitter.CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU]);
+					Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] = MatrixTransform.MultiplyPoint3x4(InstanceEmitter.CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU]);
+					Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] = MatrixTransform.MultiplyPoint3x4(InstanceEmitter.CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD]);
+					Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = MatrixTransform.MultiplyPoint3x4(InstanceEmitter.CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD]);
 
-		internal class PoolPartsEffect : PoolEffectData<PartsEffect>
-		{
-			internal int CountIndexEmitter;
-			 
-			internal PoolPartsEffect(int Count)
-			{
-				CountMax = Count;
-				ListDataRunning = null;
-				ListDataWaiting = null;
-				Data = null;
+					UV[(int)Library_SpriteStudio.KindVertexNo.LU] = InstanceEmitter.UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU];
+					UV[(int)Library_SpriteStudio.KindVertexNo.RU] = InstanceEmitter.UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU];
+					UV[(int)Library_SpriteStudio.KindVertexNo.RD] = InstanceEmitter.UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD];
+					UV[(int)Library_SpriteStudio.KindVertexNo.LD] = InstanceEmitter.UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD];
 
-				CountIndexEmitter = 0;
-			}
+					ColorVertex[(int)Library_SpriteStudio.KindVertexNo.LU] = 
+					ColorVertex[(int)Library_SpriteStudio.KindVertexNo.RU] =
+					ColorVertex[(int)Library_SpriteStudio.KindVertexNo.RD] =
+					ColorVertex[(int)Library_SpriteStudio.KindVertexNo.LD] = InstanceParameterParticle.ColorVertex;
 
-			internal bool BootUp(Script_SpriteStudio_RootEffect InstanceRoot)
-			{
-				ListDataRunning = new List<PartsEffect>(CountMax);
-				ListDataRunning.Clear();
-				ListDataWaiting = new List<PartsEffect>(CountMax);
-				ListDataWaiting.Clear();
+					UV2[(int)Library_SpriteStudio.KindVertexNo.LU].x =
+					UV2[(int)Library_SpriteStudio.KindVertexNo.RU].x =
+					UV2[(int)Library_SpriteStudio.KindVertexNo.RD].x =
+					UV2[(int)Library_SpriteStudio.KindVertexNo.LD].x = InstanceRoot.RateOpacity;
 
-				Data = new PartsEffect[CountMax];
-				for(int i=0; i<CountMax; i++)
-				{
-					Data[i] = new PartsEffect();
-					Data[i].BootUp(InstanceRoot);
-					ListDataWaiting.Add(Data[i]);
-				}
+					UV2[(int)Library_SpriteStudio.KindVertexNo.LU].y =
+					UV2[(int)Library_SpriteStudio.KindVertexNo.RU].y =
+					UV2[(int)Library_SpriteStudio.KindVertexNo.RD].y =
+					UV2[(int)Library_SpriteStudio.KindVertexNo.LD].y = (float)KindColorOperation.NON + 0.01f;	/* Disuse */
 
-				return(true);
-			}
-
-			internal int PartsGenerate(PartsEffect InstancePartsParent, Script_SpriteStudio_RootEffect InstanceRoot)
-			{
-				int IDPartsParent = -1;
-				Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitterParticle = null;
-				Library_SpriteStudio.Control.PartsEffect.FlagBitStatus FlagBitStatusRoot = Library_SpriteStudio.Control.PartsEffect.FlagBitStatus.CLEAR;
-
-				if(null == InstancePartsParent)
-				{	/* Has no parent ... Generate "Root-Emitter"s */
-					InstanceDataEmitterParticle = null;
-					IDPartsParent = 0;
-					FlagBitStatusRoot = Library_SpriteStudio.Control.PartsEffect.FlagBitStatus.EMITTER_ROOT;
-				}
-				else
-				{	/* Has parent ... Generate "Particle" + "(Sub-)Emitter"s */
-					InstanceDataEmitterParticle = InstancePartsParent.DataEmitter;
-					IDPartsParent = InstancePartsParent.DataParts.ID;
-//					FlagBitStatusRoot = Library_SpriteStudio.Control.PartsEffect.FlagBitStatus.CLEAR;
-				}
-
-				Library_SpriteStudio.Data.PartsEffect InstanceDataPartsEffect = null;
-				InstanceDataPartsEffect = InstanceRoot.DataEffect.DataGetParts(IDPartsParent);
-				int[] ListIDParts = InstanceDataPartsEffect.ListIDChild;
-				int CountEmit = ListIDParts.Length;
-				int Count = 0;
-
-				/* Generate "Particle" */
-				Library_SpriteStudio.Control.PartsEffect InstanceControlPartsEffectParticle = null;
-				bool FlagGenerateParticle = true;
-				if(null != InstanceDataEmitterParticle)
-				{
-					InstanceControlPartsEffectParticle = InstanceGetWaiting();
-					if(null != InstanceControlPartsEffectParticle)
+					/* Update Mesh */
+#if DRAWPARTS_POOLEFFECT_GENERATEJUSTINTIME
+					if(null == DataPartsDrawManager)
 					{
-						FlagGenerateParticle = InstanceControlPartsEffectParticle.Awake(	Library_SpriteStudio.KindPartsEffect.PARTICLE,
-																							InstanceDataEmitterParticle,
-																							InstanceDataPartsEffect,
-																							InstancePartsParent,
-																							CountEmit,
-																							InstancePartsParent.IndexEmitter,
-																							InstanceRoot,
-																							InstancePartsParent
-																						);
-						if(false == FlagGenerateParticle)
-						{
-							InstanceSetWaiting(InstanceControlPartsEffectParticle);
-						}
-						else
-						{
-							InstanceSetRunning(InstanceControlPartsEffectParticle);
-							Count++;
-						}
+						DataPartsDrawManager = new Library_SpriteStudio.ManagerDraw.DataParts();
+						DataPartsDrawManager.CleanUp();
+						DataPartsDrawManager.BootUp(InstanceRoot, Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2, InstanceRoot.gameObject);
+					}
+#else
+#endif
+					Mesh InstanceMesh = DataPartsDrawManager.DrawParts.Data.InstanceMesh;
+					InstanceMesh.uv = UV;
+					InstanceMesh.uv2 = UV2;
+					InstanceMesh.colors32 = ColorVertex;
+					InstanceMesh.vertices = Coordinate;
+					InstanceMesh.triangles = Library_SpriteStudio.ArrayVertexIndex_Triangle2;
+
+					/* Draw Mesh */
+					Material InstanceMaterial = InstanceRoot.MaterialGet(InstanceEmitter.IndexCellMapParticle, InstanceEmitter.InstanceDataEmitter.KindBlendTarget);
+					if((null != InstanceMaterial) && (null != DataPartsDrawManager))
+					{
+						/* Set to Parts-Cluster */
+						float Priority = InstanceEmitter.InstanceDataEmitter.PriorityParticle;	/* + Offset */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRoot;
+						DataPartsDrawManager.PartsSetDraw(InstanceRoot, InstanceMaterial, Priority);
 					}
 				}
-
-				/* Generate "(Sub-)Emitter"s */
-				if(true == FlagGenerateParticle)
-				{
-					Library_SpriteStudio.Control.PartsEffect InstanceControlPartsEffect = null;
-					Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitterEffect = null;
-					int IDParts;
-
-					for(int i=0; i<CountEmit; i++)
-					{
-						InstanceControlPartsEffect = InstanceGetWaiting();
-						if(null != InstanceControlPartsEffect)
-						{
-							IDParts = ListIDParts[i];
-							InstanceDataPartsEffect = InstanceRoot.DataEffect.DataGetParts(IDParts);
-							InstanceDataEmitterEffect = InstanceRoot.DataEffect.DataGetEmitter(InstanceDataPartsEffect.IndexEmitter);
-
-							if(false == InstanceControlPartsEffect.Awake(	Library_SpriteStudio.KindPartsEffect.EMITTER,
-																			InstanceDataEmitterEffect,
-																			InstanceDataPartsEffect,
-																			InstanceControlPartsEffectParticle,
-																			0,
-																			CountIndexEmitter,
-																			InstanceRoot,
-																			InstancePartsParent
-																		)
-								)
-							{	/* Failure */
-								InstanceSetWaiting(InstanceControlPartsEffect);
-								InstanceControlPartsEffectParticle.CountSynchronousDecrease();
-							}
-							else
-							{	/* Succeed */
-								InstanceControlPartsEffect.Status |= FlagBitStatusRoot;
-								InstanceSetRunning(InstanceControlPartsEffect);
-								Count++;
-								CountIndexEmitter++;
-							}
-						}
-					}
-				}
-
-				return(Count);
 			}
 
-			internal bool PartsFlush()
-			{
-				ListDataRunning.Clear();
-				ListDataWaiting.Clear();
-				for(int i=0; i<CountMax; i++)
-				{
-					ListDataWaiting.Add(Data[i]);
-				}
-				return(true);
-			}
-		}
-		internal class PartsEffect
-		{
-			[System.Flags]
 			internal enum FlagBitStatus
 			{
 				RUNNING = 0x40000000,
-				GETUP = 0x20000000,
+				PLAYING = 0x02000000,
 
-				PARTICLE_WAITDELETE = 0x08000000,
-				PARTICLE_TURNDIRECTION = 0x04000000,
+				LOCKSEED = 0x08000000,
+				INFINITE = 0x04000000,
+				LOOP = 0x02000000,
 
-				EMITTER_ROOT = 0x00008000,
-				EMITTER_LOOP = 0x00004000,
-				EMITTER_EMITTABLE = 0x00002000,
-
-				CLEAR = 0x00000000,
-
-				AREA_COMMON = 0x70000000,
-				AREA_PARTICLE = 0x0fff0000,
-				AREA_EMITTER = 0x0000ffff,
+				CLEAR = 0x00000000
 			}
+			internal FlagBitStatus Status = FlagBitStatus.CLEAR;
 
-			/* WorkArea: Common */
-			internal FlagBitStatus Status;
+			internal PartsEffect2Emitter[] PoolEmitter = null;
+			internal int CountMeshParticle = 0;
+			internal ParameterMesh[] ParameterMeshParticle = null;
 
 			internal Script_SpriteStudio_RootEffect InstanceRootEffect = null;
-			internal Library_SpriteStudio.KindPartsEffect Kind;
-			internal Library_SpriteStudio.Data.EmitterEffect DataEmitter;
-			internal Library_SpriteStudio.Data.PartsEffect DataParts;
-			internal Library_SpriteStudio.Control.PartsEffect InstancePartsSynchronous;
-			internal int CountEmitterSynchronous;
+			internal int EffectDurationFull;
 
-			internal float CountFramePerSecond;
-			internal float TimeElapsed;
-			internal float TimeDuration;
-
-			internal Vector2 Position;
-			internal Vector2 Scale;
-			internal float Rotation;
-			internal float Priority;
-			internal float Speed;
-			internal float SpeedStart;
-			internal float SpeedEnd;
-			internal Vector2 PositionStart;
-			internal Vector2 VectorPosition;
-			internal Vector2 Force;
-			internal Vector2 ForceBase;
-			internal Vector2 GravityDirectional;
-			internal Vector2 GravityPoint;
-			internal float RateTangentialAcceleration;
-			internal Vector2 ScaleStart;
-			internal Vector2 ScaleEnd;
-
-			/* WorkArea: Particle */
-			internal float RotationFluctuation;
-			internal float RotationFluctuationStart;
-			internal float RotationFluctuationEnd;
-			internal float Direction;
-			internal Color ColorVertex;
-			internal Color ColorVertexStart;
-			internal Color ColorVertexEnd;
-			internal Library_SpriteStudio.Data.Cell InstanceDataCell;
-			internal int IndexCellMap;
-			internal Vector3[] CoordinateMesh = null;
-			internal ParameterMeshEffect BufferParameterMesh = null;
-			internal Library_SpriteStudio.ManagerDraw.DataParts DataPartsDrawManager = null;
-
-			/* WorkArea: (Sub-)Emitter */
-			internal Library_SpriteStudio.Utility.Random.Generator InstanceRandom = null;
-			internal float TimeIntervalData;
-			internal float TimeInterval;
-			internal float TimeDelay;
-			internal int IndexEmitter;
-			internal int CountRemainEmit;
-			internal int CountFramePrevious;
+			internal uint Seed;
+			internal uint SeedOffset;
 
 			internal void CleanUp()
 			{
 				Status = FlagBitStatus.CLEAR;
 
-//				InstanceRootEffect = null;	/* Initialized in BootUp */
-				Kind = Library_SpriteStudio.KindPartsEffect.NON;
-				DataEmitter = null;
-				DataParts = null;
-				InstancePartsSynchronous = null;
-				CountEmitterSynchronous = 0;
+				PoolEmitter = null;
+				CountMeshParticle = 0;
+				ParameterMeshParticle = null;
 
-				CountFramePerSecond = 0.0f;
-				TimeElapsed = 0.0f;
-				TimeDuration = 0.0f;
+				InstanceRootEffect = null;
+				EffectDurationFull = -1;
 
-				Position = Vector2.zero;
-				Scale = Vector2.one;
-				Rotation = 0.0f;
-				Priority = 0.0f;
-				Speed = 0.0f;
-				SpeedStart = 0.0f;
-				SpeedEnd = 0.0f;
-				PositionStart = Vector2.zero;
-				VectorPosition = Vector2.zero;
-				Force = Vector2.zero;
-				ForceBase = Vector2.zero;
-				GravityDirectional = Vector2.zero;
-				GravityPoint = Vector2.zero;
-				RotationFluctuation = 0.0f;
-				RotationFluctuationStart = 0.0f;
-				RotationFluctuationEnd = 0.0f;
-				Direction = 0.0f;
-				RateTangentialAcceleration = 0.0f;
-				ScaleStart = Vector2.one;
-				ScaleEnd = Vector2.one;
-
-				ColorVertex = Color.white;
-				ColorVertexStart = Color.white;
-				ColorVertexEnd = Color.white;
-				IndexCellMap = -1;
-				InstanceDataCell = null;
-//				BufferParameterMesh = null;	/* Initialized in BootUp */
-//				DataPartsDrawManager = null;	/* Initialized in BootUp */
-
-//				InstanceRandom = null;	/* Initialized in BootUp */
-//				CountParticleMax = 0;
-//				CountParticleEmit = 0;
-				TimeIntervalData = 0.0f;
-				TimeInterval = 0.0f;
-				TimeDelay = 0.0f;
-				IndexEmitter = 0;
-				CountRemainEmit = 0;
-				CountFramePrevious = -1;
+				Seed = 0;
+				SeedOffset = 0;
 			}
 
-			internal bool BootUp(Script_SpriteStudio_RootEffect InstanceRoot)
+			internal void ParticleReset()
 			{
-				CleanUp();
+				CountMeshParticle = 0;
+			}
+
+			internal void SeedSet(uint Value)
+			{
+				Seed = Value * (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+			}
+			internal void SeedOffsetSet(uint Value)
+			{
+				SeedOffset = (0 != (Status & FlagBitStatus.LOCKSEED)) ? 0 : Value;
+			}
+
+			internal void StatusSetLoop(bool Value)
+			{
+				Status = (true == Value) ? (Status | FlagBitStatus.LOOP) : (Status & ~FlagBitStatus.LOOP);
+			}
+
+			internal bool BootUpWorkArea(Script_SpriteStudio_RootEffect InstanceRoot, int CountParticle)
+			{
+				/* Error Check */
+				if((null == InstanceRoot) || (null == InstanceRoot.DataCellMap) || (null == InstanceRoot.DataEffect))
+				{
+					return(false);
+				}
 
 				InstanceRootEffect = InstanceRoot;
 
-				InstanceRandom = Script_SpriteStudio_RootEffect.InstanceCreateRandom();
-
-				CoordinateMesh = new Vector3[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
-
-				BufferParameterMesh = new ParameterMeshEffect();
-				BufferParameterMesh.BootUp();
-
-				DataPartsDrawManager = new Library_SpriteStudio.ManagerDraw.DataParts();
-				DataPartsDrawManager.BootUp(InstanceRoot, Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2, InstanceRoot.gameObject);
-
-				return(true);
-			}
-
-			internal bool Awake(	Library_SpriteStudio.KindPartsEffect KindParts,
-									Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitter,
-									Library_SpriteStudio.Data.PartsEffect InstanceDataParts,
-									PartsEffect InstancePartsEffectSynchronousParticle,
-									int CountSynchronousEmitter,
-									int IndexInstanceEmitter,
-									Script_SpriteStudio_RootEffect InstanceRoot,
-									PartsEffect InstancePartsParent
-								)
-			{
-				CleanUp();
-
-				if(null == InstanceDataEmitter)
-				{	/* No-Datas */
-					return(false);
-				}
-
-				Kind = KindParts;
-				DataEmitter = InstanceDataEmitter;
-				DataParts = InstanceDataParts;
-				InstancePartsSynchronous = InstancePartsEffectSynchronousParticle;
-				CountEmitterSynchronous = CountSynchronousEmitter;
-				IndexEmitter = IndexInstanceEmitter;
-				float TimePerFrame;
-				if((null != InstanceRoot) && (null != InstanceRoot.InstanceRootParent))
-				{
-					TimePerFrame = InstanceRoot.InstanceRootParent.TimePerFrame;
-					CountFramePerSecond = 1.0f / TimePerFrame;
-				}
-				else
-				{
-					CountFramePerSecond = DataEmitter.CountFramePerSecond;
-					TimePerFrame = 1.0f / CountFramePerSecond;
-				}
-
-				Library_SpriteStudio.Utility.Random.Generator InstanceRandomParent = null;
-				if(null == InstancePartsParent)
-				{	/* Create by Root ... Not-Move */
-					InstanceRandomParent = InstanceRoot.InstanceRandom;
-				}
-				else
-				{	/* Create by Parts */
-					InstanceRandomParent = InstancePartsParent.InstanceRandom;
-				}
-
-				Library_SpriteStudio.Data.EmitterEffect.FlagBit FlagData = DataEmitter.FlagData;
-				switch(Kind)
-				{
-					case KindPartsEffect.PARTICLE:
-						goto Awake_Particle;
-
-					case KindPartsEffect.EMITTER:
-						goto Awake_Emitter;
-
-					default:
-						return(false);
-				}
-			Awake_End:;
-				Status |= FlagBitStatus.RUNNING;
-				Status &= ~FlagBitStatus.GETUP;
-				return(true);
-
-			Awake_Particle:;
-				/* Set Data-"Perticle" */
-				Priority = DataEmitter.Priority + ((float)IndexEmitter * 0.0001f);
-
-				PositionStart = InstancePartsParent.Position;
-				Position = PositionStart;
-				Scale = Vector2.one;
-
-				ColorVertexStart = Color.white;
-				ColorVertexEnd = Color.white;
-				ColorVertex = ColorVertexStart;
-
-				TimeDuration = RandomGetRange(	InstanceRandomParent,
-												(DataEmitter.TimeDurationParticle.Main * TimePerFrame),
-												(DataEmitter.TimeDurationParticle.Sub * TimePerFrame)
-											);
-				float temp_angle = RandomGetRangeFin(	InstanceRandomParent,
-														DataEmitter.Angle.Main,	// + (eAngle = 0.0f),
-														DataEmitter.Angle.Sub
-													);
-
-				float angle_rad = Mathf.Deg2Rad * (temp_angle + 90.0f);
-				VectorPosition.x = Mathf.Cos(angle_rad);
-				VectorPosition.y = Mathf.Sin(angle_rad);
-				VectorPosition *= CountFramePerSecond;	/* /= TimePerFrame */
-
-				SpeedStart = RandomGetRange(	InstanceRandomParent,
-												DataEmitter.SpeedStart.Main,
-												DataEmitter.SpeedStart.Sub
-											);
-				SpeedEnd = SpeedStart;
-				Speed = SpeedStart;
-
-				Force = Vector2.zero;
-				Direction = 0.0f;
-				Status &= ~FlagBitStatus.PARTICLE_TURNDIRECTION;
-
-				RotationFluctuation = 0.0f;
-				RotationFluctuationStart = 0.0f;
-				RotationFluctuationEnd = 0.0f;
-
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_DIRECTION))
-				{
-					GravityDirectional = DataEmitter.GravityDirectional;
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.POSITION))
-				{
-					Position.x = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.PositionStart.Main.x,
-													DataEmitter.PositionStart.Sub.x
-												);
-					Position.y = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.PositionStart.Main.y,
-													DataEmitter.PositionStart.Sub.y
-												);
-					Position += PositionStart;
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_START))
-				{
-					Rotation = RandomGetRange(	InstanceRandomParent,
-												DataEmitter.RotationStart.Main,
-												DataEmitter.RotationStart.Sub
-											);
-					RotationFluctuationStart = RandomGetRange(	InstanceRandomParent,
-																DataEmitter.RotationFluctuation.Main,
-																DataEmitter.RotationFluctuation.Sub
-															);
-					RotationFluctuationEnd = RotationFluctuationStart;
-					RotationFluctuation = RotationFluctuationStart;
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_END))
-				{
-					RotationFluctuationEnd = RotationFluctuationStart * DataEmitter.RotationFluctuationRate;
-				}
-				RotationFluctuationEnd *= CountFramePerSecond;
-				RotationFluctuationStart *= CountFramePerSecond;
-				RotationFluctuation *= CountFramePerSecond;
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_END))
-				{
-					SpeedEnd = RandomGetRange(	InstanceRandomParent,
-												DataEmitter.SpeedEnd.Main,
-												DataEmitter.SpeedEnd.Sub
-											);
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.TANGENTIALACCELATION))
-				{
-					RateTangentialAcceleration = RandomGetRange(	InstanceRandomParent,
-																	DataEmitter.RateTangentialAcceleration.Main,
-																	DataEmitter.RateTangentialAcceleration.Sub
-																);
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_START))
-				{
-					RandomGetRangeColor(	InstanceRandomParent,
-											ref ColorVertexStart,
-											ref DataEmitter.ColorVertexStart.Main,
-											ref DataEmitter.ColorVertexStart.Sub
-										);
-					ColorVertex = ColorVertexStart;
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_END))
-				{
-					RandomGetRangeColor(	InstanceRandomParent,
-											ref ColorVertexEnd,
-											ref DataEmitter.ColorVertexEnd.Main,
-											ref DataEmitter.ColorVertexEnd.Sub
-										);
-				}
-//				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.FADEALPHA))
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SCALE_START))
-				{
-					ScaleStart.x = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.ScaleStart.Main.x,
-													DataEmitter.ScaleStart.Sub.x
-												);
-					ScaleStart.y = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.ScaleStart.Main.y,
-													DataEmitter.ScaleStart.Sub.y
-												);
-					float Rate = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.ScaleStartRate.Main,
-													DataEmitter.ScaleStartRate.Sub
-												);
-					ScaleStart *= Rate;
-					Scale = ScaleStart;
-				}
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SCALE_END))
-				{
-					ScaleEnd.x = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.ScaleEnd.Main.x,
-													DataEmitter.ScaleEnd.Sub.x
-												);
-					ScaleEnd.y = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.ScaleEnd.Main.y,
-													DataEmitter.ScaleEnd.Sub.y
-												);
-					float Rate = RandomGetRange(	InstanceRandomParent,
-													DataEmitter.ScaleEndRate.Main,
-													DataEmitter.ScaleEndRate.Sub
-												);
-					ScaleEnd *= Rate;
-				}
-
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_POINT))
-				{
-					GravityPoint = Vector2.zero;
-				}
-				Status |= (true == DataEmitter.FlagTurnDirection) ? FlagBitStatus.PARTICLE_TURNDIRECTION : FlagBitStatus.CLEAR;
-
-				InstanceDataCell = null;
-				IndexCellMap = DataEmitter.IndexCellMap;
-				Library_SpriteStudio.Data.CellMap InstanceDataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(IndexCellMap);
-				if(null != InstanceDataCellMap)
-				{
-					InstanceDataCell = InstanceDataCellMap.DataGetCell(DataEmitter.IndexCell);
-					if(null != InstanceDataCell)
-					{
-						/* Calcurate Mesh-Base-Coordinate (Before Transform) */
-						float PivotXCell = InstanceDataCell.Pivot.x;
-						float PivotYCell = InstanceDataCell.Pivot.y;
-						float CoordinateLUx = -PivotXCell;
-						float CoordinateLUy = PivotYCell;
-						float CoordinateRDx = InstanceDataCell.Rectangle.width - PivotXCell;
-						float CoordinateRDy = -(InstanceDataCell.Rectangle.height - PivotYCell);
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LU].x = CoordinateLUx;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LU].y = CoordinateLUy;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LU].z = 0.0f;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RU].x = CoordinateRDx;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RU].y = CoordinateLUy;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RU].z = 0.0f;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RD].x = CoordinateRDx;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RD].y = CoordinateRDy;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RD].z = 0.0f;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LD].x = CoordinateLUx;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LD].y = CoordinateRDy;
-						CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LD].z = 0.0f;
-
-						/* Calcurate Fixed-Mesh-Data */
-						Library_SpriteStudio.Control.ParameterMeshEffect InstanceParameterMesh = BufferParameterMesh;
-
-						InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] =
-						InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] =
-						InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] =
-						InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = Vector3.zero;
-
-						float SizeXTexture = InstanceDataCellMap.SizeOriginal.x;
-						float SizeYTexture = InstanceDataCellMap.SizeOriginal.y;
-						float CoordinateL = InstanceDataCell.Rectangle.xMin / SizeXTexture;
-						float CoordinateR = InstanceDataCell.Rectangle.xMax / SizeXTexture;
-						float CoordinateU = (SizeYTexture - InstanceDataCell.Rectangle.yMin) / SizeYTexture;
-						float CoordinateD = (SizeYTexture - InstanceDataCell.Rectangle.yMax) / SizeYTexture;
-						InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector2(CoordinateL, CoordinateU);
-						InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector2(CoordinateR, CoordinateU);
-						InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector2(CoordinateR, CoordinateD);
-						InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector2(CoordinateL, CoordinateD);
-
-						InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.LU].y =
-						InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.RU].y =
-						InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.RD].y =
-						InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.LD].y = (float)KindColorOperation.NON + 0.01f;	/* Disuse */
-					}
-				}
-				else
-				{
-					CleanUp();
-					return(false);
-				}
-
-				Status &= ~FlagBitStatus.PARTICLE_WAITDELETE;
-
-				goto Awake_End;
-
-			Awake_Emitter:;
-				/* Set Data-"Emitter" */
-				CountEmitterSynchronous = 0;	/* Has no sub-emitter */
-
-				FlagData = DataEmitter.FlagData;
-
-				TimeDuration = DataEmitter.TimeDurationEmitter * TimePerFrame;
-				TimeDelay = DataEmitter.TimeDelay * TimePerFrame;
-
-				Status |= (0.0f >= TimeDuration) ? FlagBitStatus.EMITTER_LOOP : FlagBitStatus.CLEAR;
-				TimeDuration += TimeDelay;
-
-				TimeIntervalData = DataEmitter.TimeInterval * TimePerFrame;
-				TimeInterval = TimeIntervalData;
-				CountRemainEmit = DataEmitter.CountParticleMax;
-				CountFramePrevious = -1;
-
-				InstanceRandom = Script_SpriteStudio_RootEffect.InstanceCreateRandom();
-				SeedSetRandom();
-				if(0 == (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SEEDRANDOM))
-				{	/* MEMO: CAUTION. When have no data. */
-					RandomTrash(InstanceRoot.PoolParts.ListDataRunning.Count % 9);
-				}
-
-				Status &= ~FlagBitStatus.EMITTER_EMITTABLE;
-
-				goto Awake_End;
-			}
-
-			internal bool Update(ref int CountExecute, float TimeDelta, PoolPartsEffect InstancePoolParts, bool FlagPause)
-			{
-				bool FlagTimeUpdate = (true == FlagPause) ? false : true;
-				TimeDelta = (0 == (Status & FlagBitStatus.GETUP)) ? 0.0f : TimeDelta;
-				Status |= FlagBitStatus.GETUP;
-
-				float RateDuration;
-				Library_SpriteStudio.Data.EmitterEffect.FlagBit FlagData = DataEmitter.FlagData;
-				switch(Kind)
-				{
-					case KindPartsEffect.PARTICLE:
-						goto Update_Particle;
-
-					case KindPartsEffect.EMITTER:
-						goto Update_Emitter;
-
-					default:
-						break;
-				}
-				return(false);
-
-			Update_Particle:;
-				RateDuration = Mathf.Clamp((TimeElapsed / TimeDuration), 0.0f, 1.0f);
-
-				if(true == FlagTimeUpdate)
-				{
-					/* "Particle" Update */
-					if(0 != (Status & FlagBitStatus.PARTICLE_WAITDELETE))
-					{
-						goto Update_Particle_CheckSynchronous;
-					}
-
-					TimeElapsed += TimeDelta;
-					if((0.0f > TimeElapsed) || (TimeDuration < TimeElapsed))
-					{
-						Status |= FlagBitStatus.PARTICLE_WAITDELETE;
-						goto Update_Particle_CheckSynchronous;
-					}
-					else
-					{
-						/* Update Deltas */
-						/* MEMO: Reflecting "RotationFluctuation" is 1-timing delay?? */
-						Rotation += RotationFluctuation * TimeDelta;
-
-						Vector2 Radial = Position;
-						Radial.Normalize();
-						Vector2 TangentialAcceleration = Radial;
-						Radial *= 0.0f;	/* _radialAccel */
-						float FloatTemp = TangentialAcceleration.x;
-						TangentialAcceleration.x = -TangentialAcceleration.y;
-						TangentialAcceleration.y = FloatTemp;
-						TangentialAcceleration = TangentialAcceleration * RateTangentialAcceleration;
-						Force = Radial + TangentialAcceleration;
-
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SEEDRANDOM))
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.DELAY))
-						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_DIRECTION))
-						{
-							GravityDirectional = DataEmitter.GravityDirectional;
-							float TimePowerBase = TimeElapsed * CountFramePerSecond;
-							GravityDirectional *= TimePowerBase;
-						}
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.POSITION))
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_START))
-						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_END))
-						{
-							float RotationTimeRate = DataEmitter.RotationFluctuationRateTime;
-#if false
-							float RateRotation = (0.0f < RotationTimeRate) ? (RateDuration / RotationTimeRate) : 1.0f;
-#else
-							float RateRotation = RateDuration / RotationTimeRate;
-							RateRotation = ((true == float.IsNaN(RateRotation)) || (true == float.IsInfinity(RateRotation))) ? 1.0f : Mathf.Clamp01(RateRotation);
-#endif
-							RotationFluctuation = Mathf.Lerp(RotationFluctuationStart, RotationFluctuationEnd, RateRotation);
-						}
-						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_END))
-						{
-							Speed = Mathf.Lerp(SpeedStart, SpeedEnd, RateDuration);
-						}
-						else
-						{
-							Speed = SpeedStart;
-						}
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.TANGENTIALACCELATION))
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_START))
-						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_END))
-						{
-							ColorVertex = Color.Lerp(ColorVertexStart, ColorVertexEnd, RateDuration);
-						}
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SCALE_START))
-						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SCALE_END))
-						{
-							Scale = Vector3.Lerp(ScaleStart, ScaleEnd, RateDuration);
-						}
-						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_POINT))
-						{
-							Vector2 GravityPointNow = Vector2.zero;
-							GravityPointNow.x = DataEmitter.GravityPointPosition.x + PositionStart.x;
-							GravityPointNow.y = DataEmitter.GravityPointPosition.y + PositionStart.y;
-							GravityPointNow -= Position;
-							GravityPointNow.Normalize();
-							GravityPointNow *= (DataEmitter.GravityPointPower * TimeDelta * CountFramePerSecond);
-							GravityPoint += GravityPointNow;
-						}
-
-						Vector2 PositionOffset = (VectorPosition * Speed) + ((Force + GravityDirectional) * CountFramePerSecond);
-						PositionOffset *= TimeDelta;
-						PositionOffset += GravityPoint;
-
-//						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.TURNDIRECTION))
-						if(0 != (Status & FlagBitStatus.PARTICLE_TURNDIRECTION))
-						{
-							Direction = (AngleGetCCW(Vector2.right, PositionOffset) * Mathf.Rad2Deg) - 90.0f;
-						}
-						else
-						{
-							Direction = 0.0f;
-						}
-						Position += PositionOffset;
-					}
-				}
-
-				/* MEMO: "Alpha-Fade" always be updated (for Pausing) */
-				float RateAlpha = 1.0f;
-				if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.FADEALPHA))
-				{
-					float RateAlphaStart = DataEmitter.AlphaRateStart;
-					float RateAlphaEnd = DataEmitter.AlphaRateEnd;
-					if(RateAlphaStart > RateDuration)
-					{
-						RateAlpha = 1.0f - ((RateAlphaStart - RateDuration) / RateAlphaStart);
-					}
-					else
-					{
-						if(RateAlphaEnd < RateDuration)
-						{
-							if(1.0f <= RateAlphaEnd)
-							{
-								RateAlpha = 0.0f;
-							}
-							else
-							{
-								RateAlpha = 1.0f - ((RateDuration - RateAlphaEnd) / (1.0f - RateAlphaEnd));
-							}
-						}
-					}
-				}
-
-				/* Transforming */
-				Matrix4x4 MatrixTransform = Matrix4x4.TRS(Position, Quaternion.Euler(0.0f, 0.0f, (Rotation + Direction)), Scale);
-
-				/* Transform & Set Parameter-Mesh */
-				Library_SpriteStudio.Control.ParameterMeshEffect InstanceParameterMesh = BufferParameterMesh;
-
-				InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] = MatrixTransform.MultiplyPoint3x4(CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LU]);
-				InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] = MatrixTransform.MultiplyPoint3x4(CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RU]);
-				InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] = MatrixTransform.MultiplyPoint3x4(CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.RD]);
-				InstanceParameterMesh.Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = MatrixTransform.MultiplyPoint3x4(CoordinateMesh[(int)Library_SpriteStudio.KindVertexNo.LD]);
-
-//				InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.LU] =
-//				InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.RU] =
-//				InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.RD] =
-//				InstanceParameterMesh.UV[(int)Library_SpriteStudio.KindVertexNo.LD] =
-
-				InstanceParameterMesh.ColorVertex[(int)Library_SpriteStudio.KindVertexNo.LU] =
-				InstanceParameterMesh.ColorVertex[(int)Library_SpriteStudio.KindVertexNo.RU] =
-				InstanceParameterMesh.ColorVertex[(int)Library_SpriteStudio.KindVertexNo.RD] =
-				InstanceParameterMesh.ColorVertex[(int)Library_SpriteStudio.KindVertexNo.LD] = ColorVertex;
-
-				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.LU].x =
-				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.RU].x =
-				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.RD].x =
-				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.LD].x = RateAlpha * InstanceRootEffect.RateOpacity;
-
-//				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.LU].y =
-//				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.RU].y =
-//				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.RD].y =
-//				InstanceParameterMesh.UV2[(int)Library_SpriteStudio.KindVertexNo.LD].y =
-
-				/* Update Mesh */
-				Mesh InstanceMesh = DataPartsDrawManager.DrawParts.Data.InstanceMesh;
-				InstanceMesh.uv = InstanceParameterMesh.UV;
-				InstanceMesh.uv2 = InstanceParameterMesh.UV2;
-				InstanceMesh.colors32 = InstanceParameterMesh.ColorVertex;
-				InstanceMesh.vertices = InstanceParameterMesh.Coordinate;
-//				InstanceMesh.triangles =
-
-				/* Draw Mesh */
-				Material InstanceMaterial = InstanceRootEffect.MaterialGet(IndexCellMap, DataEmitter.KindBlendTarget);
-				if((null != InstanceMaterial) && (null != DataPartsDrawManager))
-				{
-					/* Set to Parts-Cluster */
-					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootEffect;
-					DataPartsDrawManager.PartsSetDraw(InstanceRootEffect, InstanceMaterial, Priority);
-				}
-
-				CountExecute++;
-				return(true);
-
-			Update_Particle_CheckSynchronous:;
-				if(0 >= CountEmitterSynchronous)
-				{	/* Delete */
-					if(null != InstancePartsSynchronous)
-					{
-						InstancePartsSynchronous.CountSynchronousReturnParticle();
-					}
-					return(false);
-				}
-
-				CountExecute++;
-				return(true);
-
-			Update_Emitter:;
-				int CountExecuteIncremental = 1;
-				if(true == FlagTimeUpdate)
-				{
-					TimeElapsed += TimeDelta;
-					TimeInterval += TimeDelta;
-					int CountFrameNow = (int)(Mathf.Floor(TimeElapsed * CountFramePerSecond));
-
-					bool FlagValid = ((0.0f > TimeElapsed) || (TimeDuration < TimeElapsed)) ? false : true;
-					if(false == FlagValid)
-					{
-#if false
-						/* MEMO: "Root-Emitter" is not Self-Destruction. */
-						if(0 != (Status & FlagBitStatus.EMITTER_ROOT))
-						{	/* Root-Emitter */
-							/* MEMO: Not count in "Execute", when "Root-Emitter" is at rest. */
-							CountExecuteIncremental = 0;
-							goto Update_Emitter_End;
-						}
-#else
-						/* MEMO: "Root-Emitter" is Self-Destruction. */
-#endif
-						if(null != InstancePartsSynchronous)
-						{
-							/* Reduce (parent's) Reference-Counter */
-							InstancePartsSynchronous.CountSynchronousDecrease();
-						}
-						return(false);
-					}
-
-					if(null != InstancePartsSynchronous)
-					{
-						Position = InstancePartsSynchronous.Position;
-					}
-
-					Status = ((TimeDelay > TimeElapsed) || (false == FlagValid) || (CountFramePrevious == CountFrameNow)) ? (Status & ~FlagBitStatus.EMITTER_EMITTABLE) : (Status | FlagBitStatus.EMITTER_EMITTABLE);
-					if(0 != (Status & FlagBitStatus.EMITTER_EMITTABLE))
-					{
-#if EFFECTUPDATE_CONFORMtoSS5_5
-						/* MEMO: Conforms to SSBPLIB(SS5.5) */
-						Update_PartsGenerate(InstancePoolParts);
-#else
-						/* MEMO: Original */
-						TimeInterval += TimeDelta;
-						while(TimeInterval >= TimeIntervalData)
-						{
-							TimeInterval -= TimeIntervalData;
-
-							int CountEmitMax = DataEmitter.CountParticleEmit;
-							int CountEmitNow = CountRemainEmit;
-							CountEmitNow = (CountEmitMax < CountEmitNow) ? CountEmitMax : CountEmitNow;
-							for(int i=0; i<CountEmitNow; i++)
-							{
-								InstancePoolParts.PartsGenerate(this, InstanceRootEffect);
-								CountRemainEmit--;
-							}
-						}
-#endif
-						CountFramePrevious = CountFrameNow;
-					}
-				}
-				/* Fall-Through */
-//			Update_Emitter_End:;
-				CountExecute += CountExecuteIncremental;
-				return(true);
-			}
-#if EFFECTUPDATE_CONFORMtoSS5_5
-			/* MEMO: Conforms to SSBPLIB(SS5.5) */
-			private bool Update_PartsGenerate(PoolPartsEffect InstancePoolParts)
-			{
-				int CountCreate = DataEmitter.CountParticleEmit;
-				CountCreate = (0 >= CountCreate) ? 1 : CountCreate;
-				for( ; ; )
-				{
-					if(TimeInterval >= TimeIntervalData)
-					{
-						for(int i=0; i<CountCreate; i++)
-						{
-							if(0 < CountRemainEmit)
-							{
-								InstancePoolParts.PartsGenerate(this, InstanceRootEffect);
-								CountRemainEmit--;
-							}
-							else
-							{
-								return(false);
-							}
-						}
-
-						TimeInterval -= TimeIntervalData;
-						if(0.0f >= TimeInterval)
-						{
-							return(true);
-						}
-					}
-					else
-					{
-						return(true);
-					}
-				}
-//				return(true);
-			}
-#else
-			/* MEMO: Original */
-#endif
-
-			internal bool CountSynchronousDecrease()
-			{
-				if(0 >= CountEmitterSynchronous)
-				{
-					return(false);
-				}
-				CountEmitterSynchronous--;
-				return((0 >= CountEmitterSynchronous) ? false : true);
-			}
-			internal void CountSynchronousReturnParticle()
-			{
-				CountRemainEmit++;
-				if(DataEmitter.CountParticleMax < CountRemainEmit)
-				{
-					CountRemainEmit = DataEmitter.CountParticleMax;
-				}
-			}
-
-			private static int SeedMakeID = 123456;
-			private int SeedGenerateRandom()
-			{
-				SeedMakeID++;
-				return((int)Time.realtimeSinceStartup + SeedMakeID);
-			}
-			private void SeedSetRandom()
-			{
-				int SeedRandom = DataEmitter.RandomSeed;
-				if(-1 == DataEmitter.RandomSeed)
-				{	/* Generate Seed */
-					SeedRandom = SeedGenerateRandom();
-				}
-				InstanceRandom.InitSeed((uint)SeedRandom);
-			}
-			private void RandomTrash(int Count)
-			{	/* Trash Random */
-				for(int i=0; i<Count; i++)
-				{
-					InstanceRandom.RandomUint32();
-				}
-			}
-
-			private static float FloatExtractFractionUint(uint Value)
-			{
-#if false
-				/* MEMO: Depends on the "IEEE-754" */
-				byte[] Buffer = System.BitConverter.GetBytes((Value >> 9) | 0x3f800000);	/* IEEE-754: Exponent-Part=127 (Exponent=0) */
-				return((System.BitConverter.ToSingle(Buffer, 0)) - 1.0f);
-#else
-				return((float)((Value >> 9) & 0x007fffff) * (1.0f / 8388607.0f));
-#endif
-			}
-			private static float RandomGetRange(	Library_SpriteStudio.Utility.Random.Generator GeneratorRandom,
-													float ValueBase,
-													float Range
-				)
-			{
-				uint ValueRandom = GeneratorRandom.RandomUint32();
-				return(ValueBase + (Range * FloatExtractFractionUint(ValueRandom)));
-			}
-			private static float RandomGetRangeFin(	Library_SpriteStudio.Utility.Random.Generator GeneratorRandom,
-													float ValueBase,
-													float Range
-				)
-			{
-				uint ValueRandom = GeneratorRandom.RandomUint32();
-				return(ValueBase + ((Range * FloatExtractFractionUint(ValueRandom)) - (Range * 0.5f)));
-			}
-			private static void RandomGetRangeColor(	Library_SpriteStudio.Utility.Random.Generator GeneratorRandom,
-														ref Color Output,
-														ref Color ValueBase,
-														ref Color Range
-				)
-			{
-				Output.a = RandomGetRange(GeneratorRandom, ValueBase.a, Range.a);
-				Output.r = RandomGetRange(GeneratorRandom, ValueBase.r, Range.r);
-				Output.g = RandomGetRange(GeneratorRandom, ValueBase.g, Range.g);
-				Output.b = RandomGetRange(GeneratorRandom, ValueBase.b, Range.b);
-			}
-
-			private static float AngleGetCCW(Vector2 Start, Vector2 End)
-			{
-				Vector2 StartNormalized = Start.normalized;
-				Vector2 EndNormalized = End.normalized;
-
-				float Dot = Vector2.Dot(StartNormalized, EndNormalized);
-				Dot = Mathf.Clamp(Dot, -1.0f, 1.0f);
-				float Angle = Mathf.Acos(Dot);
-				float Cross = (StartNormalized.x * EndNormalized.y) - (EndNormalized.x * StartNormalized.y);
-				Angle = (0.0f > Cross) ? ((2.0f * Mathf.PI) - Angle) : Angle;
-				return(Angle);
-			}
-		}
-
-		internal class ParameterMeshEffect
-		{
-			internal Vector3[] Coordinate;
-			internal Color32[] ColorVertex;
-			internal Vector2[] UV;
-			internal Vector2[] UV2;
-
-			internal void CleanUp()
-			{
-				Coordinate = null;
-				ColorVertex = null;
-				UV = null;
-				UV2 = null;
-			}
-
-			internal bool BootUp()
-			{
-				int Count = (int)Library_SpriteStudio.KindVertexNo.TERMINATOR2;
-
-				Coordinate = new Vector3[Count];
-				if(null == Coordinate)
+				/* Initialize Emitter Buffer */
+				int Count = InstanceRoot.DataEffect.CountGetEmitter();
+				PoolEmitter = new PartsEffect2Emitter[Count];
+				if(null == PoolEmitter)
 				{
 					goto BootUp_ErrorEnd;
 				}
+//				for(int i=0; i<Count; i++)
+//				{
+//					PoolEmitter[i].BootUp();
+//				}
 
-				ColorVertex = new Color32[Count];
-				if(null == ColorVertex)
+				/* Initialize Draw-Pool (for Particle) */
+				ParameterMeshParticle = new ParameterMesh[CountParticle];
+				if(null == ParameterMeshParticle)
 				{
 					goto BootUp_ErrorEnd;
 				}
-
-				UV = new Vector2[Count];
-				if(null == UV)
+				for(int i=0; i<CountParticle; i++)
 				{
-					goto BootUp_ErrorEnd;
+					ParameterMeshParticle[i].BootUp(InstanceRoot);
 				}
-
-				UV2 = new Vector2[Count];
-				if(null == UV2)
-				{
-					goto BootUp_ErrorEnd;
-				}
+				ParticleReset();
 
 				return(true);
 
 			BootUp_ErrorEnd:;
 				CleanUp();
 				return(false);
+			}
+
+			internal bool BootUp(Script_SpriteStudio_RootEffect InstanceRoot)
+			{
+				/* Error Check */
+				if((null == InstanceRoot) || (null == InstanceRoot.DataCellMap) || (null == InstanceRoot.DataEffect))
+				{
+					return(false);
+				}
+
+				/* Emitters Boot-Up */
+				Status = FlagBitStatus.CLEAR;
+
+				SeedSet(Script_SpriteStudio_RootEffect.KeyCreateRandom());
+
+				Library_SpriteStudio.Data.PartsEffect DataParts = null;
+				Library_SpriteStudio.Data.PartsEffect DataPartsParent = null;
+				Library_SpriteStudio.Data.EmitterEffect DataEmitter = null;
+				int IndexEmitter;
+				int IndexEmitterParent;
+				int Count = InstanceRoot.DataEffect.CountGetParts();
+				int CountEmitter = InstanceRoot.DataEffect.CountGetEmitter();
+				bool FlagInfinite = false;
+				for(int i=1; i<Count; i++)	/* MEMO: 0 == Root (has no emitter) */
+				{
+					DataParts = InstanceRoot.DataEffect.DataGetParts(i);
+					if(null != DataParts)
+					{
+						IndexEmitter = DataParts.IndexEmitter;
+
+						DataParts = InstanceRoot.DataEffect.DataGetParts(i);
+						DataEmitter = InstanceRoot.DataEffect.DataGetEmitter(IndexEmitter);
+
+						IndexEmitterParent = DataParts.IDParent;	/* Temp. */
+						if(0 >= IndexEmitterParent)
+						{	/* Root has no emitter */
+							IndexEmitterParent = -1;
+						}
+						else
+						{
+							DataPartsParent = InstanceRoot.DataEffect.DataGetParts(IndexEmitterParent);
+							IndexEmitterParent = DataPartsParent.IndexEmitter;
+						}
+						PoolEmitter[IndexEmitter].CleanUp();
+						PoolEmitter[IndexEmitter].BootUp(InstanceRoot, DataParts, DataEmitter, IndexEmitterParent, this);
+
+						FlagInfinite |= (0 != (DataEmitter.FlagData & Data.EmitterEffect.FlagBit.EMIT_INFINITE)) ? true : false;
+					}
+				}
+				Status |= (true == FlagInfinite) ? FlagBitStatus.INFINITE : FlagBitStatus.CLEAR;
+				Status |= (0 != (InstanceRoot.DataEffect.FlagData & Script_SpriteStudio_DataEffect.FlagBit.SEEDRANDOM_LOCK)) ? FlagBitStatus.LOCKSEED : FlagBitStatus.CLEAR;
+
+				/* Effect's Length Get */
+				int IDParent;
+				int FrameGlobalNow;
+				EffectDurationFull = 0;
+				for (int i=0; i<CountEmitter; i++)
+				{
+					IDParent = PoolEmitter[i].IndexParent;
+					FrameGlobalNow = PoolEmitter[i].FrameFull;
+					if(0 < IDParent)    /* (0 > IDParent) */
+					{	/* Sub-Emitters */
+						FrameGlobalNow += PoolEmitter[IDParent].FrameFull;
+					}
+					PoolEmitter[i].FrameGlobal = FrameGlobalNow;
+
+					EffectDurationFull = (FrameGlobalNow > EffectDurationFull) ? FrameGlobalNow : EffectDurationFull;
+				}
+
+				Status |= FlagBitStatus.RUNNING;
+				return(true);
+			}
+
+			internal bool Update(Script_SpriteStudio_RootEffect InstanceRoot)
+			{
+				/* Clear Draw-Pool (for Particle) */
+				ParticleReset();
+
+				/* Emitters' Random-Seed Refresh */
+				int FrameNo = (int)(InstanceRoot.FrameNow);
+				int FrameNoTarget = FrameNo;
+				int CountLoop = 0;
+				if(0 == (Status & FlagBitStatus.INFINITE))
+				{
+					if(0 != (Status & FlagBitStatus.LOOP))
+					{
+						if(FrameNo > EffectDurationFull)
+						{
+							FrameNoTarget = FrameNo % EffectDurationFull;
+							CountLoop = FrameNo / EffectDurationFull;
+							SeedOffsetSet((uint)CountLoop);
+						}
+					}
+				}
+
+				/* Update Emitters */
+				int Count = PoolEmitter.Length;
+				int IndexEmitterParent;
+				for(int i=0; i<Count; i++)
+				{
+					PoolEmitter[i].SeedOffset = SeedOffset;	/* Update Random-Seed-Offset */
+
+					IndexEmitterParent = PoolEmitter[i].IndexParent;
+					if(0 <= IndexEmitterParent)
+					{   /* Has Parent-Emitter */
+						PoolEmitter[IndexEmitterParent].UpdateSubEmitters(ref PoolEmitter[i], FrameNoTarget, InstanceRoot, this, IndexEmitterParent);
+					}
+					else
+					{	/* Has no Parent-Emitter */
+						PoolEmitter[i].Update(FrameNoTarget, InstanceRoot, this , -1);
+					}
+				}
+				return(true);
+			}
+
+			internal void DrawSet(	ref PartsEffect2Emitter.ParameterParticle InstanceParameterParticle,
+									Script_SpriteStudio_RootEffect InstanceRoot,
+									ref PartsEffect2Emitter InstanceEmitter
+								)
+			{
+				/* Get MeshParticle-Index */
+				int IndexMesh = CountMeshParticle;
+				if(IndexMesh >= ParameterMeshParticle.Length)
+				{
+					return;
+				}
+				CountMeshParticle++;
+
+				/* Transforming */
+				Vector2 ScaleLayout = InstanceRoot.DataEffect.ScaleLayout;
+				Matrix4x4 MatrixTransform = Matrix4x4.TRS(	new Vector3(	(InstanceParameterParticle.PositionX * ScaleLayout.x),
+																			(InstanceParameterParticle.PositionY * ScaleLayout.y),
+																			0.0f
+																		),
+															Quaternion.Euler(	0.0f,
+																				0.0f,
+																				(InstanceParameterParticle.RotateZ + InstanceParameterParticle.Direction)
+																			),
+															InstanceParameterParticle.Scale
+														);
+
+				/* Draw Mesh */
+				ParameterMeshParticle[IndexMesh].DrawSet(InstanceRoot, ref InstanceEmitter, ref InstanceParameterParticle, ref MatrixTransform);
+			}
+		}
+
+		internal struct PartsEffect2Emitter
+		{
+			internal struct StatusParticle
+			{
+				[System.Flags]
+				internal enum FlagBitStatus
+				{
+					EXIST = 0x40000000,	/* RUNNING */
+					BORN = 	0x20000000, /* GETUP */
+
+					CLEAR = 0x00000000,
+				}
+				internal FlagBitStatus Status;
+				internal int ID;
+				internal int Cycle;
+				internal int FrameStart;	// TimeStart;
+				internal int FrameEnd;	// TimeEnd;
+
+				internal void CleanUp()
+				{
+					Status = FlagBitStatus.CLEAR;
+					ID = -1;
+					Cycle = -1;
+					FrameStart = -1;
+					FrameEnd = -1;
+				}
+
+				internal void Update(	int Frame,
+										ref PartsEffect2Emitter InstanceEmitter,
+										Library_SpriteStudio.Data.EmitterEffect.PatternEmit InstancePatternEmit,
+										int PatternOffset,
+										Library_SpriteStudio.Data.EmitterEffect.PatternEmit InstancePatternEmitTarget
+									)
+				{
+					int DurationEmitter = InstanceEmitter.Duration;
+					int FrameNow = (int)(Frame - PatternOffset);
+					Status &= ~(FlagBitStatus.BORN | FlagBitStatus.EXIST);
+
+					int CycleTarget = InstancePatternEmitTarget.Cycle;
+					int DurationTarget = InstancePatternEmitTarget.Duration;
+					if(0 != CycleTarget)
+					{
+						int CountLoop = FrameNow / CycleTarget;
+						int CycleTop = CountLoop * CycleTarget;
+
+						Cycle = CountLoop;
+						FrameStart = CycleTop + PatternOffset;
+						FrameEnd = FrameStart + DurationTarget;
+							
+						if((Frame >= FrameStart) && (Frame < FrameEnd))
+						{
+							Status |= (FlagBitStatus.BORN | FlagBitStatus.EXIST);
+						}
+
+						if(0 == (InstanceEmitter.InstanceDataEmitter.FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.EMIT_INFINITE))
+						{
+							if(FrameStart >= DurationEmitter)
+							{
+								Status &= ~StatusParticle.FlagBitStatus.EXIST;
+
+								int FrameNow2 = DurationEmitter - PatternOffset;
+								int CountLoop2 = FrameNow2 / CycleTarget;
+								int CycleTop2 = CountLoop2 * CycleTarget;
+
+								FrameStart = CycleTop2 + PatternOffset;
+								FrameEnd = FrameStart + DurationTarget;
+								Status &= ~StatusParticle.FlagBitStatus.BORN;
+							}
+							else
+							{
+								Status |= StatusParticle.FlagBitStatus.BORN;
+							}
+						}
+
+						if(0 > FrameNow)
+						{
+							Status &= ~(StatusParticle.FlagBitStatus.BORN | StatusParticle.FlagBitStatus.EXIST);
+						}
+					}
+				}
+			}
+
+			internal struct ParameterParticle
+			{
+				internal int ID;
+				internal int IDParent;
+				internal int FrameStart;
+				internal int FrameDuration;
+
+				internal float PositionX;
+				internal float PositionY;
+				internal float RotateZ;
+				internal float Direction;
+
+				internal Color ColorVertex;
+				internal Vector3 Scale;
+
+				internal void CleanUp()
+				{
+					ID = -1;
+					IDParent = -1;
+					FrameStart = -1;
+					FrameDuration = -1;
+				}
+
+				internal bool Update(	float Frame,
+										int Index,
+										Script_SpriteStudio_RootEffect InstanceRoot,
+										PoolPartsEffect InstancePoolParts,
+										ref PartsEffect2Emitter InstanceEmitter,
+										ref StatusParticle InstanceStatusParticle,
+										int IndexEmitterParent,
+										ref ParameterParticle InstanceParameterParticleParent
+									)
+				{	/* CAUTION: "InstanceParameterParticleParent" will be broken. */
+					StatusParticle.FlagBitStatus FlagStatus = InstanceStatusParticle.Status;
+
+					if(0 == (FlagStatus & StatusParticle.FlagBitStatus.BORN))
+					{
+						return(true);
+					}
+
+					float FrameTarget = Frame;
+					FrameStart = InstanceStatusParticle.FrameStart;
+					FrameDuration = InstanceStatusParticle.FrameEnd;
+					ID = Index + InstanceStatusParticle.Cycle;
+					IDParent = (0 <= IndexEmitterParent) ? InstanceParameterParticleParent.ID : 0;
+
+					if(0 != (FlagStatus & StatusParticle.FlagBitStatus.EXIST))
+					{
+						if(0 <= IndexEmitterParent)
+						{	/* Has Parent */
+							InstanceParameterParticleParent.PositionX = InstanceParameterParticleParent.PositionY = 0.0f;
+
+//							int FrameParent = FrameStart + InstanceParameterParticleParent.FrameStart;
+//							FrameParent = (FrameParent > FrameDuration) ? FrameDuration : FrameParent;
+
+							InstanceParameterParticleParent.Calculate(	(FrameStart + InstanceParameterParticleParent.FrameStart),
+																		InstanceRoot,
+																		InstancePoolParts,
+																		ref InstancePoolParts.PoolEmitter[IndexEmitterParent],
+																		false
+																	);
+							InstanceEmitter.Position.x = InstanceParameterParticleParent.PositionX;
+							InstanceEmitter.Position.y = InstanceParameterParticleParent.PositionY;
+						}
+
+						if(true == Calculate(	FrameTarget,
+												InstanceRoot,
+												InstancePoolParts,
+												ref InstanceEmitter,
+												false
+											)
+							)
+						{
+							InstancePoolParts.DrawSet(ref this, InstanceRoot, ref InstanceEmitter);
+						}
+					}
+
+					return(true);
+				}
+
+				internal bool Calculate(	float Frame,
+											Script_SpriteStudio_RootEffect InstanceRoot,
+											PoolPartsEffect InstancePoolParts,
+											ref PartsEffect2Emitter InstanceEmitter,
+											bool FlagSimplicity = false
+										)
+				{
+					Library_SpriteStudio.Utility.Random.Generator InstanceRandom = InstanceEmitter.InstanceRandom;
+					Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitter = InstanceEmitter.InstanceDataEmitter;
+					float FrameRelative = (Frame - (float)FrameStart);
+//					float FrameRelativePrevious = FrameRelative - 1.0f;
+					float FramePower2 = FrameRelative * FrameRelative;
+					float Life = (float)(FrameDuration - FrameStart);
+
+					if(0.0f >= Life)	/* (0 == Life) */
+					{
+						return(false);
+					}
+
+					float RateLife = FrameRelative / Life;
+					long SeedParticle = InstanceEmitter.TableSeedParticle[ID % InstanceEmitter.TableSeedParticle.Length];
+					InstanceRandom.InitSeed((uint)(	(ulong)SeedParticle
+													+ (ulong)InstanceEmitter.SeedRandom
+													+ (ulong)IDParent
+													+ (ulong)InstanceEmitter.SeedOffset
+												)
+											);
+
+					/* Calc Parameters */
+					Library_SpriteStudio.Data.EmitterEffect.FlagBit FlagData = InstanceDataEmitter.FlagData;
+
+					float RadianSub = InstanceDataEmitter.Angle.Sub * Mathf.Deg2Rad;
+					float Radian = InstanceRandom.RandomFloat(RadianSub);
+					Radian = Radian - (RadianSub * 0.5f);
+					Radian += ((InstanceDataEmitter.Angle.Main + 90.0f) * Mathf.Deg2Rad);
+
+					float Speed = InstanceDataEmitter.Speed.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.Speed.Sub);
+
+					float RadianOffset = 0;
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.TANGENTIALACCELATION))
+					{
+						float accel = InstanceDataEmitter.RateTangentialAcceleration.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.RateTangentialAcceleration.Sub);
+						float SpeedTemp = Speed;
+						SpeedTemp = (0.0f >= SpeedTemp) ? 0.1f : SpeedTemp;
+						RadianOffset = (accel / (3.14f * (Life * SpeedTemp * 0.2f))) * FrameRelative;
+					}
+
+					float AngleTemp = Radian + RadianOffset;
+					float Cos = Mathf.Cos(AngleTemp);
+					float Sin = Mathf.Sin(AngleTemp);
+					float SpeedX = Cos * Speed;
+					float SpeedY = Sin * Speed;
+					float X = SpeedX * FrameRelative;
+					float Y = SpeedY * FrameRelative;
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_FLUCTUATION))
+					{
+						float SpeedFluctuation = InstanceDataEmitter.SpeedFluctuation.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.SpeedFluctuation.Sub);
+						float SpeedOffset = SpeedFluctuation / Life;
+
+						X = (((Cos * SpeedOffset) * FrameRelative) + SpeedX) * ((FrameRelative + 1.0f) * 0.5f);
+						Y = (((Sin * SpeedOffset) * FrameRelative) + SpeedY) * ((FrameRelative + 1.0f) * 0.5f);
+					}
+
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_DIRECTION))
+					{
+						X += (0.5f * InstanceDataEmitter.GravityDirectional.x * FramePower2);
+						Y += (0.5f * InstanceDataEmitter.GravityDirectional.y * FramePower2);
+					}
+					float OffsetX = 0.0f;
+					float OffsetY = 0.0f;
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.POSITION))
+					{
+						OffsetX = InstanceDataEmitter.Position.Main.x + InstanceRandom.RandomFloat(InstanceDataEmitter.Position.Sub.x);
+						OffsetY = InstanceDataEmitter.Position.Main.y + InstanceRandom.RandomFloat(InstanceDataEmitter.Position.Sub.y);
+					}
+
+					RotateZ = 0.0f;
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATION))
+					{
+						RotateZ = InstanceDataEmitter.Rotation.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.Rotation.Sub);
+
+						float RotationFluctuation = InstanceDataEmitter.RotationFluctuation.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.RotationFluctuation.Sub);
+						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATION_FLUCTUATION))
+						{
+							float FrameLast = Life * InstanceDataEmitter.RotationFluctuationRateTime;
+
+							float RateRotationFluctuation = 0.0f;
+							if(0.0f >= FrameLast)	/* Minus??? */
+							{
+								RotateZ += (RotationFluctuation * InstanceDataEmitter.RotationFluctuationRate) * FrameRelative;
+							}
+							else
+							{
+								RateRotationFluctuation = ((RotationFluctuation * InstanceDataEmitter.RotationFluctuationRate) - RotationFluctuation) / FrameLast;
+
+								float FrameModuration = FrameRelative - FrameLast;
+								FrameModuration = (0.0f > FrameModuration) ? 0.0f : FrameModuration;
+							
+								float FrameRelativeNow = FrameRelative;
+								FrameRelativeNow = (FrameRelativeNow > FrameLast) ? FrameLast : FrameRelativeNow;
+
+								float RotateOffsetTemp = RateRotationFluctuation * FrameRelativeNow;
+								RotateOffsetTemp += RotationFluctuation;
+								float RotateOffset = (RotateOffsetTemp + RotationFluctuation) * (FrameRelativeNow + 1.0f) * 0.5f;
+								RotateOffset -= RotationFluctuation;
+								RotateOffset += (FrameModuration * RotateOffsetTemp);
+								RotateZ += RotateOffset;
+							}
+						}
+						else
+						{
+							RotateZ += (RotationFluctuation * FrameRelative);
+						}
+					}
+
+					/* ColorVertex/AlphaFade */
+					{
+						ColorVertex.r =
+						ColorVertex.g =
+						ColorVertex.b =
+						ColorVertex.a = 1.0f;
+
+						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX))
+						{
+							ColorVertex.a = InstanceDataEmitter.ColorVertex.Main.a + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertex.Sub.a);
+							ColorVertex.r = InstanceDataEmitter.ColorVertex.Main.r + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertex.Sub.r);
+							ColorVertex.g = InstanceDataEmitter.ColorVertex.Main.g + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertex.Sub.g);
+							ColorVertex.b = InstanceDataEmitter.ColorVertex.Main.b + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertex.Sub.b);
+						}
+						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_FLUCTUATION))
+						{
+							Color ColorFluctuation;
+							ColorFluctuation.a = InstanceDataEmitter.ColorVertexFluctuation.Main.a + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertexFluctuation.Sub.a);
+							ColorFluctuation.r = InstanceDataEmitter.ColorVertexFluctuation.Main.r + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertexFluctuation.Sub.r);
+							ColorFluctuation.g = InstanceDataEmitter.ColorVertexFluctuation.Main.g + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertexFluctuation.Sub.g);
+							ColorFluctuation.b = InstanceDataEmitter.ColorVertexFluctuation.Main.b + InstanceRandom.RandomFloat(InstanceDataEmitter.ColorVertexFluctuation.Sub.b);
+
+							ColorVertex = Color.Lerp(ColorVertex, ColorFluctuation, RateLife);
+						}
+
+						if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.FADEALPHA))
+						{
+							float RateStart = InstanceDataEmitter.AlphaFadeStart;
+							float RateEnd = InstanceDataEmitter.AlphaFadeEnd;
+							if(RateLife < RateStart)
+							{
+								ColorVertex.a *= (1.0f - ((RateStart - RateLife) / RateStart));
+							}
+							else
+							{
+								if(RateLife > RateEnd)
+								{
+									if(1.0f <= RateEnd)
+									{
+										ColorVertex.a = 0.0f;
+									}
+									else
+									{
+										float Alpha = (RateLife - RateEnd) / (1.0f - RateEnd);
+										Alpha = (1.0f <= Alpha) ? 1.0f : Alpha;
+										ColorVertex.a *= (1.0f - Alpha);
+									}
+								}
+							}
+						}
+					}
+
+					Scale.x = 
+					Scale.y = 1.0f;
+//					Scale.z = 1.0f;
+					float ScaleRate = 1.0f;
+
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SCALE_START))
+					{
+						Scale.x = InstanceDataEmitter.ScaleStart.Main.x + InstanceRandom.RandomFloat(InstanceDataEmitter.ScaleStart.Sub.x);
+						Scale.y = InstanceDataEmitter.ScaleStart.Main.y + InstanceRandom.RandomFloat(InstanceDataEmitter.ScaleStart.Sub.y);
+						ScaleRate = InstanceDataEmitter.ScaleRateStart.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.ScaleRateStart.Sub);
+					}
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SCALE_END))
+					{
+						Vector3 ScaleEnd;
+						float ScaleRateEnd;
+						ScaleEnd.x = InstanceDataEmitter.ScaleEnd.Main.x + InstanceRandom.RandomFloat(InstanceDataEmitter.ScaleEnd.Sub.x);
+						ScaleEnd.y = InstanceDataEmitter.ScaleEnd.Main.y + InstanceRandom.RandomFloat(InstanceDataEmitter.ScaleEnd.Sub.y);
+						ScaleEnd.z = 1.0f;
+						ScaleRateEnd = InstanceDataEmitter.ScaleRateEnd.Main + InstanceRandom.RandomFloat(InstanceDataEmitter.ScaleRateEnd.Sub);
+
+						Scale = Vector2.Lerp(Scale, ScaleEnd, RateLife);
+						ScaleRate = Mathf.Lerp(ScaleRate, ScaleRateEnd, RateLife);
+					}
+					Scale *= ScaleRate;
+					Scale.z = 1.0f;	/* Overwrite, force */
+
+					float PosisionBaseX = InstanceEmitter.Position.x + OffsetX;
+					float PosisionBaseY = InstanceEmitter.Position.y + OffsetY;
+					PositionX = X + PosisionBaseX;
+					PositionY = Y + PosisionBaseY;
+
+					if(0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.GRAVITY_POINT))
+					{
+						Vector2 VectorPosition;
+						float PositionXGravity = InstanceDataEmitter.GravityPointPosition.x;
+						float PositionYGravity = InstanceDataEmitter.GravityPointPosition.y;
+						VectorPosition.x = PositionXGravity - (OffsetX + PositionX);
+						VectorPosition.y = PositionYGravity - (OffsetY + PositionY);
+						Vector2 VectorNormal = VectorPosition.normalized;
+						float GravityPower = InstanceDataEmitter.GravityPointPower;
+						if(0.0f < GravityPower)
+						{
+//							Vector2 VectorPosition2;
+//							VectorPosition2.x = PositionX;
+//							VectorPosition2.y = PositionY;
+
+							float eFrame = (VectorPosition.magnitude / GravityPower) * 0.9f;
+							float gFrame = (Frame >= (int)eFrame) ? (eFrame * 0.9f) : Frame;
+
+							VectorNormal = VectorNormal * GravityPower * gFrame;
+							PositionX += VectorNormal.x;
+							PositionY += VectorNormal.y;
+
+							float Blend = OutQuad(gFrame, eFrame, 0.9f, 0.0f);
+							Blend += (Frame / Life * 0.1f);
+
+							PositionX = PositionX + (PositionXGravity - PositionX) * Blend;	/* CAUTION!: Don't use "Mathf.Lerp" */
+							PositionY = PositionY + (PositionYGravity - PositionY) * Blend;	/* CAUTION!: Don't use "Mathf.Lerp" */
+						}
+						else
+						{
+							/* MEMO: In the case negative power, Simply repulsion. Attenuation due to distance is not taken into account. */
+							VectorNormal = VectorNormal * GravityPower * Frame;
+							PositionX += VectorNormal.x;
+							PositionY += VectorNormal.y;
+						}
+					}
+
+					Direction = 0.0f;
+					if((0 != (FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.TURNDIRECTION)) && (false == FlagSimplicity))
+					{
+						InstanceEmitter.InstanceParameterParticleTempolary2 = this;
+						InstanceEmitter.InstanceParameterParticleTempolary2.Calculate(	(Frame + 1.0f),	/* (Frame + 0.1f), */
+																						InstanceRoot,
+																						InstancePoolParts,
+																						ref InstanceEmitter,
+																						true
+																					);
+						float RadianDirection = AngleGetCCW(	new Vector2(1.0f, 0.0f),
+																new Vector2((PositionX - InstanceEmitter.InstanceParameterParticleTempolary2.PositionX), (PositionY - InstanceEmitter.InstanceParameterParticleTempolary2.PositionY))
+															);
+						Direction = (RadianDirection * Mathf.Rad2Deg) + 90.0f + InstanceDataEmitter.TurnDirectionFluctuation;
+					}
+
+					return (true);
+				}
+				private static float OutQuad(float Time, float TimeFull, float ValueMax, float ValueMin)
+				{
+					if(0.0f >= TimeFull)
+					{
+						return(0.0f);
+					}
+					if(Time > TimeFull) Time = TimeFull;
+
+					ValueMax -= ValueMin;
+					Time /= TimeFull;
+					return(-ValueMax * Time * (Time - 2.0f) + ValueMin);
+				}
+				private static float AngleGetCCW(Vector2 Start, Vector2 End)
+				{
+					Vector2 StartNormalized = Start.normalized;
+					Vector2 EndNormalized = End.normalized;
+
+					float Dot = Vector2.Dot(StartNormalized, EndNormalized);
+					Dot = Mathf.Clamp(Dot, -1.0f, 1.0f);
+					float Angle = Mathf.Acos(Dot);
+					float Cross = (StartNormalized.x * EndNormalized.y) - (EndNormalized.x * StartNormalized.y);
+					Angle = (0.0f > Cross) ? ((2.0f * Mathf.PI) - Angle) : Angle;
+					return(Angle);
+				}
+			}
+
+			internal Library_SpriteStudio.Data.PartsEffect InstanceDataParts;
+			internal Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitter;
+
+			internal int IndexParent;
+
+			internal int IndexCellMapParticle;
+			internal Vector3[] CoordinateMeshParticle;
+			internal Vector2[] UVMeshParticle;
+
+			internal Library_SpriteStudio.Utility.Random.Generator InstanceRandom;
+			internal Library_SpriteStudio.Data.EmitterEffect.PatternEmit[] TablePatternEmit;
+			internal int[] TablePatternOffset;
+			internal long[] TableSeedParticle;
+
+			internal uint SeedRandom;
+			internal uint SeedOffset;
+
+			internal int Duration;
+			internal Vector2 Position;
+			internal int FrameGlobal;
+
+			internal StatusParticle[] ListStatusParticle;
+
+			internal ParameterParticle InstanceParameterParticleTempolary2;	/* (mainly) for TurnToDirection (mainly) */
+			internal ParameterParticle InstanceParameterParticleTempolary;	/* (mainly) for Parent */
+			internal ParameterParticle InstanceParameterParticle;
+
+			internal int FrameFull
+			{
+				get
+				{
+					return(InstanceDataEmitter.DurationEmitter + (int)(InstanceDataEmitter.DurationParticle.Main + InstanceDataEmitter.DurationParticle.Sub));
+				}
+			}
+
+			internal void CleanUp()
+			{
+				InstanceDataParts = null;
+				InstanceDataEmitter = null;
+
+				IndexParent = -1;
+
+				IndexCellMapParticle = -1;
+				CoordinateMeshParticle = null;
+				UVMeshParticle = null;
+
+				InstanceRandom = null;
+				TablePatternEmit = null;
+				TableSeedParticle = null;
+
+				SeedRandom = (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+				SeedOffset = 0;
+
+				Duration = 0;
+				Position = Vector2.zero;
+				FrameGlobal = 0;
+
+				ListStatusParticle = null;
+			}
+
+			internal bool BootUp(	Script_SpriteStudio_RootEffect InstanceRoot,
+									Library_SpriteStudio.Data.PartsEffect InstanceParts,
+									Library_SpriteStudio.Data.EmitterEffect InstanceEmitter,
+									int IndexEmitterParent,
+									PoolPartsEffect InstancePoolParts
+								)
+			{
+				InstanceDataParts = InstanceParts;
+				InstanceDataEmitter = InstanceEmitter;
+				IndexParent = IndexEmitterParent;
+
+				/* Random Initialize */
+				if(null == InstanceRandom)
+				{
+					InstanceRandom = Script_SpriteStudio_RootEffect.InstanceCreateRandom();
+				}
+
+				Library_SpriteStudio.Data.EmitterEffect.FlagBit FlagData = InstanceDataEmitter.FlagData;
+
+				SeedRandom = InstancePoolParts.Seed;
+				if(0 != (FlagData & Data.EmitterEffect.FlagBit.SEEDRANDOM))
+				{	/* Seed Overwrite */
+					/* MEMO: Overwritten to the Emitter's Seed. */
+					SeedRandom = (uint)InstanceDataEmitter.SeedRandom + (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+				}
+				else
+				{
+					if(0 != (InstanceRoot.DataEffect.FlagData & Script_SpriteStudio_DataEffect.FlagBit.SEEDRANDOM_LOCK))
+					{	/* Seed Locked */
+						/* MEMO: Overwritten to the Effect's Seed. */
+						SeedRandom = ((uint)InstanceRoot.DataEffect.SeedRandom + 1) * (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+					}
+				}
+
+				/* Emitter DataTable Get */
+				TablePatternOffset = InstanceDataEmitter.TablePatternOffset;
+
+				TablePatternEmit = InstanceDataEmitter.TablePatternEmit;
+				TableSeedParticle = InstanceDataEmitter.TableSeedParticle;
+				if(((null == TablePatternEmit) || (0 >= TablePatternEmit.Length)) || ((null == TableSeedParticle) || (0 >= TableSeedParticle.Length)))
+				{	/* Calculate on Runtime ... Not Fixed Random-Seed */
+					Library_SpriteStudio.Data.EmitterEffect.TableGet(	ref TablePatternEmit,
+																		ref TableSeedParticle,
+																		InstanceDataEmitter,
+																		InstanceRandom,
+																		SeedRandom
+																	);
+				}
+
+				/* Particle UV Pre-Calculate */
+				Library_SpriteStudio.Data.CellMap DataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(InstanceDataEmitter.IndexCellMap);
+				if(null == DataCellMap)
+				{
+					IndexCellMapParticle = -1;
+				}
+				else
+				{
+					Library_SpriteStudio.Data.Cell DataCell = DataCellMap.DataGetCell(InstanceDataEmitter.IndexCell);
+					if(null == DataCell)
+					{
+						IndexCellMapParticle = -1;
+					}
+					else
+					{
+						if(null == CoordinateMeshParticle)
+						{
+							CoordinateMeshParticle = new Vector3[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
+						}
+						if(null == UVMeshParticle)
+						{
+							UVMeshParticle = new Vector2[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
+						}
+
+						IndexCellMapParticle = InstanceDataEmitter.IndexCellMap;
+
+						float PivotXCell = DataCell.Pivot.x;
+						float PivotYCell = DataCell.Pivot.y;
+						float CoordinateLUx = -PivotXCell;
+						float CoordinateLUy = PivotYCell;
+						float CoordinateRDx = DataCell.Rectangle.width - PivotXCell;
+						float CoordinateRDy = -(DataCell.Rectangle.height - PivotYCell);
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].x = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].x = CoordinateLUx;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].y = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].y = CoordinateLUy;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].x = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].x = CoordinateRDx;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].y = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].y = CoordinateRDy;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].z = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].z = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].z = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].z = 0.0f;
+
+						float SizeXTexture = DataCellMap.SizeOriginal.x;
+						float SizeYTexture = DataCellMap.SizeOriginal.y;
+						float CoordinateL = DataCell.Rectangle.xMin / SizeXTexture;
+						float CoordinateR = DataCell.Rectangle.xMax / SizeXTexture;
+						float CoordinateU = (SizeYTexture - DataCell.Rectangle.yMin) / SizeYTexture;
+						float CoordinateD = (SizeYTexture - DataCell.Rectangle.yMax) / SizeYTexture;
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector2(CoordinateL, CoordinateU);
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector2(CoordinateR, CoordinateU);
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector2(CoordinateR, CoordinateD);
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector2(CoordinateL, CoordinateD);
+					}
+				}
+
+				/* Particle Work-Area Create */
+				ListStatusParticle = new StatusParticle[InstanceEmitter.CountParticleMax];	/* Check. */
+				for(int i=0; i<InstanceEmitter.CountParticleMax; i++)
+				{
+					ListStatusParticle[i].CleanUp();
+				}
+
+				/* Parameter Set */
+				Duration = InstanceDataEmitter.DurationEmitter + InstanceDataEmitter.Delay;
+
+				return(true);
+			}
+
+			internal bool Update(	float Frame,
+									Script_SpriteStudio_RootEffect InstanceRoot,
+									PoolPartsEffect InstancePoolParts,
+									int IndexEmitterParent
+								)
+			{
+				if((null == InstanceDataEmitter) || (null == InstanceDataParts))
+				{
+					return(false);
+				}
+
+				/* Particle-Status Update */
+				int CountParticle = TablePatternEmit.Length;
+				int CountOffset = TablePatternOffset.Length;
+				int FrameNo = (int)Frame;
+				uint Slide = (0 <= IndexEmitterParent) ? (uint)InstanceParameterParticleTempolary.ID : 0;
+				Slide = Slide * (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+				uint IndexSlide;
+				for(int i=0; i<CountOffset; i++)
+				{
+					IndexSlide = ((uint)i + Slide) % (uint)CountParticle;
+					ListStatusParticle[i].Update(FrameNo, ref this, TablePatternEmit[i], TablePatternOffset[i], TablePatternEmit[IndexSlide]);
+				}
+
+				/* Update Particles */
+				/* MEMO: particleDraw */
+				CountParticle = InstanceDataEmitter.CountParticleMax;
+				for(int i=0; i<CountParticle; i++)
+				{
+					InstanceParameterParticle.Update(	FrameNo,
+														i,
+														InstanceRoot,
+														InstancePoolParts,
+														ref this,
+														ref ListStatusParticle[i],
+														IndexEmitterParent,
+														ref InstanceParameterParticleTempolary
+													); 
+				}
+				return(true);
+			}
+			internal bool UpdateSubEmitters(	ref PartsEffect2Emitter InstanceEmitterTarget,
+												float Frame,
+												Script_SpriteStudio_RootEffect InstanceRoot,
+												PoolPartsEffect InstancePoolParts,
+												int IndexEmitterMine
+											)
+			{
+				/* Particle-Status Update */
+				int CountParticle = TablePatternEmit.Length;
+				int CountOffset = TablePatternOffset.Length;
+				int FrameNo = (int)Frame;
+				for(int i=0; i<CountOffset; i++)
+				{
+					/* MEMO: Slide is always 0. */
+					ListStatusParticle[i].Update(FrameNo, ref this, TablePatternEmit[i], TablePatternOffset[i], TablePatternEmit[i]);
+				}
+
+				/* Update Sub-Emitters */
+				int FrameTop;
+				CountParticle = InstanceDataEmitter.CountParticleMax;
+				for(int i=0; i<CountParticle; i++)
+				{
+					if(0 != (ListStatusParticle[i].Status & StatusParticle.FlagBitStatus.BORN))
+					{
+						/* MEMO: "InstanceParameterParticleTempolary" is parent's parameter. */
+						FrameTop = ListStatusParticle[i].FrameStart;
+						InstanceEmitterTarget.InstanceParameterParticleTempolary.FrameStart = FrameTop;
+						InstanceEmitterTarget.InstanceParameterParticleTempolary.FrameDuration = ListStatusParticle[i].FrameEnd;
+						InstanceEmitterTarget.InstanceParameterParticleTempolary.ID = i;
+						InstanceEmitterTarget.InstanceParameterParticleTempolary.IDParent = 0;
+
+						/* CAUTION: "InstanceParameterParticleTempolary" will be broken. */
+						InstanceEmitterTarget.Update(	(Frame - (float)FrameTop),
+														InstanceRoot,
+														InstancePoolParts,
+														IndexEmitterMine
+													);
+					}
+				}
+
+				return(true);
 			}
 		}
 
@@ -5529,7 +5691,10 @@ public static partial class Library_SpriteStudio
 		}
 
 		internal static void MeshCreate(	TerminalClusterDrawParts ClusterTerminal,
-											Mesh InstanceMesh,
+											ref Mesh InstanceMeshWrite,
+											ref Material[] InstanceMaterialWrite,
+											ref Mesh InstanceMeshDraw,
+											ref Material[] InstanceMaterialDraw,
 											MeshRenderer InstanceMeshRenderer,
 											MeshFilter InstanceMeshFilter,
 											Transform InstanceTrasnformDrawManager,
@@ -5539,6 +5704,10 @@ public static partial class Library_SpriteStudio
 			/* FragmentClusterDrawParts */	Library_SpriteStudio.Miscellaneousness.Chain<DataClusterDrawParts>.Fragment ClusterNow = null;
 			/* FragmentDrawParts */	Library_SpriteStudio.Miscellaneousness.Chain<DataDrawParts>.Fragment DataPartsNow = null;
 			int Index;
+
+			/* Mesh Clear */
+			Mesh InstanceMesh = InstanceMeshWrite;
+			InstanceMesh.Clear();
 
 			/* Count Mesh & Material-Table Create */
 			int CountMaterial = ClusterTerminal.CountChain;
@@ -5562,8 +5731,11 @@ public static partial class Library_SpriteStudio
 			{
 				goto MeshCreate_MeshNoDraw;
 			}
-
-			InstanceMeshRenderer.sharedMaterials = TableMaterial;
+			InstanceMaterialWrite = TableMaterial;
+			if(null != InstanceMaterialDraw)
+			{
+				InstanceMeshRenderer.sharedMaterials = InstanceMaterialDraw;
+			}
 
 			/* Create Combined Mesh */
 			Matrix4x4 MatrixCollect = (null != InstanceTrasnformDrawManager) ? InstanceTrasnformDrawManager.localToWorldMatrix.inverse : Matrix4x4.identity;
@@ -5627,7 +5799,8 @@ public static partial class Library_SpriteStudio
 			}
 
 			InstanceMesh.name = "BatchedMesh";
-			InstanceMeshFilter.sharedMesh = InstanceMesh;
+//			InstanceMeshWrite = InstanceMesh;
+			InstanceMeshFilter.sharedMesh = InstanceMeshDraw;
 
 			/* Clear Draw-Entries */
 			ClusterTerminal.ChainCleanUp();
@@ -5662,7 +5835,7 @@ public static partial class Library_SpriteStudio
 
 			/* Playing Datas */
 			public bool FlagHideForce;
-			public float RateSpeed = 1.0f;
+			public float RateSpeed;
 
 			/* Playing Datas: for Runtime (WorkArea) */
 			internal float TimePerFrame = 1.0f;
@@ -5935,31 +6108,34 @@ public static partial class Library_SpriteStudio
 					return(null);
 				}
 
-				if(null != InstanceGameObjectOld)
-				{
-					Object.DestroyImmediate(InstanceGameObjectOld);
-					InstanceGameObjectOld = null;
+				GameObject InstanceGameObject = InstanceGameObjectOld;
+				Transform InstanceTransformParent = InstanceGameObjectParent.transform;
+				Transform InstanceTransform;
+
+				if(null == InstanceGameObject)
+				{	/* Lost (Not-Found) */
+					InstanceTransform = InstanceTransformParent.Find(GameObjectPrefab.name);
+					if(null != InstanceTransform)
+					{	/* Found */
+						InstanceGameObject = InstanceTransform.gameObject;
+					}
 				}
 
-				GameObject InstanceGameObject = null;
-				Transform InstanceTransform = null;
-				Transform InstanceTransformParent = InstanceGameObjectParent.transform;
-
-				/* Get Child-Instance */
-				InstanceTransform = InstanceTransformParent.Find(GameObjectPrefab.name);
-				if((null == InstanceTransform) || (true == FlagInstanceUnderControlRenew))
-				{
-					/* Delete Old UnderControl-Instance (Same Name) */
-					if(null != InstanceTransform)
-					{
-						Object.DestroyImmediate(InstanceTransform.gameObject);
+				if(true == FlagInstanceUnderControlRenew)
+				{	/* Renew Force */
+					if(null != InstanceGameObject)
+					{	/* Exist */
+						Object.DestroyImmediate(InstanceGameObject);
 					}
+					InstanceGameObject = null;
+				}
 
-					/* Instantiate UnderControl-Instance */
+				if(null == InstanceGameObject)
+				{	/* Instantiate */
 #if UNITY_EDITOR
 					InstanceGameObject = UnityEditor.PrefabUtility.InstantiatePrefab(GameObjectPrefab) as GameObject;
 					if(null == InstanceGameObject)
-					{
+					{	/* for not-prefab */
 						InstanceGameObject = Object.Instantiate(GameObjectPrefab) as GameObject;
 						InstanceGameObject.name = GameObjectPrefab.name;	/* Remove "(clone)" */
 					}
@@ -5969,12 +6145,11 @@ public static partial class Library_SpriteStudio
 #endif
 					InstanceTransform = InstanceGameObject.transform;
 
-					if(null != InstanceGameObjectParent)
+					if (null != InstanceGameObjectParent)
 					{
 						InstanceTransform = InstanceGameObject.transform;
-						InstanceTransform.parent = InstanceGameObjectParent.transform;
+						InstanceTransform.parent = InstanceTransformParent;
 					}
-
 					if(null != InstanceGameObject)
 					{
 						InstanceTransform.localPosition = Vector3.zero;
@@ -5982,7 +6157,6 @@ public static partial class Library_SpriteStudio
 						InstanceTransform.localScale = Vector3.one;
 					}
 				}
-				InstanceGameObject = InstanceTransform.gameObject;
 
 				return(InstanceGameObject);
 			}
@@ -6143,7 +6317,8 @@ public static partial class Library_SpriteStudio
 
 				void InitSeed(uint Seed);
 				uint RandomUint32();
-				double RandomDouble();
+				double RandomDouble(double Limit=1.0);
+				float RandomFloat(float Limit=1.0f);
 				int RandomN(int Limit);
 			}
 		}

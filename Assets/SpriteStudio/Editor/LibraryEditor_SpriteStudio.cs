@@ -1018,7 +1018,7 @@ public static partial class LibraryEditor_SpriteStudio
 																	DataSettingImport.FlagNameDataAttachSpecificToPrefab,
 																	ref DataSettingImport
 																)
-								+ InformationEffectSet.Name + NameExtensionPrefabEffect;
+								+ NameExtensionPrefabEffect;	// + InformationEffectSet.Name + NameExtensionPrefabEffect;
 
 				AssetGameObjectRoot = AssetDatabase.LoadAssetAtPath(NamePathAsset, typeof(GameObject)) as GameObject;
 				ScriptRootEffectAsset = (null != AssetGameObjectRoot) ? (AssetGameObjectRoot.GetComponent<Script_SpriteStudio_RootEffect>()) : null;
@@ -1151,6 +1151,7 @@ public static partial class LibraryEditor_SpriteStudio
 				case KindVersionSSPJ.VERSION_000100:
 				case KindVersionSSPJ.VERSION_010000:
 				case KindVersionSSPJ.VERSION_010200:
+				case KindVersionSSPJ.VERSION_010201:
 					break;
 
 				case KindVersionSSPJ.ERROR:
@@ -1158,10 +1159,10 @@ public static partial class LibraryEditor_SpriteStudio
 					goto ParseOPSS_ImportSSPJ_ErrorEnd;
 
 				default:
-					if(KindVersionSSPJ.VERSION_010200 < VersionCode)
+					if(KindVersionSSPJ.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
-						VersionCode = KindVersionSSPJ.VERSION_010200;
-						goto case KindVersionSSPJ.VERSION_010200;
+						VersionCode = KindVersionSSPJ.VERSION_LATEST;
+						goto case KindVersionSSPJ.VERSION_LATEST;
 					}
 					goto case KindVersionSSPJ.ERROR;
 			}
@@ -1324,6 +1325,9 @@ public static partial class LibraryEditor_SpriteStudio
 			VERSION_000100 = 0x00000100,
 			VERSION_010000 = 0x00010000,
 			VERSION_010200 = 0x00010200,	/* sspj ver. 5.5.0 beta-3 */
+			VERSION_010201 = 0x00010201,	/* sspj ver. 5.7.0 beta */
+
+			VERSION_LATEST = VERSION_010201
 		}
 		internal class InformationSSPJ
 		{
@@ -1633,6 +1637,7 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				case KindVersionSSCE.VERSION_000100:
 				case KindVersionSSCE.VERSION_010000:
+				case KindVersionSSCE.VERSION_010001:
 					break;
 
 				case KindVersionSSCE.ERROR:
@@ -1640,10 +1645,10 @@ public static partial class LibraryEditor_SpriteStudio
 					goto ParseOPSS_ImportSSCE_ErrorEnd;
 
 				default:
-					if(KindVersionSSCE.VERSION_010000 < VersionCode)
+					if(KindVersionSSCE.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
-						VersionCode = KindVersionSSCE.VERSION_010000;
-						goto case KindVersionSSCE.VERSION_010000;
+						VersionCode = KindVersionSSCE.VERSION_LATEST;
+						goto case KindVersionSSCE.VERSION_LATEST;
 					}
 					goto case KindVersionSSCE.ERROR;
 			}
@@ -1792,6 +1797,9 @@ public static partial class LibraryEditor_SpriteStudio
 			ERROR = 0x00000000,
 			VERSION_000100 = 0x00000100,
 			VERSION_010000 = 0x00010000,
+			VERSION_010001 = 0x00010001,
+
+			VERSION_LATEST = VERSION_010001
 		};
 		internal class InformationSSCE
 		{
@@ -1917,6 +1925,8 @@ public static partial class LibraryEditor_SpriteStudio
 				case KindVersionSSAE.VERSION_010001:
 				case KindVersionSSAE.VERSION_010002:
 				case KindVersionSSAE.VERSION_010200:
+				case KindVersionSSAE.VERSION_010201:
+				case KindVersionSSAE.VERSION_010202:
 					break;
 
 				case KindVersionSSAE.ERROR:
@@ -1924,10 +1934,10 @@ public static partial class LibraryEditor_SpriteStudio
 					goto ParseOPSS_ImportSSAE_ErrorEnd;
 
 				default:
-					if(KindVersionSSAE.VERSION_010200 < VersionCode)
+					if(KindVersionSSAE.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
-						VersionCode = KindVersionSSAE.VERSION_010200;
-						goto case KindVersionSSAE.VERSION_010200;
+						VersionCode = KindVersionSSAE.VERSION_LATEST;
+						goto case KindVersionSSAE.VERSION_LATEST;
 					}
 					goto case KindVersionSSAE.ERROR;
 			}
@@ -2164,6 +2174,8 @@ public static partial class LibraryEditor_SpriteStudio
 							case KindVersionSSAE.VERSION_010001:
 							case KindVersionSSAE.VERSION_010002:
 							case KindVersionSSAE.VERSION_010200:
+							case KindVersionSSAE.VERSION_010201:
+							case KindVersionSSAE.VERSION_010202:	/* EffectPartsCheck? */
 								{
 									if(0 == InformationParts.ID)
 									{
@@ -2222,6 +2234,8 @@ public static partial class LibraryEditor_SpriteStudio
 
 							case KindVersionSSAE.VERSION_010002:
 							case KindVersionSSAE.VERSION_010200:
+							case KindVersionSSAE.VERSION_010201:
+							case KindVersionSSAE.VERSION_010202:
 								{
 									/* MEMO: Attributes'-Tag always exists. */
 									string ValueTextBool = "";
@@ -2346,7 +2360,7 @@ public static partial class LibraryEditor_SpriteStudio
 #if false
 				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? InformationAnimationSet.NamePathGetAbsolute(ValueText + ".ssee") : "";
 #else
-					/* MEMO: Without confirming the file-path, search at the time of reference. */
+				/* MEMO: Without confirming the file-path, search at the time of reference. */
 				InformationParts.NameSSEEEffect = (false == string.IsNullOrEmpty(ValueText)) ? ValueText : "";
 #endif
 			}
@@ -3168,6 +3182,35 @@ public static partial class LibraryEditor_SpriteStudio
 								InformationAnimationPart.Attribute[InformationAttribute.IndexAttribute].Add(Data);
 							}
 							break;
+
+						case LibraryEditor_SpriteStudio.KeyFrame.KindValue.EFFECT:
+							{
+								LibraryEditor_SpriteStudio.KeyFrame.DataEffect Data = new LibraryEditor_SpriteStudio.KeyFrame.DataEffect();
+								Data.FrameNo = FrameNo;
+
+								/* Body-Data Set */
+								ValueTextParameter = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeKey, "value/startTime", ManagerNameSpace);
+								Data.Value.FrameStart = (null == ValueTextParameter) ? 0 : LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueTextParameter);
+
+								ValueTextParameter = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeKey, "value/speed", ManagerNameSpace);
+								Data.Value.RateTime = (null == ValueTextParameter) ? 1.0f : LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextParameter);
+
+								ValueTextParameter = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeKey, "value/independent", ManagerNameSpace);
+								if(null == ValueTextParameter)
+								{
+									Data.Value.Flags &= ~Library_SpriteStudio.Data.AttributeEffect.FlagBit.INDEPENDENT;
+								}
+								else
+								{
+									Data.Value.Flags = (true == LibraryEditor_SpriteStudio.Utility.Text.ValueGetBool(ValueTextParameter)) ?
+															(Data.Value.Flags | Library_SpriteStudio.Data.AttributeEffect.FlagBit.INDEPENDENT)
+															: (Data.Value.Flags & ~Library_SpriteStudio.Data.AttributeEffect.FlagBit.INDEPENDENT);
+								}
+
+								/* Key-Data Add */
+								InformationAnimationPart.Attribute[InformationAttribute.IndexAttribute].Add(Data);
+							}
+							break;
 					}
 				}
 			}
@@ -3244,7 +3287,11 @@ public static partial class LibraryEditor_SpriteStudio
 			VERSION_010000 = 0x00010000,
 			VERSION_010001 = 0x00010001,
 			VERSION_010002 = 0x00010002,	/* ssae ver.5.3.5 */
-			VERSION_010200 = 0x00010200,	/* ssae ver.5.5.0 beta-3 */
+			VERSION_010200 = 0x00010200,    /* ssae ver.5.5.0 beta-3 */
+			VERSION_010201 = 0x00010201,	/* ssae ver.5.7.0 beta-1 */
+			VERSION_010202 = 0x00010202,	/* ssae ver.5.7.0 beta-2 */
+
+			VERSION_LATEST = VERSION_010202
 		};
 		internal class InformationSSAE
 		{
@@ -3500,6 +3547,16 @@ public static partial class LibraryEditor_SpriteStudio
 					goto case KindVersionSSEE.ERROR;
 
 				case KindVersionSSEE.VERSION_010002:
+					/* MEMO: SS5.6 Unsupported */
+#if false
+					goto case KindVersionSSEE.ERROR;
+#else
+					/* MEMO: SS5.7-Underdevelopment */
+					VersionCode = KindVersionSSEE.VERSION_010100;
+					goto case KindVersionSSEE.VERSION_010100;
+#endif
+
+				case KindVersionSSEE.VERSION_010100:
 					break;
 
 				case KindVersionSSEE.ERROR:
@@ -3507,10 +3564,10 @@ public static partial class LibraryEditor_SpriteStudio
 					goto ParseOPSS_ImportSSEE_ErrorEnd;
 
 				default:
-					if(KindVersionSSEE.VERSION_010002 < VersionCode)
+					if(KindVersionSSEE.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
-						VersionCode = KindVersionSSEE.VERSION_010002;
-						goto case KindVersionSSEE.VERSION_010002;
+						VersionCode = KindVersionSSEE.VERSION_LATEST;
+						goto case KindVersionSSEE.VERSION_LATEST;
 					}
 					goto case KindVersionSSEE.ERROR;
 			}
@@ -3523,57 +3580,86 @@ public static partial class LibraryEditor_SpriteStudio
 			/* Base-Data Get */
 			string ValueText = "";
 
-			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/lockRandSeed", ManagerNameSpace);
-			if(false == string.IsNullOrEmpty(ValueText))
+			switch(InformationEffect.VersionCode)
 			{
-				InformationEffect.Seed = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText);
-			}
+				case KindVersionSSEE.VERSION_010002:
+					/* MEMO: SS5.6 Unsupported */
+					/* MEMO: SS5.7-Underdevelopment */
+					break;
 
-			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/isLockRandSeed", ManagerNameSpace);
-			if(false == string.IsNullOrEmpty(ValueText))
-			{
-				InformationEffect.FlagLockSeed = LibraryEditor_SpriteStudio.Utility.Text.ValueGetBool(ValueText);
-			}
+				case KindVersionSSEE.VERSION_010100:
+					{	/* SS5.7 */
+						ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/lockRandSeed", ManagerNameSpace);
+						if(false == string.IsNullOrEmpty(ValueText))
+						{
+							InformationEffect.Seed = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText);
+						}
 
-			ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/fps", ManagerNameSpace);
-			if(false == string.IsNullOrEmpty(ValueText))
-			{
-				InformationEffect.FramePerSecond = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText);
-			}
+						ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/isLockRandSeed", ManagerNameSpace);
+						if(false == string.IsNullOrEmpty(ValueText))
+						{
+							InformationEffect.FlagLockSeed = LibraryEditor_SpriteStudio.Utility.Text.ValueGetBool(ValueText);
+						}
 
-			/* Parts-Data Get */
-			NodeList = LibraryEditor_SpriteStudio.Utility.XML.ListGetNode(NodeRoot, "effectData/nodeList/node", ManagerNameSpace);
-			if(null == NodeList)
-			{
-				MessageError = "PartsList-Node[Effect] Not-Found.";
-				goto ParseOPSS_ImportSSEE_ErrorEnd;
-			}
-			InformationEffect.ListParts = new LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts[NodeList.Count];
-			if(null == InformationEffect.ListParts)
-			{
-				MessageError = "Not Enough Memory. (Parts-Data[Effect] WorkArea)";
-				goto ParseOPSS_ImportSSEE_ErrorEnd;
-			}
-			foreach(XmlNode NodeParts in NodeList)
-			{
-				/* Part-ID Get */
-				int IDParts = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "arrayIndex", ManagerNameSpace));
+						ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/fps", ManagerNameSpace);
+						if(false == string.IsNullOrEmpty(ValueText))
+						{
+							InformationEffect.FramePerSecond = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText);
+						}
 
-				/* Part-Data Get */
-				InformationEffect.ListParts[IDParts] = ImportSSEEParts(	ref DataSettingImport,
-																		InformationProject,
-																		NodeParts,
-																		ManagerNameSpace,
-																		InformationEffect,
-																		IDParts,
-																		(string)InformationProject.ListNameSSEE[IndexSSEE]
-																	);
-				if(null == InformationEffect.ListParts[IDParts])
-				{
-					goto ParseOPSS_ImportSSEE_ErrorEnd_NoMessage;
-				}
-			}
+						ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/renderVersion", ManagerNameSpace);
+						if(false == string.IsNullOrEmpty(ValueText))
+						{
+							InformationEffect.VersionRenderer = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText);
+						}
 
+						ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/layoutScaleX", ManagerNameSpace);
+						if(false == string.IsNullOrEmpty(ValueText))
+						{
+							InformationEffect.ScaleLayout.x = (float)(LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText)) / 100.0f;
+						}
+
+						ValueText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "effectData/layoutScaleY", ManagerNameSpace);
+						if(false == string.IsNullOrEmpty(ValueText))
+						{
+							InformationEffect.ScaleLayout.y = (float)(LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueText)) / 100.0f;
+						}
+
+						/* Parts-Data Get */
+						NodeList = LibraryEditor_SpriteStudio.Utility.XML.ListGetNode(NodeRoot, "effectData/nodeList/node", ManagerNameSpace);
+						if(null == NodeList)
+						{
+							MessageError = "PartsList-Node[Effect] Not-Found.";
+							goto ParseOPSS_ImportSSEE_ErrorEnd;
+						}
+						InformationEffect.ListParts = new LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts[NodeList.Count];
+						if(null == InformationEffect.ListParts)
+						{
+							MessageError = "Not Enough Memory. (Parts-Data[Effect] WorkArea)";
+							goto ParseOPSS_ImportSSEE_ErrorEnd;
+						}
+						foreach(XmlNode NodeParts in NodeList)
+						{
+							/* Part-ID Get */
+							int IDParts = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeParts, "arrayIndex", ManagerNameSpace));
+
+							/* Part-Data Get */
+							InformationEffect.ListParts[IDParts] = ImportSSEEParts(	ref DataSettingImport,
+																						InformationProject,
+																						NodeParts,
+																						ManagerNameSpace,
+																						InformationEffect,
+																						IDParts,
+																						(string)InformationProject.ListNameSSEE[IndexSSEE]
+																					);
+							if(null == InformationEffect.ListParts[IDParts])
+							{
+								goto ParseOPSS_ImportSSEE_ErrorEnd_NoMessage;
+							}
+						}
+					}
+					break;
+			}
 			return(InformationEffect);
 
 		ParseOPSS_ImportSSEE_ErrorEnd:;
@@ -3585,14 +3671,14 @@ public static partial class LibraryEditor_SpriteStudio
 			return(null);
 		}
 		internal static LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts ImportSSEEParts(	ref SettingImport DataSettingImport,
-																									InformationSSPJ InformationProject,
-																									XmlNode NodeParts,
-																									XmlNamespaceManager ManagerNameSpace,
-																									LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffect,
-																									int ID,
-																									string NameFileSSEE
-																								)
-		{
+																										InformationSSPJ InformationProject,
+																										XmlNode NodeParts,
+																										XmlNamespaceManager ManagerNameSpace,
+																										LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffect,
+																										int ID,
+																										string NameFileSSEE
+																									)
+		{	/* MEMO: SS5.7 */
 			string MessageError = "";
 
 			LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts InformationPartsEffect = new LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts();
@@ -3716,18 +3802,18 @@ public static partial class LibraryEditor_SpriteStudio
 			return(null);
 		}
 		private static LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEEmitter ImportSSEEPartsEmitter(	ref SettingImport DataSettingImport,
-																											InformationSSPJ InformationProject,
-																											XmlNode NodeParts,
-																											XmlNamespaceManager ManagerNameSpace,
-																											LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffectSet,
-																											LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts InformationEffectParts,
-																											Library_SpriteStudio.KindColorOperationEffect KindColorOperationTartget,
-																											string NameCellMap,
-																											string NameCell,
-																											int ID,
-																											string NameFileSSEE
-																										)
-		{
+																												InformationSSPJ InformationProject,
+																												XmlNode NodeParts,
+																												XmlNamespaceManager ManagerNameSpace,
+																												LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffectSet,
+																												LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEEParts InformationEffectParts,
+																												Library_SpriteStudio.KindColorOperationEffect KindColorOperationTartget,
+																												string NameCellMap,
+																												string NameCell,
+																												int ID,
+																												string NameFileSSEE
+																											)
+		{	/* MEMO: SS5.7 */
 			string MessageError = "";
 			string ValueText = "";
 
@@ -3737,20 +3823,14 @@ public static partial class LibraryEditor_SpriteStudio
 				MessageError = "Parts[" + ID.ToString() + "] Not Enough Memory. (Effect-Emitter WorkArea)";
 				goto ParseOPSS_InformationSSEEEmitter_ErrorEnd;
 			}
-			InformationEmitter.CleanUp();
+//			InformationEmitter.CleanUp();
+			InformationEmitter.BootUp();
 
 			/* Base Datas Set */
+			InformationEmitter.FlagData = Library_SpriteStudio.Data.EmitterEffect.FlagBit.CLEAR;
 			InformationEmitter.KindBlendTarget = KindColorOperationTartget;
 			InformationEmitter.NameCellMap = NameCellMap;
 			InformationEmitter.NameCell = NameCell;
-			if(false == InformationEffectSet.FlagLockSeed)
-			{
-				InformationEmitter.RandomSeed = -1;
-			}
-			else
-			{
-				InformationEmitter.RandomSeed = InformationEffectSet.Seed;
-			}
 			ValueText = InformationEmitter.NameCellMap;
 			if(false == string.IsNullOrEmpty(ValueText))
 			{
@@ -3761,7 +3841,6 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationEmitter.IndexCellMap = InformationProject.IndexGetFileName(InformationProject.ListNameSSCE, ValueText);
 			}
 			InformationEmitter.IndexCell = -1;
-
 			XmlNode NodeEmitterAttributes = LibraryEditor_SpriteStudio.Utility.XML.NodeGet(NodeParts, "behavior/list", ManagerNameSpace);
 
 			string ValueTextAttribute = "";
@@ -3779,7 +3858,7 @@ public static partial class LibraryEditor_SpriteStudio
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "priority", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
 							{
-								InformationEmitter.Priority = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute);
+								InformationEmitter.PriorityParticle = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute);
 							}
 
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "maximumParticle", ManagerNameSpace);
@@ -3797,18 +3876,18 @@ public static partial class LibraryEditor_SpriteStudio
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "interval", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
 							{
-								InformationEmitter.TimeInterval = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute);
+								InformationEmitter.Interval = (int)(LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute));
 							}
 
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "lifetime", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
 							{
-								InformationEmitter.TimeDurationEmitter = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute);
+								InformationEmitter.DurationEmitter = (int)(LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute));
 							}
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.SpeedStart.Main, ref InformationEmitter.SpeedStart.Sub, NodeAttribute, "speed", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.Speed.Main, ref InformationEmitter.Speed.Sub, NodeAttribute, "speed", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.TimeDurationParticle.Main, ref InformationEmitter.TimeDurationParticle.Sub, NodeAttribute, "lifespan", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.DurationParticle.Main, ref InformationEmitter.DurationParticle.Sub, NodeAttribute, "lifespan", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "angle", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
@@ -3831,7 +3910,7 @@ public static partial class LibraryEditor_SpriteStudio
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "Seed", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
 							{
-								InformationEmitter.RandomSeed = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueTextAttribute);
+								InformationEmitter.SeedRandom = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueTextAttribute);
 							}
 						}
 						break;
@@ -3843,7 +3922,7 @@ public static partial class LibraryEditor_SpriteStudio
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "DelayTime", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
 							{
-								InformationEmitter.TimeDelay = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueTextAttribute);
+								InformationEmitter.Delay = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(ValueTextAttribute);
 							}
 						}
 						break;
@@ -3878,25 +3957,24 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.POSITION;
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.PositionStart.Main.x, ref InformationEmitter.PositionStart.Sub.x, NodeAttribute, "OffsetX", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
-
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.PositionStart.Main.y, ref InformationEmitter.PositionStart.Sub.y, NodeAttribute, "OffsetY", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.Position.Main.x, ref InformationEmitter.Position.Sub.x, NodeAttribute, "OffsetX", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.Position.Main.y, ref InformationEmitter.Position.Sub.y, NodeAttribute, "OffsetY", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
 						break;
 
 					case "trans_speed":
 						{
-							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_END;
+							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.SPEED_FLUCTUATION;
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.SpeedEnd.Main, ref InformationEmitter.SpeedEnd.Sub, NodeAttribute, "Speed", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.SpeedFluctuation.Main, ref InformationEmitter.SpeedFluctuation.Sub, NodeAttribute, "Speed", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
 						break;
 
 					case "init_rotation":
 						{
-							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_START;
+							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATION;
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.RotationStart.Main, ref InformationEmitter.RotationStart.Sub, NodeAttribute, "Rotation", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.Rotation.Main, ref InformationEmitter.Rotation.Sub, NodeAttribute, "Rotation", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 
 							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.RotationFluctuation.Main, ref InformationEmitter.RotationFluctuation.Sub, NodeAttribute, "RotationAdd", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
@@ -3904,7 +3982,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 					case "trans_rotation":
 						{
-							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATIONFLUCTUATION_END;
+							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.ROTATION_FLUCTUATION;
 
 							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "RotationFactor", ManagerNameSpace);
 							if(false == string.IsNullOrEmpty(ValueTextAttribute))
@@ -3963,17 +4041,17 @@ public static partial class LibraryEditor_SpriteStudio
 
 					case "init_vertexcolor":
 						{
-							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_START;
+							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX;
 
-							ImportSSEEPartsEmitterGetRangeColor(ref InformationEmitter.ColorVertexStart.Main, ref InformationEmitter.ColorVertexStart.Sub, NodeAttribute, "Color", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeColor(ref InformationEmitter.ColorVertex.Main, ref InformationEmitter.ColorVertex.Sub, NodeAttribute, "Color", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
 						break;
 
 					case "trans_vertexcolor":
 						{
-							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_END;
+							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.COLORVERTEX_FLUCTUATION;
 
-							ImportSSEEPartsEmitterGetRangeColor(ref InformationEmitter.ColorVertexEnd.Main, ref InformationEmitter.ColorVertexEnd.Sub, NodeAttribute, "Color", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeColor(ref InformationEmitter.ColorVertexFluctuation.Main, ref InformationEmitter.ColorVertexFluctuation.Sub, NodeAttribute, "Color", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
 						break;
 
@@ -3985,7 +4063,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.ScaleStart.Main.y, ref InformationEmitter.ScaleStart.Sub.y, NodeAttribute, "SizeY", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.ScaleStartRate.Main, ref InformationEmitter.ScaleStartRate.Sub, NodeAttribute, "ScaleFactor", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.ScaleRateStart.Main, ref InformationEmitter.ScaleRateStart.Sub, NodeAttribute, "ScaleFactor", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
 						break;
 
@@ -3997,7 +4075,7 @@ public static partial class LibraryEditor_SpriteStudio
 
 							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.ScaleEnd.Main.y, ref InformationEmitter.ScaleEnd.Sub.y, NodeAttribute, "SizeY", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 
-							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.ScaleEndRate.Main, ref InformationEmitter.ScaleEndRate.Sub, NodeAttribute, "ScaleFactor", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
+							ImportSSEEPartsEmitterGetRangeFloat(ref InformationEmitter.ScaleRateEnd.Main, ref InformationEmitter.ScaleRateEnd.Sub, NodeAttribute, "ScaleFactor", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
 						}
 						break;
 
@@ -4007,8 +4085,8 @@ public static partial class LibraryEditor_SpriteStudio
 
 							Library_SpriteStudio.Data.AttributeEffectRangeFloat RangeTemp = new Library_SpriteStudio.Data.AttributeEffectRangeFloat();
 							ImportSSEEPartsEmitterGetRangeFloat(ref RangeTemp.Main, ref RangeTemp.Sub, NodeAttribute, "disprange", ManagerNameSpace, InformationProject, ID, NameFileSSEE);
-							InformationEmitter.AlphaRateStart = RangeTemp.Main * 0.01f;
-							InformationEmitter.AlphaRateEnd = (RangeTemp.Main + RangeTemp.Sub) * 0.01f;
+							InformationEmitter.AlphaFadeStart = RangeTemp.Main * 0.01f;
+							InformationEmitter.AlphaFadeEnd = (RangeTemp.Main + RangeTemp.Sub) * 0.01f;
 						}
 						break;
 
@@ -4016,7 +4094,17 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.TURNDIRECTION;
 
-							InformationEmitter.FlagTurnDirection = true;
+							ValueTextAttribute = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeAttribute, "Rotation", ManagerNameSpace);
+							if(false == string.IsNullOrEmpty(ValueTextAttribute))
+							{
+								InformationEmitter.TurnDirectionFluctuation = LibraryEditor_SpriteStudio.Utility.Text.ValueGetFloat(ValueTextAttribute);
+							}
+						}
+						break;
+
+					case "InfiniteEmit":
+						{
+							InformationEmitter.FlagData |= Library_SpriteStudio.Data.EmitterEffect.FlagBit.EMIT_INFINITE;
 						}
 						break;
 
@@ -4031,23 +4119,6 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
-			/* Time-Datas Recalc */
-			/* MEMO: FPS is dependent on SSAE when playing. */
-			float FPS = (float)InformationEffectSet.FramePerSecond;
-			InformationEmitter.CountFramePerSecond = FPS;
-#if false
-			if(0 != (InformationEmitter.FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.BASIC))
-			{
-				InformationEmitter.TimeInterval /= FPS;
-				InformationEmitter.TimeDurationEmitter /= FPS;
-				InformationEmitter.TimeDurationParticle.Main /= FPS;
-				InformationEmitter.TimeDurationParticle.Sub /= FPS;
-			}
-			if(0 != (InformationEmitter.FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.DELAY))
-			{
-				InformationEmitter.TimeDelay /= FPS;
-			}
-#endif
 			return(InformationEmitter);
 
 		ParseOPSS_InformationSSEEEmitter_ErrorEnd:;
@@ -4059,6 +4130,7 @@ public static partial class LibraryEditor_SpriteStudio
 						);
 			return(null);
 		}
+
 		private static bool ImportSSEEPartsEmitterGetRangeFloat(	ref float OutputMain,
 																	ref float OutputSub,
 																	XmlNode NodeAttribute,
@@ -4208,7 +4280,10 @@ public static partial class LibraryEditor_SpriteStudio
 			ERROR = 0x00000000,
 			VERSION_010000 = 0x00010000,	/* Disuse */
 			VERSION_010001 = 0x00010001,	/* Disuse */
-			VERSION_010002 = 0x00010002,	/* ssae ver.5.5.1 */
+			VERSION_010002 = 0x00010002,	/* ssee ver.5.5.1 */
+			VERSION_010100 = 0x00010100,	/* ssee ver.5.7 */
+
+			VERSION_LATEST = VERSION_010100
 		};
 		internal class InformationSSEE
 		{
@@ -4222,6 +4297,8 @@ public static partial class LibraryEditor_SpriteStudio
 			internal InformationSSEEParts[] ListParts;
 
 			/* SSEE Data: Parameters */
+			internal int VersionRenderer;
+			internal Vector2 ScaleLayout;
 			internal int Seed;
 			internal bool FlagLockSeed;
 			internal int FramePerSecond;
@@ -4245,6 +4322,8 @@ public static partial class LibraryEditor_SpriteStudio
 
 				ListParts = null;
 
+				VersionRenderer = 0;
+				ScaleLayout = Vector2.one;
 				Seed = 0;
 				FlagLockSeed = false;
 				FramePerSecond = 60;
@@ -4262,7 +4341,7 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 		}
 		internal class InformationSSEEParts : Library_SpriteStudio.Data.PartsEffect
-		{
+		{	/* SS5.7 */
 			internal List<int> ListIndexPartsChild;
 			internal InformationSSEEEmitter Emitter;
 
@@ -4275,7 +4354,7 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 		}
 		internal class InformationSSEEEmitter : Library_SpriteStudio.Data.EmitterEffect
-		{
+		{	/* SS5.7 */
 			internal string NameCellMap;
 			internal string NameCell;
 
@@ -4285,6 +4364,11 @@ public static partial class LibraryEditor_SpriteStudio
 
 				NameCellMap = "";
 				NameCell = "";
+			}
+
+			internal void BootUp()
+			{
+				CleanUp();
 			}
 		}
 	}
@@ -4710,6 +4794,22 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 			}
 
+			/* ConvertPass-1: Judge no-use "Instance" and "Effect" */
+			for(int i=0; i<InformationAnimationSet.ListDataAnimationRuntime.Length; i++)
+			{
+				for(int j=0; j<InformationAnimationSet.ListDataPartsRuntime.Length; j++)
+				{
+					PrefabCreateSSAEDataJudgeNoUseParts(	ref DataSettingImport,
+															InformationProject,
+															InformationAnimationSet,
+															i,
+															j,
+															NameBaseAssetPath,
+															FileName
+														);
+				}
+			}
+
 			/* ConvertPass-2: "Calculation in Advance" */
 			if(true == DataSettingImport.FlagDataCalculateInAdvance)
 			{
@@ -5053,6 +5153,9 @@ public static partial class LibraryEditor_SpriteStudio
 					InformationPartsRuntime.UserData.CleanUp();
 					InformationPartsRuntime.UserData.BootUp(0);
 				InformationPartsRuntime.Instance = new Library_SpriteStudio.Data.ListAttributeInstance();
+					InformationPartsRuntime.Instance.CleanUp();
+					InformationPartsRuntime.Instance.BootUp(0);
+				InformationPartsRuntime.Effect = new Library_SpriteStudio.Data.ListAttributeEffect();
 					InformationPartsRuntime.Instance.CleanUp();
 					InformationPartsRuntime.Instance.BootUp(0);
 
@@ -5894,7 +5997,7 @@ public static partial class LibraryEditor_SpriteStudio
 			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			bool FlagDummyDataInsert = false;
 			if(0 >= CountAttributeList)
-			{
+			{	/* Has no datas */
 				if(Library_SpriteStudio.KindParts.INSTANCE == KindParts)
 				{
 					FlagDummyDataInsert = true;
@@ -5907,6 +6010,15 @@ public static partial class LibraryEditor_SpriteStudio
 					return(Rv);
 				}
 			}
+			else
+			{	/* Has datas */
+				/* Check top key's frame */
+				DataInstance = (LibraryEditor_SpriteStudio.KeyFrame.DataInstance)(AttributeList[0]);
+				if(0 < DataInstance.FrameNo)
+				{	/* Insert Default, force (After SS5.7) */
+					FlagDummyDataInsert = true;
+				}
+			}
 
 			/* CAUTION!: "Instance" is stored in Compressed-State from scratch. */
 			/* Data Initialize */
@@ -5917,7 +6029,7 @@ public static partial class LibraryEditor_SpriteStudio
 			/* Key-Frames Set */
 			int Index = 0;
 			if(true == FlagDummyDataInsert)
-			{	/* Set Invalid-Data */
+			{	/* Cover a missing data */
 				FlagDummyDataInsert = false;
 				Rv.ListStatus[Index] = Library_SpriteStudio.Data.ListAttributeInstance.GetFlagBit(0, 0);
 				Rv.ListValue[Index] = new Library_SpriteStudio.Data.AttributeInstance();
@@ -5945,16 +6057,11 @@ public static partial class LibraryEditor_SpriteStudio
 																								)
 		{
 			Library_SpriteStudio.Data.ListAttributeEffect Rv = null;
-#if true
-			Rv = new Library_SpriteStudio.Data.ListAttributeEffect();
-			Rv.CleanUp();
-			Rv.BootUp(0);
-#else
-//			LibraryEditor_SpriteStudio.KeyFrame.DataEffect DataEffect = null;
-			int CountAttributeList = 0;	/* AttributeList.Count; */
+			LibraryEditor_SpriteStudio.KeyFrame.DataEffect DataEffect = null;
+			int CountAttributeList = (null != AttributeList) ? AttributeList.Count : 0;
 			bool FlagDummyDataInsert = false;
 			if(0 >= CountAttributeList)
-			{
+			{	/* Has no datas */
 				if(Library_SpriteStudio.KindParts.EFFECT == KindParts)
 				{
 					FlagDummyDataInsert = true;
@@ -5967,8 +6074,17 @@ public static partial class LibraryEditor_SpriteStudio
 					return(Rv);
 				}
 			}
+			else
+			{	/* Has datas */
+				/* Check top key's frame */
+				DataEffect = (LibraryEditor_SpriteStudio.KeyFrame.DataEffect)(AttributeList[0]);
+				if(0 < DataEffect.FrameNo)
+				{	/* Insert Default, force (After SS5.7) */
+					FlagDummyDataInsert = true;
+				}
+			}
 
-			/* CAUTION!: "Effect" is stored in Compressed-State from scratch. */
+			/* CAUTION!: "Instance" is stored in Compressed-State from scratch. */
 			/* Data Initialize */
 			Rv = new Library_SpriteStudio.Data.ListAttributeEffect();
 			Rv.CleanUp();
@@ -5977,22 +6093,25 @@ public static partial class LibraryEditor_SpriteStudio
 			/* Key-Frames Set */
 			int Index = 0;
 			if(true == FlagDummyDataInsert)
-			{	/* Set Invalid-Data */
+			{	/* Cover a missing data */
 				FlagDummyDataInsert = false;
 				Rv.ListStatus[Index] = Library_SpriteStudio.Data.ListAttributeEffect.GetFlagBit(0, 0);
 				Rv.ListValue[Index] = new Library_SpriteStudio.Data.AttributeEffect();
 				Rv.ListValue[Index].CleanUp();
+				Rv.ListValue[Index].FrameStart = 0;
+				Rv.ListValue[Index].RateTime = 1.0f;
+
 				Index++;
 			}
-//			for(int i=0; i<CountAttributeList; i++)
-//			{
-//				DataEffect = (LibraryEditor_SpriteStudio.KeyFrame.DataEffect)(AttributeList[i]);
-//				Rv.ListStatus[Index] = Library_SpriteStudio.Data.ListAttributeEffect.GetFlagBit(DataEffect.FrameNo, Index);
-//				Rv.ListValue[Index] = new Library_SpriteStudio.Data.AttributeEffect();
-//				Rv.ListValue[Index].Duplicate(DataEffect.Value);
-//				Index++;
-//			}
-#endif
+			for(int i=0; i<CountAttributeList; i++)
+			{
+				DataEffect = (LibraryEditor_SpriteStudio.KeyFrame.DataEffect)(AttributeList[i]);
+				Rv.ListStatus[Index] = Library_SpriteStudio.Data.ListAttributeEffect.GetFlagBit(DataEffect.FrameNo, Index);
+				Rv.ListValue[Index] = new Library_SpriteStudio.Data.AttributeEffect();
+				Rv.ListValue[Index].Duplicate(DataEffect.Value);
+				Index++;
+			}
+
 			return(Rv);
 		}
 		private static Library_SpriteStudio.Data.ListAttributeCell ListCellGetSSAEAttribute(	ref SettingImport DataSettingImport,
@@ -6327,6 +6446,57 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 		Convert_PrefabCreateSSAEDataSolveParts_End:;
+			return(true);
+		}
+		private static bool PrefabCreateSSAEDataJudgeNoUseParts(	ref SettingImport DataSettingImport,
+																	LibraryEditor_SpriteStudio.ParseOPSS.InformationSSPJ InformationProject,
+																	LibraryEditor_SpriteStudio.ParseOPSS.InformationSSAE InformationAnimationSet,
+																	int IndexAnimation,
+																	int IndexParts,
+																	string NameBaseAssetPath,
+																	string FileName
+																)
+		{
+			Library_SpriteStudio.Data.Parts DataPartsRuntime = InformationAnimationSet.ListDataPartsRuntime[IndexParts];
+			Library_SpriteStudio.Data.Animation DataAnimationRuntime = InformationAnimationSet.ListDataAnimationRuntime[IndexAnimation];
+			Library_SpriteStudio.Data.AnimationParts DataAnimationPartsRuntime = DataAnimationRuntime.ListAnimationParts[IndexParts];
+
+			DataAnimationPartsRuntime.StatusParts = Library_SpriteStudio.Data.AnimationParts.FlagBitStatus.CLEAR;
+			switch(DataPartsRuntime.Kind)
+			{
+				case Library_SpriteStudio.KindParts.INSTANCE:
+				case Library_SpriteStudio.KindParts.EFFECT:
+					break;
+
+				default:
+					goto PrefabCreateSSAEDataJudgeNoUseParts_NotApplicable;
+			}
+
+			/* Check Hide */
+			int CountFrameFull = DataAnimationRuntime.CountFrame;
+			int IndexAttribute;
+			int FrameNoOrigin;
+			Library_SpriteStudio.Data.AttributeStatus DataStatus;
+			bool FlagHideAll = true;
+			for(int i=0; i<CountFrameFull; i++)
+			{
+				IndexAttribute = DataAnimationPartsRuntime.Status.IndexGetValue(out FrameNoOrigin, i);
+				DataStatus = (0 <= IndexAttribute) ? DataAnimationPartsRuntime.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
+				if(false == DataStatus.IsHide)
+				{
+					FlagHideAll = false;
+					break;
+				}
+			}
+			if(true == FlagHideAll)
+			{	/* not Used */
+				DataAnimationPartsRuntime.StatusParts |= Library_SpriteStudio.Data.AnimationParts.FlagBitStatus.HIDE_FULL;
+			}
+
+			return(true);
+
+		PrefabCreateSSAEDataJudgeNoUseParts_NotApplicable:;
+			DataAnimationPartsRuntime.StatusParts &= ~Library_SpriteStudio.Data.AnimationParts.FlagBitStatus.HIDE_FULL;
 			return(true);
 		}
 		private static bool PrefabCreateSSAEDataCompressRequired(	ref SettingImport DataSettingImport,
@@ -6794,6 +6964,36 @@ public static partial class LibraryEditor_SpriteStudio
 												string FileName
 											)
 		{
+			LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffectSet = InformationProject.ListInformationSSEE[Index];
+			switch(InformationEffectSet.VersionCode)
+			{
+				case ParseOPSS.KindVersionSSEE.VERSION_010002:
+					/* MEMO: SS5.6 Unsupported */
+					/* MEMO: SS5.7-Underdevelopment */
+					break;
+
+				case ParseOPSS.KindVersionSSEE.VERSION_010100:
+					return(PrefabCreateSSEEMain(ref DataSettingImport, InformationProject, Index, NameBaseAssetPath, FileName));
+
+				default:
+					break;
+			}
+			return(false);
+		}
+		internal struct WorkAreaPrefabCreateSSEE
+		{
+			internal int IndexParts;
+			internal int IndexEmitter;
+			internal int IndexPartsHasIndexChild;
+			internal int IndexPartsBody;
+		}
+		internal static bool PrefabCreateSSEEMain(	ref SettingImport DataSettingImport,
+													LibraryEditor_SpriteStudio.ParseOPSS.InformationSSPJ InformationProject,
+													int Index,
+													string NameBaseAssetPath,
+													string FileName
+												)
+		{	/* MEMO: SS5.7 */
 //			string MessageError = "";
 			LibraryEditor_SpriteStudio.ParseOPSS.InformationSSEE InformationEffectSet = InformationProject.ListInformationSSEE[Index];
 			Script_SpriteStudio_DataEffect DataEffectSet = null;
@@ -6828,7 +7028,7 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				InformationEffectSet.ListDataPartsRuntime = DataEffectSet.ListDataParts;
 				InformationEffectSet.ListDataEmitterRuntime = DataEffectSet.ListDataEmitter;
-				goto Convert_PrefabCreateSSEE_ConvertGameObject;
+				goto Convert_PrefabCreateSSEEMain_ConvertGameObject;
 			}
 
 			/* Optimize Parts */
@@ -6850,8 +7050,8 @@ public static partial class LibraryEditor_SpriteStudio
 					case Library_SpriteStudio.KindPartsEffect.ROOT:
 						InformationOptimize[i].IndexParts = CountPartsOptimize;
 						InformationOptimize[i].IndexEmitter = -1;
-						InformationOptimize[i].IndexPartsHasIndexChild = InformationOptimize[i].IndexParts;
-//						InformationOptimize[i].IndexPartsBody =
+						InformationOptimize[i].IndexPartsHasIndexChild = CountPartsOptimize;	// InformationOptimize[i].IndexParts;
+						InformationOptimize[i].IndexPartsBody = i;
 
 						CountPartsOptimize++;
 						break;
@@ -6860,7 +7060,7 @@ public static partial class LibraryEditor_SpriteStudio
 						InformationOptimize[i].IndexParts = CountPartsOptimize;
 						InformationOptimize[i].IndexEmitter = CountEmitterOptimize;
 //						InformationOptimize[i].IndexPartsHasIndexChild =
-						InformationOptimize[i].IndexPartsBody = -1;
+						InformationOptimize[i].IndexPartsBody = CountPartsOptimize;
 
 						CountPartsOptimize++;
 						CountEmitterOptimize++;
@@ -6870,8 +7070,11 @@ public static partial class LibraryEditor_SpriteStudio
 //						InformationOptimize[i].IndexParts = -1;
 //						InformationOptimize[i].IndexEmitter = -1;
 						IndexTemp = InformationEffectSet.ListParts[i].IDParent;
-						InformationOptimize[IndexTemp].IndexPartsHasIndexChild = (0 <= IndexTemp) ? i : -1;
-						InformationOptimize[i].IndexPartsBody = IndexTemp;
+						if(0 <= IndexTemp)
+						{
+							InformationOptimize[IndexTemp].IndexPartsHasIndexChild = i;
+						}
+						InformationOptimize[i].IndexPartsBody = InformationOptimize[IndexTemp].IndexParts;
 						break;
 
 					default:
@@ -6906,23 +7109,26 @@ public static partial class LibraryEditor_SpriteStudio
 				DataPartsSource = InformationEffectSet.ListParts[i];
 				IndexParts = InformationOptimize[i].IndexParts;
 				if(0 <= IndexParts)
-				{
+				{	/* "Root" or "Emitter" */
 					DataPartsRuntime = InformationEffectSet.ListDataPartsRuntime[IndexParts];
 
+					/* Part's ID & Name Set */
 					DataPartsRuntime.Name = DataPartsSource.Name;
 					DataPartsRuntime.ID = IndexParts;
 
+					/* Parent's ID Set */
 					IndexTemp = DataPartsSource.IDParent;
 					if(0 <= IndexTemp)
-					{
-						int IndexTempOptimize = InformationOptimize[IndexTemp].IndexPartsBody;
-						DataPartsRuntime.IDParent = (0 <= IndexTempOptimize) ? IndexTempOptimize : InformationOptimize[IndexTemp].IndexParts;
+					{	/* Has Parent */
+						int IndexTempOptimize = InformationOptimize[IndexTemp].IndexPartsBody;	/* Parent Index (Optimized) */
+						DataPartsRuntime.IDParent = IndexTempOptimize;
 					}
 					else
-					{
+					{	/* Has no Parent */
 						DataPartsRuntime.IDParent = -1;
 					}
 
+					/* Children's ID List Set */
 					IndexTemp = InformationOptimize[i].IndexPartsHasIndexChild;
 					if(0 <= IndexTemp)
 					{
@@ -6934,7 +7140,7 @@ public static partial class LibraryEditor_SpriteStudio
 							for(int j=0; j<CountChild; j++)
 							{
 								IndexTemp = DataPartsSourceList.ListIndexPartsChild[j];
-								DataPartsRuntime.ListIDChild[j] = InformationOptimize[IndexTemp].IndexParts;
+								DataPartsRuntime.ListIDChild[j] = InformationOptimize[IndexTemp].IndexPartsBody;
 							}
 						}
 						else
@@ -6943,6 +7149,7 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 					}
 
+					/* Part's Kind & Emitter-Index Set */
 					DataPartsRuntime.Kind = DataPartsSource.Kind;
 					DataPartsRuntime.IndexEmitter = InformationOptimize[i].IndexEmitter;
 				}
@@ -6963,27 +7170,59 @@ public static partial class LibraryEditor_SpriteStudio
 						}
 					}
 
+					/* Emit-Pattern Create */
+
+					/* Data Copy */
 					DataEmitterRuntime.Copy(DataPartsSource.Emitter);
 				}
 			}
 
+			/* Fairure-Data Filtering */
+			if(false == PrefabCreateSSEEMainValidate(ref InformationEffectSet.ListDataPartsRuntime, ref InformationEffectSet.ListDataEmitterRuntime))
+			{
+				Debug.LogWarning(	"SSEE Warning: Number of Sub-Emitters or Nesting Depth is exceeded the limit "
+									+ "(Number: " + ((int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_COUNT).ToString()
+									+ " / Depth : " + ((int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_DEPTH).ToString()
+									+ "). : File["
+									+ (string)InformationProject.ListNameSSEE[Index] + "] "
+									+ " SSPJ[" + InformationProject.NameFileBody + InformationProject.NameFileExtension + "]"
+									);
+			}
+
+			/* Emitters'-Data Calculation in Advance */
+			/* MEMO: This process is unaffected by the setting,"Calculate In Advance" */
+			PrefabCreateSSEEMainCalculateInAdvance(	InformationEffectSet.ListDataEmitterRuntime,
+													InformationEffectSet.FlagLockSeed,
+													InformationEffectSet.Seed
+												);
+
 			/* Effect Data Fix */
 			DataEffectSet.ListDataParts = InformationEffectSet.ListDataPartsRuntime;
 			DataEffectSet.ListDataEmitter = InformationEffectSet.ListDataEmitterRuntime;
+
+			DataEffectSet.FlagData = Script_SpriteStudio_DataEffect.FlagBit.CLEAR;
+			DataEffectSet.FlagData |= Script_SpriteStudio_DataEffect.FlagBit.IMPORTED_BY_VER1_4_ORLATER;
+			DataEffectSet.FlagData |= (true == InformationEffectSet.FlagLockSeed) ? Script_SpriteStudio_DataEffect.FlagBit.SEEDRANDOM_LOCK : Script_SpriteStudio_DataEffect.FlagBit.CLEAR;
+			DataEffectSet.SeedRandom = InformationEffectSet.Seed;
+			DataEffectSet.CountFramePerSecond = InformationEffectSet.FramePerSecond;
+			DataEffectSet.ScaleLayout = InformationEffectSet.ScaleLayout;
+			DataEffectSet.VersionRenderer = InformationEffectSet.VersionRenderer;
+			DataEffectSet.CountMaxParticle = 0;
+
 			EditorUtility.SetDirty(DataEffectSet);
 			AssetDatabase.SaveAssets();
 
 			/* WorkArea(for ".ssee" importing) Purge */
 
-		Convert_PrefabCreateSSEE_ConvertGameObject:;
+		Convert_PrefabCreateSSEEMain_ConvertGameObject:;
 			/* Construction GameObject-s */
 			if(false == PrefabCreateSSEEGameObject(	ref DataSettingImport,
-													InformationProject,
-													InformationEffectSet,
-													DataEffectSet,
-													NameBaseAssetPath,
-													FileName
-												)
+														InformationProject,
+														InformationEffectSet,
+														DataEffectSet,
+														NameBaseAssetPath,
+														FileName
+													)
 				)
 			{
 				goto Convert_PrefabCreateSSEE_ErrorEnd_NoMessage;
@@ -6995,12 +7234,175 @@ public static partial class LibraryEditor_SpriteStudio
 		Convert_PrefabCreateSSEE_ErrorEnd_NoMessage:;
 			return(false);
 		}
-		internal struct WorkAreaPrefabCreateSSEE
+		internal static bool PrefabCreateSSEEMainValidate(	ref Library_SpriteStudio.Data.PartsEffect[] ListDataParts,
+															ref Library_SpriteStudio.Data.EmitterEffect[] ListDataEmitter
+															)
 		{
-			internal int IndexParts;
-			internal int IndexEmitter;
-			internal int IndexPartsHasIndexChild;
-			internal int IndexPartsBody;
+			int CountParts = ListDataParts.Length;
+//			int CountEmitters = ListDataEmitter.Length;
+			bool FlagWarning = false;
+
+			/* WorkArea Initialize */
+			List<int> ListIndexParts = new List<int>();
+			ListIndexParts.Clear();
+			ListIndexParts.Add(0);	/* Root-Parts */
+			List<int> ListIndexEmitters = new List<int>();
+			ListIndexEmitters.Clear();
+
+			/* All Parts Check */
+			/* MEMO: Root-Parts ... Forced-Valid. */
+			Library_SpriteStudio.Data.PartsEffect InstanceDataParts = null;
+			Library_SpriteStudio.Data.PartsEffect InstanceDataPartsParent = null;
+			for(int i=1; i<CountParts; i++)
+			{
+				InstanceDataParts = ListDataParts[i];
+
+				if(0 <= InstanceDataParts.IDParent)
+				{	/* Has Parent */
+					InstanceDataPartsParent = ListDataParts[InstanceDataParts.IDParent];
+
+					/* Check Number of Child-Emitters */
+					int[] ListIDChildParent = InstanceDataPartsParent.ListIDChild;
+					int CountListChildParent = ListIDChildParent.Length;
+					int IndexIDListParent = (int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_COUNT;	/* for Not-Found */
+					for(int j=0; j<CountListChildParent; j++)
+					{	/* Search my ID */
+						if(i == ListIDChildParent[j])
+						{
+							IndexIDListParent = j;
+							break;
+						}
+					}
+					if((int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_COUNT <= IndexIDListParent)
+					{
+						FlagWarning |= true;	/* Invalid Emitter */
+						continue;
+					}
+
+					/* Check Depth */
+					int CountGeneration = 0;
+					while(0 <= InstanceDataPartsParent.IDParent)
+					{
+						CountGeneration++;
+						InstanceDataPartsParent = ListDataParts[InstanceDataPartsParent.IDParent];
+					}
+					if((int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_DEPTH <= CountGeneration)
+					{
+						FlagWarning |= true;	/* Invalid Emitter */
+						continue;
+					}
+				}
+				/* MEMO: Valid-Emitter */
+				ListIndexParts.Add(i);
+				ListIndexEmitters.Add(InstanceDataParts.IndexEmitter);
+			}
+
+			/* Extract only Valid-Data */
+			if(true == FlagWarning)
+			{
+				int CountPartsNew = ListIndexParts.Count;
+				int CountEmittersNew = ListIndexEmitters.Count;
+
+				Library_SpriteStudio.Data.PartsEffect InstanceDataPartsNow = null;
+				Library_SpriteStudio.Data.PartsEffect[] ListDataPartsNew = new Library_SpriteStudio.Data.PartsEffect[CountPartsNew];
+				Library_SpriteStudio.Data.EmitterEffect[] ListDataEmitterNew = new Library_SpriteStudio.Data.EmitterEffect[CountEmittersNew];
+
+				int IndexEmitterNew;
+				for(int i=0; i<CountPartsNew; i++)
+				{
+					InstanceDataPartsNow = ListDataParts[ListIndexParts[i]];
+
+					/* Renumber Emitter-Index */
+					IndexEmitterNew = ListIndexEmitters.BinarySearch(InstanceDataPartsNow.IndexEmitter);
+					InstanceDataPartsNow.IndexEmitter = IndexEmitterNew;
+
+					/* Relisting Child-Parts */
+					int CountChild = InstanceDataPartsNow.ListIDChild.Length;
+					CountChild = ((int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_COUNT < CountChild) ? (int)Script_SpriteStudio_RootEffect.Constants.LIMIT_SUBEMITTER_COUNT : CountChild;
+					int[] ListIDChildNew = new int[CountChild];
+					for(int j=0; j<CountChild; j++)
+					{
+						ListIDChildNew[j] = ListIndexParts.BinarySearch(InstanceDataPartsNow.ListIDChild[j]);
+					}
+					InstanceDataPartsNow.ListIDChild = ListIDChildNew;
+
+					/* Set to New-List */
+					ListDataPartsNew[i] = InstanceDataPartsNow;
+				}
+
+				for(int i=0; i<CountEmittersNew; i++)
+				{
+					/* Set to New-List */
+					ListDataEmitterNew[i] = ListDataEmitter[ListIndexEmitters[i]];
+				}
+
+				/* Replace List */
+				ListDataParts = ListDataPartsNew;
+				ListDataEmitter = ListDataEmitterNew;
+			}
+
+			return(!FlagWarning);
+		}
+		internal static void PrefabCreateSSEEMainCalculateInAdvance(	Library_SpriteStudio.Data.EmitterEffect[] ListDataEmitter,
+																		bool FlagLockSeedEffect,
+																		int SeedRandomEffect
+																)
+		{
+			int Count = ListDataEmitter.Length;
+			Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitter = null;
+			bool FlagLockSeed = false;
+			uint SeedRandom = 0;
+
+			Library_SpriteStudio.Utility.Random.Generator InstanceRandom = Script_SpriteStudio_RootEffect.InstanceCreateRandom();
+			Library_SpriteStudio.Data.EmitterEffect.PatternEmit[] DataTablePatternEmit = null;
+			long[] DataTableSeedParticle = null;
+
+			for(int i=0; i<Count; i++)
+			{
+				InstanceDataEmitter = ListDataEmitter[i];
+
+				/* Fixed Random-Seed */
+				FlagLockSeed = false;
+				if(0 != (InstanceDataEmitter.FlagData & Library_SpriteStudio.Data.EmitterEffect.FlagBit.SEEDRANDOM))
+				{	/* Seed Overwrite */
+					SeedRandom = (uint)InstanceDataEmitter.SeedRandom + (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+					FlagLockSeed = true;
+				}
+				else
+				{
+					if(true == FlagLockSeedEffect)
+					{	/* Seed Locked */
+						/* MEMO: Overwritten to the Effect's Seed. */
+						SeedRandom = ((uint)SeedRandomEffect + 1) * (uint)Library_SpriteStudio.Data.EmitterEffect.Constant.SEED_MAGIC;
+						FlagLockSeed = true;
+					}
+				}
+
+				/* Calcurate Table-Offset-Pattern */
+				Library_SpriteStudio.Data.EmitterEffect.TableGetOffset( ref InstanceDataEmitter.TablePatternOffset,
+																		InstanceDataEmitter
+																	);
+
+				/* Set to Data */
+				if(true == FlagLockSeed)
+				{	/* Fixed Data */
+					/* Calcurate Table-Datas */
+					Library_SpriteStudio.Data.EmitterEffect.TableGet(	ref DataTablePatternEmit,
+																		ref DataTableSeedParticle,
+																		InstanceDataEmitter,
+																		InstanceRandom,
+																		SeedRandom
+																	);
+
+					InstanceDataEmitter.TablePatternEmit = DataTablePatternEmit;
+					InstanceDataEmitter.TableSeedParticle = DataTableSeedParticle;
+				}
+				else
+				{	/* Calculate on runtime */
+					InstanceDataEmitter.TablePatternEmit = null;
+					InstanceDataEmitter.TableSeedParticle = null;
+				}
+			}
 		}
 		internal static bool PrefabCreateSSEEGameObject(	ref SettingImport DataSettingImport,
 															LibraryEditor_SpriteStudio.ParseOPSS.InformationSSPJ InformationProject,
@@ -7052,15 +7454,10 @@ public static partial class LibraryEditor_SpriteStudio
 			InstanceRootEffect.DataEffect = (Script_SpriteStudio_DataEffect)InformationEffectSet.PrefabDataEffect;
 			InstanceRootEffect.TableMaterial = InformationProject.TableMaterialEffect;
 
-			/* Construct Child-GameObjects & Controls */
-//			GameObject[] ListGameObject = InstanceRoot.GameObjectBuildUp(DataSettingImport.FlagAttachRigidBody, DataSettingImport.CollisionThicknessZ);
-//			InstanceRoot.ControlPartsBuildUp(ListGameObject);
-
 			/* Initial-Setting Parts-Root */
 			if((true == FlagNewCreate) || (false == DataSettingImport.FlagDataTakeOverSettingPrefab))
 			{	/* Parameters Set */
-				InstanceRootEffect.SeedRandomInitialize = InformationEffectSet.Seed;
-				InstanceRootEffect.CountLimitPartsInitial = -1;
+				InstanceRootEffect.CountLimitParticleInitial = 0;
 				InstanceRootEffect.RateSpeed = 1.0f;
 			}
 			else
@@ -7068,11 +7465,13 @@ public static partial class LibraryEditor_SpriteStudio
 				GameObject InstanceGameObjectRootOld = (GameObject)InformationEffectSet.PrefabGameObject;
 				Script_SpriteStudio_RootEffect InstanceRootOld = InstanceGameObjectRootOld.GetComponent<Script_SpriteStudio_RootEffect>();
 
-				InstanceRootEffect.SeedRandomInitialize = InstanceRootOld.SeedRandomInitialize;
-				InstanceRootEffect.CountLimitPartsInitial = InstanceRootOld.CountLimitPartsInitial;
+				InstanceRootEffect.CountLimitParticleInitial = InstanceRootOld.CountLimitParticleInitial;
 				InstanceRootEffect.RateSpeed = InstanceRootOld.RateSpeed;
 			}
 			InstanceRootEffect.TableCreateBlendOffset();
+			InstanceRootEffect.IndexMaterialBlendOffset[(int)Library_SpriteStudio.KindColorOperationEffect.MIX - 1] = 0;
+			InstanceRootEffect.IndexMaterialBlendOffset[(int)Library_SpriteStudio.KindColorOperationEffect.ADD - 1] = (int)Library_SpriteStudio.KindColorOperationEffect.ADD2 - (int)Library_SpriteStudio.KindColorOperationEffect.ADD;
+
 			Library_SpriteStudio.Miscellaneousness.Asset.ActiveSetGameObject(InstanceGameObjectRoot, true);
 
 			/* Fixing Created Assets */
@@ -7232,7 +7631,7 @@ public static partial class LibraryEditor_SpriteStudio
 			VERTEXCORRECTION,	/* VERT : VertexCorrection */
 
 			INSTANCE,			/* IPRM : Instance */
-			EFFECT,				/* ???? : Effect *//* Reserved */
+			EFFECT,				/* EFCT : Effect */
 
 			TERMINATOR
 		}
@@ -7882,6 +8281,8 @@ public static partial class LibraryEditor_SpriteStudio
 			{
 				/* MEMO: Not Interpolated */
 				Output.Flags = Value.Flags;
+				Output.FrameStart = Value.FrameStart;
+				Output.RateTime = Value.RateTime;
 			}
 		}
 
@@ -8277,6 +8678,10 @@ public static partial class LibraryEditor_SpriteStudio
 			},
 			{"IPRM",	new InformationAttribute(	KindAttribute.INSTANCE,
 													KindValue.INSTANCE
+												)
+			},
+			{"EFCT",	new InformationAttribute(	KindAttribute.EFFECT,
+													KindValue.EFFECT
 												)
 			},
 

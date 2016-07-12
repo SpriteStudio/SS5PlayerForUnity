@@ -223,9 +223,13 @@ public static partial class Library_SpriteStudio
 				{
 					return(genrand_uint32());
 				}
-				public double RandomDouble()
+				public double RandomDouble(double Limit)
 				{
-					return(genrand_real1());
+					return((genrand_uint32() * (Limit / 4294967296.0)));
+				}
+				public float RandomFloat(float Limit)
+				{
+					return((float)(genrand_uint32() * (Limit / 4294967296.0f)));
 				}
 				public int RandomN(int Limit)
 				{
