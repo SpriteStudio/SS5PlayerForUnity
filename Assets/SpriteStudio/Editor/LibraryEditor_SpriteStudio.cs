@@ -1155,15 +1155,23 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSPJ.ERROR:
+#if false
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSPJ_ErrorEnd;
+#else
+					VersionCode = KindVersionSSPJ.VERSION_LATEST;
+					Debug.LogWarning("SSPJ-Import Warning: Unknown Version (SSPJ). SSPJ[" + FileName + "]");
+					break;
+#endif
 
 				default:
+#if false
 					if(KindVersionSSPJ.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
 						VersionCode = KindVersionSSPJ.VERSION_LATEST;
 						goto case KindVersionSSPJ.VERSION_LATEST;
 					}
+#endif
 					goto case KindVersionSSPJ.ERROR;
 			}
 
@@ -1641,15 +1649,25 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSCE.ERROR:
+#if false
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSCE_ErrorEnd;
+#else
+					VersionCode = KindVersionSSCE.VERSION_LATEST;
+					Debug.LogWarning(	"SSPJ-Import Warning: Unknown Version (SSCE). SSPJ["
+										+ InformationProject.NameFileBody + InformationProject.NameFileExtension + "]"
+								);
+					break;
+#endif
 
 				default:
+#if false
 					if(KindVersionSSCE.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
 						VersionCode = KindVersionSSCE.VERSION_LATEST;
 						goto case KindVersionSSCE.VERSION_LATEST;
 					}
+#endif
 					goto case KindVersionSSCE.ERROR;
 			}
 			InformationCellMap.VersionCode = VersionCode;
@@ -1930,15 +1948,25 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSAE.ERROR:
+#if false
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSAE_ErrorEnd;
+#else
+					VersionCode = KindVersionSSAE.VERSION_LATEST;
+					Debug.LogWarning(	"SSPJ-Import Warning: Unknown Version (SSAE). SSPJ["
+										+ InformationProject.NameFileBody + InformationProject.NameFileExtension + "]"
+									);
+					break;
+#endif
 
 				default:
+#if false
 					if(KindVersionSSAE.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
 						VersionCode = KindVersionSSAE.VERSION_LATEST;
 						goto case KindVersionSSAE.VERSION_LATEST;
 					}
+#endif
 					goto case KindVersionSSAE.ERROR;
 			}
 			InformationAnimation.VersionCode = VersionCode;
@@ -3560,15 +3588,25 @@ public static partial class LibraryEditor_SpriteStudio
 					break;
 
 				case KindVersionSSEE.ERROR:
+#if false
 					MessageError = "Not Supported Version.";
 					goto ParseOPSS_ImportSSEE_ErrorEnd;
+#else
+					VersionCode = KindVersionSSEE.VERSION_LATEST;
+					Debug.LogWarning(	"SSPJ-Import Warning: Unknown Version (SSEE). SSPJ["
+										+ InformationProject.NameFileBody + InformationProject.NameFileExtension + "]"
+									);
+					break;
+#endif
 
 				default:
+#if false
 					if(KindVersionSSEE.VERSION_LATEST < VersionCode)
 					{	/* MEMO: Dealing as the latest supported version. */
 						VersionCode = KindVersionSSEE.VERSION_LATEST;
 						goto case KindVersionSSEE.VERSION_LATEST;
 					}
+#endif
 					goto case KindVersionSSEE.ERROR;
 			}
 			InformationEffect.VersionCode = VersionCode;
