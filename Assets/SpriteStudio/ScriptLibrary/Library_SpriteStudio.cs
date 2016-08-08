@@ -1577,6 +1577,61 @@ public static partial class Library_SpriteStudio
 
 			public int IndexGetValue(out int FrameNoOrigin, int FrameNo)
 			{
+#if true
+				int Index = -1;
+				int FrameNoKey = -1;
+
+				if(0 >= ListStatus.Length)
+				{	/* MEMO: Uncompressed or No-Data */
+					if(0 >= ListValue.Length)
+					{	/* MEMO: No-Data */
+						goto IndexGetValue_End;
+					}
+
+					FrameNoKey = FrameNo;
+					Index = FrameNo;
+					goto IndexGetValue_End;
+				}
+
+				FlagBit StatusTemp;
+				int Min = 0;
+				int Max = ListStatus.Length - 1;
+				int Medium;
+				int Range;
+				while(Min != Max)
+				{
+					Range = Min + Max;
+					Medium = (Range / 2) + (Range % 2);
+					StatusTemp = ListStatus[Medium] & FlagBit.FRAMENO;
+					FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
+					if(FrameNo == FrameNoKey)
+					{
+						Min = Medium;
+						Max = Medium;
+					}
+					else
+					{
+						if((FrameNo < FrameNoKey) || (-1 == FrameNoKey))
+						{
+							Max = Medium - 1;
+						}
+						else
+						{
+							Min = Medium;
+						}
+					}
+				}
+					
+				StatusTemp = ListStatus[Min];
+				FlagBit ValueTemp = StatusTemp & FlagBit.FRAMENO;
+				FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
+				ValueTemp = StatusTemp & FlagBit.INDEX;
+				Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
+
+			IndexGetValue_End:;
+				FrameNoOrigin = FrameNoKey;
+				return(Index);
+#else
 				int Index = -1;
 				int FrameNoKey = -1;
 
@@ -1620,6 +1675,7 @@ public static partial class Library_SpriteStudio
 			IndexGetValue_End:;
 				FrameNoOrigin = FrameNoKey;
 				return(Index);
+#endif
 			}
 
 			public bool CompressCPE(int CountFrame)
