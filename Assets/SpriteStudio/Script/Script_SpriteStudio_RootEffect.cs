@@ -50,11 +50,12 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		REQUEST_DESTROY = 0x00000800,	/* Reserved */
 		REQUEST_PLAYEND = 0x00000400,
 
+		CELL_TABLECHANGED = 0x00000080,
+
 		CLEAR = 0x00000000,
 	}
 
 	/* Base-Datas */
-	public Script_SpriteStudio_DataCell DataCellMap;
 	public Script_SpriteStudio_DataEffect DataEffect;
 
 	/* Material Replacement Parameters  */
@@ -174,6 +175,13 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 			return(0 != (Status & FlagBitStatus.REQUEST_PLAYEND));
 		}
 	}
+	internal bool StatusIsCellTableChanged
+	{
+		get
+		{
+			return(0 != (Status & FlagBitStatus.CELL_TABLECHANGED));
+		}
+	}
 
 	/* CallBack-s */
 	internal Library_SpriteStudio.FunctionCallBackPlayEndEffect FunctionPlayEnd = null;
@@ -261,6 +269,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 
 		/* Status Update */
 		Status &= ~FlagBitStatus.PLAYING_START;
+		Status &= ~FlagBitStatus.CELL_TABLECHANGED;
 	}
 	internal void TimeElapsedSetForce(float TimeElapsedForce, bool FlagReverseParent)
 	{   /* MEMO: In principle, This Function is for calling from "(Control.PartsEffect.)Update". */
@@ -322,6 +331,36 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 				IndexMaterialBlendOffset[i] = 0;
 			}
 		}
+	}
+
+	/* ******************************************************** */
+	//! Get the part's-index(ID) from the part's-name
+	/*!
+	@param	Name
+		Part's name
+	@retval	Return-Value
+		Index of Part
+		-1 == Error / "Name" is not-found.
+
+	Get the Part's-Index(ID) from the name.<br>
+	"Name" must be a "Emitter"-part's name on "SpriteStudio5".
+	<br>
+	The Index is the serial-number (0 origins) in the Runtime (not in Effect-data).
+	*/
+	public int IDGetParts(string Name)
+	{
+		if((null != PoolParts) && (null != PoolParts.PoolEmitter) && (false == string.IsNullOrEmpty(Name)))
+		{
+			int CountEmitter = PoolParts.PoolEmitter.Length;
+			for(int i=0; i<CountEmitter; i++)
+			{
+				if(0 == string.Compare(Name, PoolParts.PoolEmitter[i].InstanceDataParts.Name))
+				{
+					return(i);
+				}
+			}
+		}
+		return(-1);
 	}
 
 	/* ******************************************************** */
@@ -473,7 +512,8 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	//! Get Material
 	/*!
 	@param	IndexCellMap
-		Serial-number of using Cell-Map
+		Serial-number of using Cell-Map<br>
+		MEMO: using Texture-Index ,After Ver.1.4.3
 	@param	Operation
 		Color-Blend Operation for the target
 	@retval	Return-Value
@@ -481,19 +521,13 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	*/
 	public Material MaterialGet(int IndexCellMap, Library_SpriteStudio.KindColorOperationEffect KindOperation)
 	{
-#if false
-		return((	(0 <= IndexCellMap) && (DataCellMap.ListDataCellMap.Length > IndexCellMap)
-					&& (Library_SpriteStudio.KindColorOperationEffect.NON < KindOperation) && (Library_SpriteStudio.KindColorOperationEffect.TERMINATOR > KindOperation)
-				)
-				? TableMaterial[(IndexCellMap * ((int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1)) + ((int)KindOperation - 1)]
-				: null
-			);
-#else
-		if((0 > IndexCellMap) && (DataCellMap.ListDataCellMap.Length <= IndexCellMap))
+		const int CountLength = (int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1;
+
+		if((0 > IndexCellMap) || (null == TableMaterial) || ((TableMaterial.Length / CountLength) <= IndexCellMap))
 		{
 			return(null);
 		}
-		if((Library_SpriteStudio.KindColorOperationEffect.NON >= KindOperation) && (Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND <= KindOperation))
+		if((Library_SpriteStudio.KindColorOperationEffect.NON >= KindOperation) || (Library_SpriteStudio.KindColorOperationEffect.TERMINATOR_KIND <= KindOperation))
 		{
 			return(null);
 		}
@@ -503,8 +537,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		{
 			IndexMaterial += IndexMaterialBlendOffset[IndexBlendKind];
 		}
-		return(TableMaterial[(IndexCellMap * ((int)Library_SpriteStudio.KindColorOperationEffect.TERMINATOR - 1)) + IndexMaterial]);
-#endif
+		return(TableMaterial[(IndexCellMap * CountLength) + IndexMaterial]);
 	}
 
 	/* ******************************************************** */
@@ -552,7 +585,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		false == Failure
 
 	Change 1-Texture is set in "TableMaterial".
-	Texture is set to "TableMaterial[Index * 2] to TableMaterial[Index * 2 + 1]".<br>
+	Texture is set to "TableMaterial[Index * 3] to TableMaterial[Index * 3 + 2]".<br>
 	<br>
 	Appropriate range of "Material"-instance of the texture you want to change will be created in the new.<br>
 	*/
@@ -580,6 +613,336 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 			TableMaterial[IndexMaterial + i] = new Material(Library_SpriteStudio.Shader_SpriteStudioEffect[i]);
 			TableMaterial[IndexMaterial + i].mainTexture = DataTexture;
 		}
+		return(true);
+	}
+
+	/* ******************************************************** */
+	//! Change Material-Table
+	/*!
+	@param	TableMaterialChange
+		New Material-Table<br>
+		null == Disable the changed
+	@param	FlagChangeInstance
+		true == Set "TableMaterialChangeInstance" to "Instance" Animation-Objects.<br>
+		false == Do not affect "Instance" Animation-Objects.<br>
+		default: false
+	@param	TableMaterialChangeInstance
+		New Material-Table for "Instance" Animation-Objects.<br>
+		null == Disable the changed (When "FlagChangeInstance" is true).<br>
+		default: null
+	@param	FlagChangeEffect
+		true == Set "TableMaterialChangeEffect" to "Effect" Animation-Objects.<br>
+		false == Do not affect "Effect" Animation-Objects.<br>
+		default: false
+	@param	TableMaterialChangeEffect
+		New Material-Table for "Effect" Animation-Objects.<br>
+		null == Disable the changed (When "FlagChangeEffect" is true).<br>
+		default: null
+	@retval	Return-Value
+		true == Success <br>
+		false == Failure (Error)
+
+	Replace the Material-Table that is used in the Animation.<br>
+	<br>
+	Following the format of the Material-Table. (for "TableMaterialChangeEffect")<br>
+	Table[0]: Material for Texture 0(Cell-Map 0) / Blending "Mix"<br>
+	Table[1]: Material for Texture 0(Cell-Map 0) / Blending "Add" (PreMultiplied Alpha)<br>
+	Table[2]: Material for Texture 0(Cell-Map 0) / Blending "Add2" (Straight Alpha)<br>
+	Table[3]: Material for Texture 1(Cell-Map 1) / Blending "Mul"<br>
+	Table[4]: Material for Texture 1(Cell-Map 1) / Blending "Add" (PreMultiplied Alpha)<br>
+	...<br>
+	<br>
+	Utility for processing this table is defined in "Library_SpriteStudio.Utility.TableMaterial" class.
+	*/
+	public bool TableMaterialChange(Material[] TableMaterialChange)
+	{
+		TableMaterial = TableMaterialChange;
+		return(true);
+	}
+
+	/* ******************************************************** */
+	//! Get Cell-Map count
+	/*!
+	@param	FlagConsideringChanged
+		true == Auto<br>
+		false == Initially-Set, force<br>
+		Default: false
+	@retval	Return-Value
+		Count of "Cell-Map"s<br>
+		-1 == Failure (Error)
+
+	Get count of "Cell-Map"s.<br>
+	<br>
+	When "FlagConsideringChanged" is true, this function returns the number of "Cell-Map"s of the changed (If "Cell-Map"-Table has been changed).
+	*/
+	public int CountGetCellMap(bool FlagConsideringChanged=false)
+	{
+		if((true == FlagConsideringChanged) && (null != TableCellChange))
+		{
+			return(Library_SpriteStudio.Utility.TableCellChange.CountGetCellMap(TableCellChange));
+		}
+
+		if(null != DataCellMap)
+		{
+			return(DataCellMap.CountGetCellMap());
+		}
+
+		return(-1);
+	}
+
+	/* ******************************************************** */
+	//! Get "Cell-Map"'s Index
+	/*!
+	@param	Name
+		"Cell-Map" Name
+	@retval	Return-Value
+		"Cell-Map"'s Index<br>
+		-1 == Not-Found / Failure (Error)
+
+	Get Cell-Map's Index.<br>
+	However, the search target is the only "Cell-Map"s that is initially set ("DataCellMap" member in this Class).
+	*/
+	public int IndexGetCellMap(string Name)
+	{
+		if(null == DataCellMap)
+		{
+			return(-1);
+		}
+		return(DataCellMap.IndexGetCellMap(Name));
+	}
+
+	/* ******************************************************** */
+	//! Get Cell count
+	/*!
+	@param	IndexCellMap
+		"Cell-Map"'s Index
+	@param	FlagConsideringChanged
+		true == Auto<br>
+		false == Initially-Set, force<br>
+		Default: false
+	@retval	Return-Value
+		Count of "Cell-Map"s<br>
+		-1 == Failure (Error)
+
+	Get count of Cells in the "Cell-Map".<br>
+	<br>
+	When "FlagConsideringChanged" is true, this function returns the number of cell in "Cell-Map"s of the changed (If "Cell-Map"-Table has been changed).
+	*/
+	public int CountGetCell(int IndexCellMap, bool FlagConsideringChanged=false)
+	{
+		if((true == FlagConsideringChanged) && (null != TableCellChange))
+		{
+			return(Library_SpriteStudio.Utility.TableCellChange.CountGetCell(TableCellChange, IndexCellMap));
+		}
+
+		if(null != DataCellMap)
+		{
+			Library_SpriteStudio.Data.CellMap InstanceCellMap = DataCellMap.DataGetCellMap(IndexCellMap);
+			if(null == InstanceCellMap)
+			{
+				return(-1);
+			}
+			return(InstanceCellMap.CountGetCell());
+		}
+
+		return(-1);
+	}
+
+	/* ******************************************************** */
+	//! Get Cell's Index
+	/*!
+	@param	IndexCellMap
+		"Cell-Map"'s Index
+	@param	Name
+		Cell's Name
+	@param	FlagConsideringChanged
+		true == Auto<br>
+		false == Initially-Set, force<br>
+		Default: false
+	@retval	Return-Value
+		Cell's Index<br>
+		-1 == Not-Found / Failure (Error)
+
+	Get Cell's Index.<br>
+	<br>
+	When "FlagConsideringChanged" is true, this function returns the index of cell in "Cell-Map"s of the changed (If "Cell-Map"-Table has been changed).
+	*/
+	public int IndexGetCell(int IndexCellMap, string NameCell, bool FlagConsideringChanged=false)
+	{
+		if(true == string.IsNullOrEmpty(NameCell))
+		{
+			return(-1);
+		}
+
+		if((true == FlagConsideringChanged) && (null != TableCellChange))
+		{
+			return(Library_SpriteStudio.Utility.TableCellChange.IndexGetCell(TableCellChange, IndexCellMap, NameCell));
+		}
+
+		if(null != DataCellMap)
+		{
+			Library_SpriteStudio.Data.CellMap InstanceCellMap = DataCellMap.DataGetCellMap(IndexCellMap);
+			if(null == InstanceCellMap)
+			{
+				return(-1);
+			}
+			return(InstanceCellMap.IndexGetCell(NameCell));
+		}
+
+		return(-1);
+	}
+
+	/* ******************************************************** */
+	//! Change Part's-Cell
+	/*!
+	@param	IDParts
+		IDParts(Part-Index)
+	@param	IndexCellMap
+		Cell-Map Index<br>
+		-1 == Accorde to Animation-Data
+	@param	IndexCell
+		Cell Index in Cell-Map<br>
+		-1 == Accorde to Animation-Data
+	@param	FlagIgnoreAttributeCell
+		true == Ignore "Reference-Cell" Attribute in the Animation-Data.<br>
+		false == Will be updated, if the new "Reference-Cell"Attribute-Data has appeared after changing.<br>
+		default: false
+	@retval	Return-Value
+		true == Success <br>
+		false == Failure (Error)
+
+	Change the cells that are displayed in the parts.<br>
+	<br>
+	This function must be called after "Start" and "Awake" are executed.
+	*/
+	public bool CellChange(int IDParts, int IndexCellMap, int IndexCell, bool FlagIgnoreAttributeCell=false)
+	{
+		if((null == PoolParts) || (null == PoolParts.PoolEmitter))
+		{
+			return(false);
+		}
+		if((0 > IDParts) || (PoolParts.PoolEmitter.Length <= IDParts))
+		{
+			return(false);
+		}
+
+		Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus Status = PoolParts.PoolEmitter[IDParts].Status;
+		if(0 == (Status & (Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.VALID | Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.RUNNING)))
+		{
+			return(false);
+		}
+
+		if(null == TableCellChange)
+		{	/* Default */
+			if((null == DataCellMap) || (null == DataCellMap.ListDataCellMap))
+			{	/* Error */
+				return(false);
+			}
+
+			if((0 > IndexCellMap) || (0 > IndexCell))
+			{	/* Clear Changing */
+				goto CellChange_Clear;
+			}
+
+			if(DataCellMap.ListDataCellMap.Length <= IndexCellMap)
+			{	/* Error */
+				return(false);
+			}
+			if(DataCellMap.ListDataCellMap[IndexCellMap].CountGetCell() <= IndexCell)
+			{	/* Error */
+				return(false);
+			}
+		}
+		else
+		{	/* Cell-Table Changed */
+			if((0 > IndexCellMap) || (0 > IndexCell))
+			{	/* Clear Changing */
+				goto CellChange_Clear;
+			}
+
+			if(false == Library_SpriteStudio.Utility.TableCellChange.TableCheckValidIndex(TableCellChange, IndexCellMap, IndexCell))
+			{	/* Error */
+				return(false);
+			}
+		}
+
+		PoolParts.PoolEmitter[IDParts].IndexCellMapOverwrite = IndexCellMap;
+		PoolParts.PoolEmitter[IDParts].IndexCellOverwrite = IndexCell;
+		Status = (false == FlagIgnoreAttributeCell) ? 
+					(Status & ~Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE) :
+					(Status | Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE);
+		Status |= Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.OVERWRITE_CELL_UNREFLECTED;
+		PoolParts.PoolEmitter[IDParts].Status = Status;
+		return(true);
+
+	CellChange_Clear:;
+		PoolParts.PoolEmitter[IDParts].IndexCellMapOverwrite = -1;
+		PoolParts.PoolEmitter[IDParts].IndexCellOverwrite = -1;
+		Status &= ~Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE;
+		Status |= Library_SpriteStudio.Control.PartsEffectEmitter.FlagBitStatus.OVERWRITE_CELL_UNREFLECTED;
+		PoolParts.PoolEmitter[IDParts].Status = Status;
+		return(true);
+	}
+
+	/* ******************************************************** */
+	//! Change "Cell-Map"-Table
+	/*!
+	@param	InstanceTableCellChange
+		New "Cell-Map"-Table<br>
+		null == Disable the changed
+	@param	FlagChangeInstance
+		true == Set "InstanceTableCellChangeInstance" to "Instance" Animation-Objects.<br>
+		false == Do not affect "Instance" Animation-Objects.<br>
+		default: false
+	@param	InstanceTableCellChangeInstance
+		New "Cell-Map"-Table for "Instance" Animation-Objects.<br>
+		null == Disable the changed (When "FlagChangeInstance" is true).<br>
+		default: null
+	@param	FlagChangeEffect
+		true == Set "InstanceTableCellChangeEffect" to "Effect" Animation-Objects.<br>
+		false == Do not affect "Effect" Animation-Objects.<br>
+		default: false
+	@param	InstanceTableCellChangeEffect
+		New "Cell-Map"-Table for "Effect" Animation-Objects.<br>
+		null == Disable the changed (When "FlagChangeEffect" is true).<br>
+		default: null
+	@retval	Return-Value
+		true == Success <br>
+		false == Failure (Error)
+
+	Replace the Material-Table that is used in the Animation.<br>
+	<br>
+	This function must be called after "Start" and "Awake" are executed.
+	<br>
+	Following the format of the "Cell-Map"-Table.<br>
+	Table[0][0]: Replacing Cell Data (Cell-Map No.:0, Cell No.:0)<br>
+	Table[0][1]: Replacing Cell Data (Cell-Map No.:0, Cell No.:1)<br>
+	Table[0][2]: Replacing Cell Data (Cell-Map No.:0, Cell No.:2)<br>
+	...<br>
+	Table[0][x]: Replacing Cell Data (Cell-Map No.:0, The last of the cell owned by Cell-Map 0)<br>
+	--- (End of Table[0])<br>
+	Table[1][0]: Replacing Cell Data (Cell-Map No.:1, Cell No.:0)<br>
+	Table[1][1]: Replacing Cell Data (Cell-Map No.:1, Cell No.:1)<br>
+	...<br>
+	Table[1][y]: Replacing Cell Data (Cell-Map No.:1, The last of the cell owned by Cell-Map 1)<br>
+	---(End of Table[1])<br>
+	Table[n][0]: Replacing Cell Data (Cell-Map No.:n, Cell No.: 0)<br>
+	...<br>
+	Table[n][z]: Replacing Cell Data (Cell-Map No.:n, The last of the cell owned by Cell-Map n)<br>
+	---(End of Table[n])<br>
+	<br>
+	Following the function of each member of the " Library_SpriteStudio.Control.CellChange".
+	- IndexTexture: Index of Texture (in Material-Table)<br>
+	- DataCellMap: Information of Texture-Atlas that Cell is stored. (".ListCell" is dis-used.)<br>
+	- DataCell: Cell's placement-information in Texture-Atlas.<br>
+	<br>
+	Utility for processing this table is defined in "Library_SpriteStudio.Utility.TableCellChange" class.
+	*/
+	public bool CellMapChange(Library_SpriteStudio.Control.CellChange[][] InstanceTableCellChange)
+	{
+		TableCellChange = InstanceTableCellChange;
+		Status |= FlagBitStatus.CELL_TABLECHANGED;
+
 		return(true);
 	}
 }
