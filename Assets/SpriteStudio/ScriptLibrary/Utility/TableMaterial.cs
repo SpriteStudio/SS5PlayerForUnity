@@ -56,7 +56,7 @@ public static partial class Library_SpriteStudio
 					for(int j=0; j<CountTextureBlock; j++)
 					{
 						TableDataMaterialNew[IndexTop + j] = new Material(Library_SpriteStudio.Shader_SpriteStudioTriangleX[j]);
-						TableDataMaterialNew[IndexTop + j].mainTexture = TableDataTexture[j];
+						TableDataMaterialNew[IndexTop + j].mainTexture = TableDataTexture[i];
 					}
 				}
 				return(TableDataMaterialNew);
@@ -76,9 +76,11 @@ public static partial class Library_SpriteStudio
 			<br>
 			(Result's) Format: (MT = Material-Table)<br>
 			MT[0]: TableDataTexture[0] / Shader for "Mix"-Operation<br>
-			MT[1]: TableDataTexture[0] / Shader for "Add"-Operation<br>
-			MT[2]: TableDataTexture[1] / Shader for "Mix"-Operation<br>
-			MT[3]: TableDataTexture[1] / Shader for "Add"-Operation<br>
+			MT[1]: TableDataTexture[0] / Shader for "Add"-Operation ("PreMultiplied Alpha" Add)<br>
+			MT[2]: TableDataTexture[0] / Shader for "Add2"-Operation ("Straight Alpha" Add)<br>
+			MT[3]: TableDataTexture[1] / Shader for "Mix"-Operation<br>
+			MT[4]: TableDataTexture[1] / Shader for "Add"-Operation ("PreMultiplied Alpha" Add)<br>
+			MT[5]: TableDataTexture[1] / Shader for "Add2"-Operation ("Straight Alpha" Add)<br>
 			...<br>
 			*/
 			public static Material[] CreateEffect(Texture2D[] TableDataTexture)
@@ -192,6 +194,7 @@ public static partial class Library_SpriteStudio
 			int IndexMaterial = Library_SpriteStudio.IndexGetMaterialEffect(3);<br>
 			MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.MIX].mainTexture = Texture03;<br>
 			MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.ADD].mainTexture = Texture03;<br>
+			MaterialTable[IndexMaterial + (int)Library_SpriteStudio.KindColorOperation.ADD2].mainTexture = Texture03;<br>
 			*/
 			public static int IndexGetMaterialEffect(int IndexTexture)
 			{
@@ -249,8 +252,10 @@ public static partial class Library_SpriteStudio
 			(Materual-Table's) Format: (MT = Material-Table)<br>
 			MT[0]: Texture-0 / Shader for "Mix"-Operation<br>
 			MT[1]: Texture-0 / Shader for "Add"-Operation<br>
-			MT[2]: Texture-1 / Shader for "Mix"-Operation<br>
-			MT[3]: Texture-1 / Shader for "Add"-Operation<br>
+			MT[2]: Texture-0 / Shader for "Add2"-Operation<br>
+			MT[3]: Texture-1 / Shader for "Mix"-Operation<br>
+			MT[4]: Texture-1 / Shader for "Add"-Operation<br>
+			MT[5]: Texture-1 / Shader for "Add2"-Operation<br>
 			...<br>
 			*/
 			public static int CountGetTextureEffect(Material[] TableDataMaterial)
@@ -322,7 +327,7 @@ public static partial class Library_SpriteStudio
 				false == Failure
 
 			Change 1-Texture is set in Material-Table (for "Script_SpriteStudio_RootEffect").<br>
-			Texture is set to "TableDataMaterial[Index * 2] to TableDataMaterial[Index * 2 + 3]".
+			Texture is set to "TableDataMaterial[Index * 3] to TableDataMaterial[Index * 3 + 2]".
 			*/
 			public static bool TextureChangeEffect(int Index, Texture2D DataTexture, Material[] TableDataMaterial)
 			{

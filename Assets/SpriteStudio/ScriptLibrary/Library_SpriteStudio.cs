@@ -343,6 +343,13 @@ public static partial class Library_SpriteStudio
 				}
 				return(null);
 			}
+
+			public void Duplicate(Library_SpriteStudio.Data.CellMap Source)
+			{
+				Name = string.Copy(Source.Name);
+				SizeOriginal = Source.SizeOriginal;
+				ListCell = Source.ListCell;
+			}
 		}
 		[System.Serializable]
 		public class Cell
@@ -359,6 +366,13 @@ public static partial class Library_SpriteStudio
 				Rectangle.width = 0.0f;
 				Rectangle.height = 0.0f;
 				Pivot = Vector2.zero;
+			}
+
+			public void Duplicate(Library_SpriteStudio.Data.Cell Source)
+			{
+				Name = string.Copy(Source.Name);
+				Rectangle = Source.Rectangle;
+				Pivot = Source.Pivot;
 			}
 		}
 
@@ -1577,6 +1591,61 @@ public static partial class Library_SpriteStudio
 
 			public int IndexGetValue(out int FrameNoOrigin, int FrameNo)
 			{
+#if true
+				int Index = -1;
+				int FrameNoKey = -1;
+
+				if(0 >= ListStatus.Length)
+				{	/* MEMO: Uncompressed or No-Data */
+					if(0 >= ListValue.Length)
+					{	/* MEMO: No-Data */
+						goto IndexGetValue_End;
+					}
+
+					FrameNoKey = FrameNo;
+					Index = FrameNo;
+					goto IndexGetValue_End;
+				}
+
+				FlagBit StatusTemp;
+				int Min = 0;
+				int Max = ListStatus.Length - 1;
+				int Medium;
+				int Range;
+				while(Min != Max)
+				{
+					Range = Min + Max;
+					Medium = (Range / 2) + (Range % 2);
+					StatusTemp = ListStatus[Medium] & FlagBit.FRAMENO;
+					FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
+					if(FrameNo == FrameNoKey)
+					{
+						Min = Medium;
+						Max = Medium;
+					}
+					else
+					{
+						if((FrameNo < FrameNoKey) || (-1 == FrameNoKey))
+						{
+							Max = Medium - 1;
+						}
+						else
+						{
+							Min = Medium;
+						}
+					}
+				}
+					
+				StatusTemp = ListStatus[Min];
+				FlagBit ValueTemp = StatusTemp & FlagBit.FRAMENO;
+				FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
+				ValueTemp = StatusTemp & FlagBit.INDEX;
+				Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
+
+			IndexGetValue_End:;
+				FrameNoOrigin = FrameNoKey;
+				return(Index);
+#else
 				int Index = -1;
 				int FrameNoKey = -1;
 
@@ -1620,6 +1689,7 @@ public static partial class Library_SpriteStudio
 			IndexGetValue_End:;
 				FrameNoOrigin = FrameNoKey;
 				return(Index);
+#endif
 			}
 
 			public bool CompressCPE(int CountFrame)
@@ -2422,6 +2492,9 @@ public static partial class Library_SpriteStudio
 				CHANGE_TRANSFORM_ROTATION = 0x00200000,
 				CHANGE_TRANSFORM_SCALING = 0x00400000,
 
+				OVERWRITE_CELL_UNREFLECTED = 0x00080000,
+				OVERWRITE_CELL_IGNOREATTRIBUTE = 0x00040000,
+
 				INSTANCE_VALID = 0x00008000,
 				INSTANCE_PLAYINDEPENDENT = 0x00004000,
 
@@ -2474,6 +2547,10 @@ public static partial class Library_SpriteStudio
 			internal Script_SpriteStudio_Root InstanceRootUnderControl;
 			internal Script_SpriteStudio_RootEffect InstanceRootUnderControlEffect;
 			internal int FrameNoPreviousUpdateUnderControl;
+
+			internal int IndexPreviousCell;
+			internal int IndexCellMapOverwrite;
+			internal int IndexCellOverwrite;
 
 			public void CleanUp()
 			{
@@ -2565,6 +2642,13 @@ public static partial class Library_SpriteStudio
 //				InstanceRootUnderControlEffect =
 
 				FrameNoPreviousUpdateUnderControl = -1;
+
+				IndexPreviousCell = -1;
+				if(0 == (Status & FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE))
+				{
+					IndexCellMapOverwrite = -1;
+					IndexCellOverwrite = -1;
+				}
 			}
 
 			public bool BootUp(	Script_SpriteStudio_Root InstanceRootInitial,
@@ -2893,9 +2977,26 @@ public static partial class Library_SpriteStudio
 					case Library_SpriteStudio.KindFormat.PLAIN:
 						{
 							/* Cell Get */
+							/* MEMO: It is able to perform "Cell-Table Change" and "Cell Overwrite", only when data is "Plain" format. */
+#if false
 							IndexAttribute = DataAnimationParts.DataPlain.Cell.IndexGetValue(out FrameNoOrigin, FrameNo);
+#else
+							bool FlagCellOverwrite = (0 != (Status & (FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE | FlagBitStatus.OVERWRITE_CELL_UNREFLECTED))) ? true : false;
+							Status &= ~FlagBitStatus.OVERWRITE_CELL_UNREFLECTED;
+							IndexAttribute = DataAnimationParts.DataPlain.Cell.IndexGetValue(out FrameNoOrigin, FrameNo);
+							if(FrameNoOrigin != IndexPreviousCell)
+							{
+								IndexPreviousCell = FrameNoOrigin;
+								if(false == FlagCellOverwrite)
+								{
+									IndexCellMapOverwrite = -1;
+									IndexCellOverwrite = -1;
+								}
+							}
+#endif
 							if(0 <= IndexAttribute)
 							{
+#if false
 								Library_SpriteStudio.Data.AttributeCell AttributeCell = DataAnimationParts.DataPlain.Cell.ListValue[IndexAttribute];
 								BufferParameterParts.IndexCellMap = AttributeCell.IndexCellMap;
 								int IndexCell = AttributeCell.IndexCell;
@@ -2919,6 +3020,60 @@ public static partial class Library_SpriteStudio
 										BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
 									}
 								}
+#else
+								int IndexCellMap = IndexCellMapOverwrite;
+								int IndexCell = IndexCellOverwrite;
+								if((0 > IndexCellMap) || (0 > IndexCell))
+								{	/* Attribute */
+									Library_SpriteStudio.Data.AttributeCell AttributeCell = DataAnimationParts.DataPlain.Cell.ListValue[IndexAttribute];
+									IndexCellMap = AttributeCell.IndexCellMap;
+									IndexCell = AttributeCell.IndexCell;
+								}
+
+								Library_SpriteStudio.Data.CellMap DataCellMap = null;
+								Library_SpriteStudio.Data.Cell DataCell = null;
+								Library_SpriteStudio.Control.CellChange[][] TableCellChange = InstanceRoot.TableCellChange;
+								if(null != TableCellChange)
+								{	/* Cell-Table Changed */
+									if((0 <= IndexCellMap) && (TableCellChange.Length > IndexCellMap))
+									{
+										Library_SpriteStudio.Control.CellChange[] ListCellChange = TableCellChange[IndexCellMap];
+										if((0 <= IndexCell) && (ListCellChange.Length > IndexCell))
+										{
+											ListCellChange[IndexCell].DataGet(ref IndexCellMap, ref DataCellMap, ref DataCell);
+										}
+									}
+								}
+								else
+								{	/* Default */
+									DataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(IndexCellMap);
+									if(null != DataCellMap)
+									{
+										DataCell = DataCellMap.DataGetCell(IndexCell);
+									}
+								}
+
+								if(null == DataCell)
+								{	/* Invalid */
+									BufferParameterParts.IndexCellMap = -1;
+									BufferParameterParts.SizeTextureOriginal = Vector2.zero;
+
+									BufferParameterParts.DataCell = null;
+									BufferParameterParts.PivotMesh = Vector2.zero;
+									BufferParameterParts.SizePixelMesh.x = 64.0f;
+									BufferParameterParts.SizePixelMesh.y = 64.0f;
+								}
+								else
+								{	/* Valid */
+									BufferParameterParts.IndexCellMap = IndexCellMap;
+									BufferParameterParts.SizeTextureOriginal = DataCellMap.SizeOriginal;
+
+									BufferParameterParts.DataCell = DataCell;
+									BufferParameterParts.PivotMesh = DataCell.Pivot;
+									BufferParameterParts.SizePixelMesh.x = DataCell.Rectangle.width;
+									BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
+								}
+#endif
 							}
 
 							/* Recalc Mesh Size & Pivot (Considering SizeForce-X/Y & OffsetPivot-X/Y) */
@@ -4029,8 +4184,8 @@ public static partial class Library_SpriteStudio
 				}
 
 				internal void DrawSet(	Script_SpriteStudio_RootEffect InstanceRoot,
-										ref PartsEffect2Emitter InstanceEmitter,
-										ref PartsEffect2Emitter.ParameterParticle InstanceParameterParticle,
+										ref PartsEffectEmitter InstanceEmitter,
+										ref PartsEffectEmitter.ParameterParticle InstanceParameterParticle,
 										ref Matrix4x4 MatrixTransform
 									)
 				{
@@ -4102,7 +4257,7 @@ public static partial class Library_SpriteStudio
 			}
 			internal FlagBitStatus Status = FlagBitStatus.CLEAR;
 
-			internal PartsEffect2Emitter[] PoolEmitter = null;
+			internal PartsEffectEmitter[] PoolEmitter = null;
 			internal int CountMeshParticle = 0;
 			internal ParameterMesh[] ParameterMeshParticle = null;
 
@@ -4158,7 +4313,7 @@ public static partial class Library_SpriteStudio
 
 				/* Initialize Emitter Buffer */
 				int Count = InstanceRoot.DataEffect.CountGetEmitter();
-				PoolEmitter = new PartsEffect2Emitter[Count];
+				PoolEmitter = new PartsEffectEmitter[Count];
 				if(null == PoolEmitter)
 				{
 					goto BootUp_ErrorEnd;
@@ -4281,9 +4436,19 @@ public static partial class Library_SpriteStudio
 				}
 
 				/* Update Emitters */
-				int Count = PoolEmitter.Length;
+				int CountEmitter = PoolEmitter.Length;
+				bool FlagChangeCellTable = InstanceRoot.StatusIsCellTableChanged;
+				for(int i=0; i<CountEmitter; i++)
+				{
+					if((true == FlagChangeCellTable) || (0 != (PoolEmitter[i].Status & PartsEffectEmitter.FlagBitStatus.OVERWRITE_CELL_UNREFLECTED)))
+					{
+						PoolEmitter[i].ParticleCellSet(InstanceRoot);
+					}
+				}
+
+				/* Update Emitters */
 				int IndexEmitterParent;
-				for(int i=0; i<Count; i++)
+				for(int i=0; i<CountEmitter; i++)
 				{
 					PoolEmitter[i].SeedOffset = SeedOffset;	/* Update Random-Seed-Offset */
 
@@ -4300,9 +4465,9 @@ public static partial class Library_SpriteStudio
 				return(true);
 			}
 
-			internal void DrawSet(	ref PartsEffect2Emitter.ParameterParticle InstanceParameterParticle,
+			internal void DrawSet(	ref PartsEffectEmitter.ParameterParticle InstanceParameterParticle,
 									Script_SpriteStudio_RootEffect InstanceRoot,
-									ref PartsEffect2Emitter InstanceEmitter
+									ref PartsEffectEmitter InstanceEmitter
 								)
 			{
 				/* Get MeshParticle-Index */
@@ -4331,7 +4496,7 @@ public static partial class Library_SpriteStudio
 			}
 		}
 
-		internal struct PartsEffect2Emitter
+		internal struct PartsEffectEmitter
 		{
 			internal struct StatusParticle
 			{
@@ -4346,8 +4511,8 @@ public static partial class Library_SpriteStudio
 				internal FlagBitStatus Status;
 				internal int ID;
 				internal int Cycle;
-				internal int FrameStart;	// TimeStart;
-				internal int FrameEnd;	// TimeEnd;
+				internal int FrameStart;
+				internal int FrameEnd;
 
 				internal void CleanUp()
 				{
@@ -4359,7 +4524,7 @@ public static partial class Library_SpriteStudio
 				}
 
 				internal void Update(	int Frame,
-										ref PartsEffect2Emitter InstanceEmitter,
+										ref PartsEffectEmitter InstanceEmitter,
 										Library_SpriteStudio.Data.EmitterEffect.PatternEmit InstancePatternEmit,
 										int PatternOffset,
 										Library_SpriteStudio.Data.EmitterEffect.PatternEmit InstancePatternEmitTarget
@@ -4440,7 +4605,7 @@ public static partial class Library_SpriteStudio
 										int Index,
 										Script_SpriteStudio_RootEffect InstanceRoot,
 										PoolPartsEffect InstancePoolParts,
-										ref PartsEffect2Emitter InstanceEmitter,
+										ref PartsEffectEmitter InstanceEmitter,
 										ref StatusParticle InstanceStatusParticle,
 										int IndexEmitterParent,
 										ref ParameterParticle InstanceParameterParticleParent
@@ -4496,7 +4661,7 @@ public static partial class Library_SpriteStudio
 				internal bool Calculate(	float Frame,
 											Script_SpriteStudio_RootEffect InstanceRoot,
 											PoolPartsEffect InstancePoolParts,
-											ref PartsEffect2Emitter InstanceEmitter,
+											ref PartsEffectEmitter InstanceEmitter,
 											bool FlagSimplicity = false
 										)
 				{
@@ -4772,12 +4937,28 @@ public static partial class Library_SpriteStudio
 				}
 			}
 
+			[System.Flags]
+			internal enum FlagBitStatus
+			{
+				VALID = 0x40000000,
+				RUNNING = 0x20000000,
+
+				OVERWRITE_CELL_UNREFLECTED = 0x00080000,
+				OVERWRITE_CELL_IGNOREATTRIBUTE = 0x00040000,
+
+				CLEAR = 0x00000000
+			}
+			internal FlagBitStatus Status;
+
 			internal Library_SpriteStudio.Data.PartsEffect InstanceDataParts;
 			internal Library_SpriteStudio.Data.EmitterEffect InstanceDataEmitter;
 
 			internal int IndexParent;
 
 			internal int IndexCellMapParticle;
+			internal int IndexCellParticle;
+			internal int IndexCellMapOverwrite;
+			internal int IndexCellOverwrite;
 			internal Vector3[] CoordinateMeshParticle;
 			internal Vector2[] UVMeshParticle;
 
@@ -4809,12 +4990,20 @@ public static partial class Library_SpriteStudio
 
 			internal void CleanUp()
 			{
+				Status = FlagBitStatus.CLEAR;
+
 				InstanceDataParts = null;
 				InstanceDataEmitter = null;
 
 				IndexParent = -1;
 
 				IndexCellMapParticle = -1;
+				IndexCellParticle = -1;
+				if(0 == (Status & FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE))
+				{
+					IndexCellMapOverwrite = -1;
+					IndexCellOverwrite = -1;
+				}
 				CoordinateMeshParticle = null;
 				UVMeshParticle = null;
 
@@ -4839,6 +5028,8 @@ public static partial class Library_SpriteStudio
 									PoolPartsEffect InstancePoolParts
 								)
 			{
+				Status = FlagBitStatus.CLEAR;
+
 				InstanceDataParts = InstanceParts;
 				InstanceDataEmitter = InstanceEmitter;
 				IndexParent = IndexEmitterParent;
@@ -4882,62 +5073,7 @@ public static partial class Library_SpriteStudio
 				}
 
 				/* Particle UV Pre-Calculate */
-				Library_SpriteStudio.Data.CellMap DataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(InstanceDataEmitter.IndexCellMap);
-				if(null == DataCellMap)
-				{
-					IndexCellMapParticle = -1;
-				}
-				else
-				{
-					Library_SpriteStudio.Data.Cell DataCell = DataCellMap.DataGetCell(InstanceDataEmitter.IndexCell);
-					if(null == DataCell)
-					{
-						IndexCellMapParticle = -1;
-					}
-					else
-					{
-						if(null == CoordinateMeshParticle)
-						{
-							CoordinateMeshParticle = new Vector3[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
-						}
-						if(null == UVMeshParticle)
-						{
-							UVMeshParticle = new Vector2[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
-						}
-
-						IndexCellMapParticle = InstanceDataEmitter.IndexCellMap;
-
-						float PivotXCell = DataCell.Pivot.x;
-						float PivotYCell = DataCell.Pivot.y;
-						float CoordinateLUx = -PivotXCell;
-						float CoordinateLUy = PivotYCell;
-						float CoordinateRDx = DataCell.Rectangle.width - PivotXCell;
-						float CoordinateRDy = -(DataCell.Rectangle.height - PivotYCell);
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].x = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].x = CoordinateLUx;
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].y = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].y = CoordinateLUy;
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].x = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].x = CoordinateRDx;
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].y = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].y = CoordinateRDy;
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].z = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].z = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].z = 
-						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].z = 0.0f;
-
-						float SizeXTexture = DataCellMap.SizeOriginal.x;
-						float SizeYTexture = DataCellMap.SizeOriginal.y;
-						float CoordinateL = DataCell.Rectangle.xMin / SizeXTexture;
-						float CoordinateR = DataCell.Rectangle.xMax / SizeXTexture;
-						float CoordinateU = (SizeYTexture - DataCell.Rectangle.yMin) / SizeYTexture;
-						float CoordinateD = (SizeYTexture - DataCell.Rectangle.yMax) / SizeYTexture;
-						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector2(CoordinateL, CoordinateU);
-						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector2(CoordinateR, CoordinateU);
-						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector2(CoordinateR, CoordinateD);
-						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector2(CoordinateL, CoordinateD);
-					}
-				}
+				ParticleCellSet(InstanceRoot);
 
 				/* Particle Work-Area Create */
 				ListStatusParticle = new StatusParticle[InstanceEmitter.CountParticleMax];	/* Check. */
@@ -4948,6 +5084,9 @@ public static partial class Library_SpriteStudio
 
 				/* Parameter Set */
 				Duration = InstanceDataEmitter.DurationEmitter + InstanceDataEmitter.Delay;
+
+				/* Status Set */
+				Status |= (FlagBitStatus.VALID | FlagBitStatus.RUNNING);
 
 				return(true);
 			}
@@ -4993,7 +5132,7 @@ public static partial class Library_SpriteStudio
 				}
 				return(true);
 			}
-			internal bool UpdateSubEmitters(	ref PartsEffect2Emitter InstanceEmitterTarget,
+			internal bool UpdateSubEmitters(	ref PartsEffectEmitter InstanceEmitterTarget,
 												float Frame,
 												Script_SpriteStudio_RootEffect InstanceRoot,
 												PoolPartsEffect InstancePoolParts,
@@ -5035,6 +5174,83 @@ public static partial class Library_SpriteStudio
 
 				return(true);
 			}
+
+			internal bool ParticleCellSet(Script_SpriteStudio_RootEffect InstanceRoot)
+			{
+				int IndexCellMap = IndexCellMapOverwrite;
+				int IndexCell = IndexCellOverwrite;
+				if((0 > IndexCellMap) || (0 > IndexCell))
+				{
+					IndexCellMapOverwrite = -1;
+					IndexCellOverwrite = -1;
+
+					IndexCellMap = InstanceDataEmitter.IndexCellMap;
+					IndexCell = InstanceDataEmitter.IndexCell;
+				}
+
+				Library_SpriteStudio.Data.CellMap DataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(IndexCellMap);
+				if(null == DataCellMap)
+				{
+					IndexCellMapParticle = -1;
+					IndexCellParticle = -1;
+				}
+				else
+				{
+					Library_SpriteStudio.Data.Cell DataCell = DataCellMap.DataGetCell(IndexCell);
+					if(null == DataCell)
+					{
+						IndexCellMapParticle = -1;
+						IndexCellParticle = -1;
+					}
+					else
+					{
+						IndexCellMapParticle = IndexCellMap;
+						IndexCellParticle = IndexCell;
+
+						if(null == CoordinateMeshParticle)
+						{
+							CoordinateMeshParticle = new Vector3[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
+						}
+						if(null == UVMeshParticle)
+						{
+							UVMeshParticle = new Vector2[(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2];
+						}
+
+						float PivotXCell = DataCell.Pivot.x;
+						float PivotYCell = DataCell.Pivot.y;
+						float CoordinateLUx = -PivotXCell;
+						float CoordinateLUy = PivotYCell;
+						float CoordinateRDx = DataCell.Rectangle.width - PivotXCell;
+						float CoordinateRDy = -(DataCell.Rectangle.height - PivotYCell);
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].x = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].x = CoordinateLUx;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].y = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].y = CoordinateLUy;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].x = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].x = CoordinateRDx;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].y = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].y = CoordinateRDy;
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU].z = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU].z = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD].z = 
+						CoordinateMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD].z = 0.0f;
+
+						float SizeXTexture = DataCellMap.SizeOriginal.x;
+						float SizeYTexture = DataCellMap.SizeOriginal.y;
+						float CoordinateL = DataCell.Rectangle.xMin / SizeXTexture;
+						float CoordinateR = DataCell.Rectangle.xMax / SizeXTexture;
+						float CoordinateU = (SizeYTexture - DataCell.Rectangle.yMin) / SizeYTexture;
+						float CoordinateD = (SizeYTexture - DataCell.Rectangle.yMax) / SizeYTexture;
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector2(CoordinateL, CoordinateU);
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector2(CoordinateR, CoordinateU);
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector2(CoordinateR, CoordinateD);
+						UVMeshParticle[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector2(CoordinateL, CoordinateD);
+					}
+				}
+
+				Status &= ~FlagBitStatus.OVERWRITE_CELL_UNREFLECTED;
+				return(true);
+			}
 		}
 
 		public class ColorBlendOverwrite
@@ -5043,7 +5259,7 @@ public static partial class Library_SpriteStudio
 			public Library_SpriteStudio.KindColorOperation Operation;
 			public Color[] VertexColor;
 
-			public	ColorBlendOverwrite()
+			public ColorBlendOverwrite()
 			{
 				Bound = Library_SpriteStudio.KindColorBound.NON;
 				Operation = Library_SpriteStudio.KindColorOperation.MIX;
@@ -5139,6 +5355,40 @@ public static partial class Library_SpriteStudio
 				VertexColor[(int)Library_SpriteStudio.KindVertexNo.RU] = DataColorRU;
 				VertexColor[(int)Library_SpriteStudio.KindVertexNo.RD] = DataColorRD;
 				VertexColor[(int)Library_SpriteStudio.KindVertexNo.LD] = DataColorLD;
+			}
+		}
+
+		public struct CellChange
+		{
+			public int IndexTexture;
+			public Library_SpriteStudio.Data.CellMap DataCellMap;
+			public Library_SpriteStudio.Data.Cell DataCell;
+
+			public void CleanUp()
+			{
+				IndexTexture = -1;
+				DataCellMap = null;
+				DataCell = null;
+			}
+
+			public void DataGet(	ref int IndexTextureOut,
+									ref Library_SpriteStudio.Data.CellMap CellMapOut,
+									ref Library_SpriteStudio.Data.Cell CellOut
+								)
+			{
+				IndexTextureOut = IndexTexture;
+				CellMapOut = DataCellMap;
+				CellOut = DataCell;
+			}
+
+			public void DataSet(	int IndexTextureIn,
+									Library_SpriteStudio.Data.CellMap CellMapIn,
+									Library_SpriteStudio.Data.Cell CellIn
+								)
+			{
+				IndexTexture = IndexTextureIn;
+				DataCellMap = CellMapIn;
+				DataCell = CellIn;
 			}
 		}
 	}
@@ -5822,12 +6072,16 @@ public static partial class Library_SpriteStudio
 		{
 			/* Base-Datas */
 			public Material[] TableMaterial;
+			public Script_SpriteStudio_DataCell DataCellMap;
 
 			/* WorkArea: DrawManager */
 			public Script_SpriteStudio_ManagerDraw InstanceManagerDraw;
 			internal Library_SpriteStudio.ManagerDraw.FragmentDrawObject DrawObject = null;
 			internal Library_SpriteStudio.ManagerDraw.TerminalClusterDrawParts ChainClusterDrawParts = null;
 			internal int CountPartsDraw;
+
+			/* WorkArea: Cell-Table Changing Datas */
+			internal Library_SpriteStudio.Control.CellChange[][] TableCellChange = null;
 
 			/* Relation Datas */
 			internal Script_SpriteStudio_Root InstanceRootParent = null;
@@ -6302,6 +6556,10 @@ public static partial class Library_SpriteStudio
 		}
 
 		public static partial class TableMaterial
+		{
+		}
+
+		public static partial class TableCellChange
 		{
 		}
 
