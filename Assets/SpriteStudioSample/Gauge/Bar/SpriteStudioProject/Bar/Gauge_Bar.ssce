@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SpriteStudioCellMap version="1.00.01">
+	<name>Gauge_Bar</name>
+	<exportPath></exportPath>
+	<generator>SpriteStudio</generator>
+	<packed>0</packed>
+	<imagePath>Gauge_Bar.png</imagePath>
+	<pixelSize>256 128</pixelSize>
+	<overrideTexSettings>0</overrideTexSettings>
+	<wrapMode>clamp</wrapMode>
+	<filterMode>linear</filterMode>
+	<imagePathAtImport></imagePathAtImport>
+	<packInfoFilePath></packInfoFilePath>
+	<texPackSettings>
+		<maxSize>4096 4096</maxSize>
+		<forcePo2>1</forcePo2>
+		<forceSquare>0</forceSquare>
+		<margin>0</margin>
+		<padding>1</padding>
+	</texPackSettings>
+	<cells>
+		<cell>
+			<name>Cover</name>
+			<pos>0 0</pos>
+			<size>208 40</size>
+			<pivot>-0.480769217014313 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Bar</name>
+			<pos>4 40</pos>
+			<size>200 40</size>
+			<pivot>-0.5 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Base</name>
+			<pos>0 80</pos>
+			<size>208 40</size>
+			<pivot>-0.480769217014313 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+	</cells>
+</SpriteStudioCellMap>

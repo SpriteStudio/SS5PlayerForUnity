@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SpriteStudioCellMap version="1.00.01">
+	<name>BitmapFontNumeric_Simple</name>
+	<exportPath></exportPath>
+	<generator>SpriteStudio</generator>
+	<packed>0</packed>
+	<imagePath>BitmapFontNumeric_Simple.png</imagePath>
+	<pixelSize>128 128</pixelSize>
+	<overrideTexSettings>0</overrideTexSettings>
+	<wrapMode>clamp</wrapMode>
+	<filterMode>linear</filterMode>
+	<imagePathAtImport></imagePathAtImport>
+	<packInfoFilePath></packInfoFilePath>
+	<texPackSettings>
+		<maxSize>4096 4096</maxSize>
+		<forcePo2>1</forcePo2>
+		<forceSquare>0</forceSquare>
+		<margin>0</margin>
+		<padding>1</padding>
+	</texPackSettings>
+	<cells>
+		<cell>
+			<name>Font1_0</name>
+			<pos>0 0</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_1</name>
+			<pos>40 0</pos>
+			<size>16 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_2</name>
+			<pos>64 0</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_3</name>
+			<pos>96 0</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_4</name>
+			<pos>0 32</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_5</name>
+			<pos>32 32</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_6</name>
+			<pos>64 32</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_7</name>
+			<pos>96 32</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_8</name>
+			<pos>0 64</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_9</name>
+			<pos>32 64</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Period</name>
+			<pos>72 64</pos>
+			<size>16 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Comma</name>
+			<pos>104 64</pos>
+			<size>16 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Plus</name>
+			<pos>0 96</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Minus</name>
+			<pos>32 96</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Mul</name>
+			<pos>64 96</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Div</name>
+			<pos>96 96</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+	</cells>
+</SpriteStudioCellMap>

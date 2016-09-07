@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SpriteStudioAnimePack version="1.02.02">
+	<settings>
+		<fps>30</fps>
+		<frameCount>11</frameCount>
+		<sortMode>prio</sortMode>
+		<canvasSize>320 320</canvasSize>
+		<pivot>0 0</pivot>
+		<bgColor>FF323232</bgColor>
+		<gridSize>32</gridSize>
+		<gridColor>FF808080</gridColor>
+		<outStartNum>0</outStartNum>
+	</settings>
+	<name>BitmapFontNumeric_Complex</name>
+	<exportPath></exportPath>
+	<Model>
+		<partList>
+			<value>
+				<name>root</name>
+				<arrayIndex>0</arrayIndex>
+				<parentIndex>-1</parentIndex>
+				<type>null</type>
+				<boundsType>none</boundsType>
+				<inheritType>self</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit00</name>
+				<arrayIndex>1</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit01</name>
+				<arrayIndex>2</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit02</name>
+				<arrayIndex>3</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit03</name>
+				<arrayIndex>4</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit04</name>
+				<arrayIndex>5</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit05</name>
+				<arrayIndex>6</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit06</name>
+				<arrayIndex>7</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Digit07</name>
+				<arrayIndex>8</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+		</partList>
+	</Model>
+	<cellmapNames>
+		<value>BitmapFontNumeric_Complex.ssce</value>
+	</cellmapNames>
+	<animeList>
+		<anime>
+			<name>Digit08</name>
+			<overrideSettings>1</overrideSettings>
+			<settings>
+				<fps>30</fps>
+				<frameCount>2</frameCount>
+				<sortMode>prio</sortMode>
+				<canvasSize>320 320</canvasSize>
+				<pivot>0 0</pivot>
+				<bgColor>FF323232</bgColor>
+				<gridSize>32</gridSize>
+				<gridColor>FF808080</gridColor>
+				<outStartNum>0</outStartNum>
+			</settings>
+			<labels />
+			<partAnimes>
+				<partAnime>
+					<partName>root</partName>
+					<attributes>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit00</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit01</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit02</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit03</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit04</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit05</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit06</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Digit07</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Font1_0</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+			</partAnimes>
+		</anime>
+	</animeList>
+</SpriteStudioAnimePack>

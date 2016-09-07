@@ -1,0 +1,24 @@
+* ++++++++++++++++++++++++++++++++++++++++
+* Reference:
+* https://github.com/SpriteStudio/SS5PlayerForUnity/wiki/%E3%83%90%E3%83%83%E3%83%81%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%BC%E3%83%88%E6%A9%9F%E8%83%BD
+* ++++++++++++++++++++++++++++++++++++++++
+
+? TextureSizePixelMaximum > 4096
+? CollisionThicknessZ > 1.0
+? FlagAttachRigidBody > true
+? FlagAttachControlGameObject > true
+? FlagConfirmOverWrite > false
+? FlagCreateProjectFolder > true
+? FlagDataCalculateInAdvance > true
+
+? NameBaseFolderSS5Data > Assets/SpriteStudioSample/basic/SpriteStudioProject
+? NameBaseFolderAsset > Assets/SpriteStudioSample/basic/SSdata
+
+character_template_sample1/character_template1.sspj
+instance_sample/instance_test.sspj
+
+* ++++++++++++++++++++++++++++++++++++++++
+? NameBaseFolderAsset > Assets/SpriteStudioSample/basic/Resources/prefabs/hiteffect
+
+effect_comipo/effect_comipo.sspj
+

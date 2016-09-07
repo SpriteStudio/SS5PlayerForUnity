@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SpriteStudioAnimePack version="1.02.02">
+	<settings>
+		<fps>30</fps>
+		<frameCount>11</frameCount>
+		<sortMode>prio</sortMode>
+		<canvasSize>320 320</canvasSize>
+		<pivot>0 0</pivot>
+		<bgColor>FF323232</bgColor>
+		<gridSize>32</gridSize>
+		<gridColor>FF808080</gridColor>
+		<outStartNum>0</outStartNum>
+	</settings>
+	<name>Gauge_Meter</name>
+	<exportPath></exportPath>
+	<Model>
+		<partList>
+			<value>
+				<name>root</name>
+				<arrayIndex>0</arrayIndex>
+				<parentIndex>-1</parentIndex>
+				<type>null</type>
+				<boundsType>none</boundsType>
+				<inheritType>self</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Base</name>
+				<arrayIndex>1</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Decoration_Base</name>
+				<arrayIndex>2</arrayIndex>
+				<parentIndex>1</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>add</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Pointer</name>
+				<arrayIndex>3</arrayIndex>
+				<parentIndex>0</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>mix</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+			<value>
+				<name>Decoration_Pointer</name>
+				<arrayIndex>4</arrayIndex>
+				<parentIndex>3</parentIndex>
+				<type>normal</type>
+				<boundsType>none</boundsType>
+				<inheritType>parent</inheritType>
+				<ineheritRates>
+					<ALPH>1</ALPH>
+					<FLPH>0</FLPH>
+					<FLPV>0</FLPV>
+					<HIDE>0</HIDE>
+					<IFLH>0</IFLH>
+					<IFLV>0</IFLV>
+				</ineheritRates>
+				<alphaBlendType>add</alphaBlendType>
+				<show>1</show>
+				<locked>0</locked>
+				<expandAttribute>0</expandAttribute>
+				<expandChildren>1</expandChildren>
+			</value>
+		</partList>
+	</Model>
+	<cellmapNames>
+		<value>Gauge_Meter.ssce</value>
+	</cellmapNames>
+	<animeList>
+		<anime>
+			<name>Normal</name>
+			<overrideSettings>1</overrideSettings>
+			<settings>
+				<fps>30</fps>
+				<frameCount>30</frameCount>
+				<sortMode>prio</sortMode>
+				<canvasSize>320 320</canvasSize>
+				<pivot>0 0</pivot>
+				<bgColor>FF323232</bgColor>
+				<gridSize>32</gridSize>
+				<gridColor>FF808080</gridColor>
+				<outStartNum>0</outStartNum>
+			</settings>
+			<labels />
+			<partAnimes>
+				<partAnime>
+					<partName>root</partName>
+					<attributes>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Base</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Base</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="POSX">
+							<key time="0" ipType="linear">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="POSY">
+							<key time="0" ipType="linear">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="ROTZ">
+							<key time="0" ipType="linear">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="PRIO">
+							<key time="0" ipType="linear">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Decoration_Base</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Decoration_Base</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="SCLX">
+							<key time="0" ipType="linear">
+								<value>4</value>
+							</key>
+						</attribute>
+						<attribute tag="SCLY">
+							<key time="0" ipType="linear">
+								<value>4</value>
+							</key>
+						</attribute>
+						<attribute tag="ALPH">
+							<key time="0" ipType="linear">
+								<value>1</value>
+							</key>
+						</attribute>
+						<attribute tag="PRIO">
+							<key time="0" ipType="linear">
+								<value>1</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="VCOL">
+							<key time="0" ipType="linear">
+								<value>
+									<target>vertex</target>
+									<blendType>mix</blendType>
+									<LT>
+										<rgba>FF00C0FF</rgba>
+										<rate>1</rate>
+									</LT>
+									<RT>
+										<rgba>40FFC000</rgba>
+										<rate>1</rate>
+									</RT>
+									<LB>
+										<rgba>FF0040FF</rgba>
+										<rate>1</rate>
+									</LB>
+									<RB>
+										<rgba>40FF4000</rgba>
+										<rate>1</rate>
+									</RB>
+								</value>
+							</key>
+							<key time="15" ipType="linear">
+								<value>
+									<target>vertex</target>
+									<blendType>mix</blendType>
+									<LT>
+										<rgba>4000C0FF</rgba>
+										<rate>1</rate>
+									</LT>
+									<RT>
+										<rgba>FFFFC000</rgba>
+										<rate>1</rate>
+									</RT>
+									<LB>
+										<rgba>400040FF</rgba>
+										<rate>1</rate>
+									</LB>
+									<RB>
+										<rgba>FFFF4000</rgba>
+										<rate>1</rate>
+									</RB>
+								</value>
+							</key>
+							<key time="29" ipType="linear">
+								<value>
+									<target>vertex</target>
+									<blendType>mix</blendType>
+									<LT>
+										<rgba>FF00C0FF</rgba>
+										<rate>1</rate>
+									</LT>
+									<RT>
+										<rgba>40FFC000</rgba>
+										<rate>1</rate>
+									</RT>
+									<LB>
+										<rgba>FF0040FF</rgba>
+										<rate>1</rate>
+									</LB>
+									<RB>
+										<rgba>40FF4000</rgba>
+										<rate>1</rate>
+									</RB>
+								</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Pointer</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Pointer</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="ROTZ">
+							<key time="4" ipType="linear">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="PRIO">
+							<key time="0" ipType="linear">
+								<value>10</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+				<partAnime>
+					<partName>Decoration_Pointer</partName>
+					<attributes>
+						<attribute tag="CELL">
+							<key time="0">
+								<value>
+									<mapId>0</mapId>
+									<name>Decoration_Pointer</name>
+								</value>
+							</key>
+						</attribute>
+						<attribute tag="SCLX">
+							<key time="0" ipType="linear">
+								<value>4</value>
+							</key>
+						</attribute>
+						<attribute tag="SCLY">
+							<key time="0" ipType="linear">
+								<value>4</value>
+							</key>
+						</attribute>
+						<attribute tag="PRIO">
+							<key time="0" ipType="linear">
+								<value>11</value>
+							</key>
+						</attribute>
+						<attribute tag="HIDE">
+							<key time="0">
+								<value>0</value>
+							</key>
+						</attribute>
+						<attribute tag="VCOL">
+							<key time="0" ipType="linear">
+								<value>
+									<target>whole</target>
+									<blendType>mix</blendType>
+									<color>
+										<rgba>FFFF0000</rgba>
+										<rate>1</rate>
+									</color>
+								</value>
+							</key>
+							<key time="7" ipType="linear">
+								<value>
+									<target>whole</target>
+									<blendType>mix</blendType>
+									<color>
+										<rgba>FF800080</rgba>
+										<rate>1</rate>
+									</color>
+								</value>
+							</key>
+							<key time="15" ipType="linear">
+								<value>
+									<target>whole</target>
+									<blendType>mix</blendType>
+									<color>
+										<rgba>FFFF0000</rgba>
+										<rate>1</rate>
+									</color>
+								</value>
+							</key>
+							<key time="22" ipType="linear">
+								<value>
+									<target>whole</target>
+									<blendType>mix</blendType>
+									<color>
+										<rgba>FF800080</rgba>
+										<rate>1</rate>
+									</color>
+								</value>
+							</key>
+							<key time="29" ipType="linear">
+								<value>
+									<target>whole</target>
+									<blendType>mix</blendType>
+									<color>
+										<rgba>FFFF0000</rgba>
+										<rate>1</rate>
+									</color>
+								</value>
+							</key>
+						</attribute>
+					</attributes>
+				</partAnime>
+			</partAnimes>
+		</anime>
+	</animeList>
+</SpriteStudioAnimePack>

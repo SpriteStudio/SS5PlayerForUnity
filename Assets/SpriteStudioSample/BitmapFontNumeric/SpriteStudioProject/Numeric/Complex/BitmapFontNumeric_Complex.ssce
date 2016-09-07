@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SpriteStudioCellMap version="1.00.01">
+	<name>BitmapFontNumeric_Complex</name>
+	<exportPath></exportPath>
+	<generator>SpriteStudio</generator>
+	<packed>0</packed>
+	<imagePath>BitmapFontNumeric_Complex.png</imagePath>
+	<pixelSize>256 256</pixelSize>
+	<overrideTexSettings>0</overrideTexSettings>
+	<wrapMode>clamp</wrapMode>
+	<filterMode>linear</filterMode>
+	<imagePathAtImport></imagePathAtImport>
+	<packInfoFilePath></packInfoFilePath>
+	<texPackSettings>
+		<maxSize>4096 4096</maxSize>
+		<forcePo2>1</forcePo2>
+		<forceSquare>0</forceSquare>
+		<margin>0</margin>
+		<padding>1</padding>
+	</texPackSettings>
+	<cells>
+		<cell>
+			<name>Font1_0</name>
+			<pos>4 0</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_1</name>
+			<pos>41 0</pos>
+			<size>14 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_2</name>
+			<pos>68 0</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_3</name>
+			<pos>101 0</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_4</name>
+			<pos>4 32</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_5</name>
+			<pos>37 32</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_6</name>
+			<pos>69 32</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_7</name>
+			<pos>101 32</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_8</name>
+			<pos>5 64</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_9</name>
+			<pos>37 64</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Period</name>
+			<pos>75 64</pos>
+			<size>10 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Comma</name>
+			<pos>106 64</pos>
+			<size>10 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Plus</name>
+			<pos>5 96</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Minus</name>
+			<pos>37 96</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Mul</name>
+			<pos>70 96</pos>
+			<size>20 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font1_Div</name>
+			<pos>101 96</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_0</name>
+			<pos>132 0</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_1</name>
+			<pos>168 0</pos>
+			<size>16 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_2</name>
+			<pos>197 0</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_3</name>
+			<pos>229 0</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_4</name>
+			<pos>132 32</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_5</name>
+			<pos>165 32</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_6</name>
+			<pos>197 32</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_7</name>
+			<pos>229 32</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_8</name>
+			<pos>133 64</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_9</name>
+			<pos>165 64</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_Period</name>
+			<pos>202 64</pos>
+			<size>12 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_Comma</name>
+			<pos>233 64</pos>
+			<size>12 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_Plus</name>
+			<pos>133 96</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_Minus</name>
+			<pos>165 96</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_Mul</name>
+			<pos>198 96</pos>
+			<size>20 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font2_Div</name>
+			<pos>229 96</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_0</name>
+			<pos>3 128</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_1</name>
+			<pos>39 128</pos>
+			<size>18 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_2</name>
+			<pos>67 128</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_3</name>
+			<pos>99 128</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_4</name>
+			<pos>2 160</pos>
+			<size>28 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_5</name>
+			<pos>35 160</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_6</name>
+			<pos>67 160</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_7</name>
+			<pos>100 160</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_8</name>
+			<pos>3 192</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_9</name>
+			<pos>35 192</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_Period</name>
+			<pos>73 192</pos>
+			<size>14 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_Comma</name>
+			<pos>105 192</pos>
+			<size>14 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_Plus</name>
+			<pos>4 224</pos>
+			<size>24 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_Minus</name>
+			<pos>37 224</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_Mul</name>
+			<pos>69 224</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font3_Div</name>
+			<pos>101 224</pos>
+			<size>22 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_0</name>
+			<pos>129 128</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_1</name>
+			<pos>166 128</pos>
+			<size>20 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_2</name>
+			<pos>193 128</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_3</name>
+			<pos>225 128</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_4</name>
+			<pos>128 160</pos>
+			<size>32 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_5</name>
+			<pos>161 160</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_6</name>
+			<pos>193 160</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_7</name>
+			<pos>226 160</pos>
+			<size>28 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_8</name>
+			<pos>129 192</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_9</name>
+			<pos>161 192</pos>
+			<size>30 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_Period</name>
+			<pos>199 192</pos>
+			<size>18 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_Comma</name>
+			<pos>231 192</pos>
+			<size>18 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_Plus</name>
+			<pos>130 224</pos>
+			<size>28 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_Minus</name>
+			<pos>163 224</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_Mul</name>
+			<pos>195 224</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+		<cell>
+			<name>Font4_Div</name>
+			<pos>227 224</pos>
+			<size>26 32</size>
+			<pivot>0 0</pivot>
+			<rotated>0</rotated>
+			<orgImageName></orgImageName>
+			<posStable>0</posStable>
+		</cell>
+	</cells>
+</SpriteStudioCellMap>
