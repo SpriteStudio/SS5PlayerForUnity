@@ -3962,7 +3962,7 @@ public static partial class Library_SpriteStudio
 				float TimeOffset = 0.0f;
 
 				bool FlagUpdatingForce = InstanceRoot.StatusIsPlayingTurn;
-				if((true == FlagUpdatingForce) && (0 == (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)))
+				if((true == FlagUpdatingForce) && (0 == (Status & FlagBitStatus.EFFECT_PLAYINDEPENDENT)))
 				{
 					FrameNoPreviousUpdateUnderControl = -1;
 				}
@@ -4390,6 +4390,7 @@ public static partial class Library_SpriteStudio
 					}
 				}
 				Status |= (true == FlagInfinite) ? FlagBitStatus.INFINITE : FlagBitStatus.CLEAR;
+				InstanceRoot.StatusIsPlayingInfinity = FlagInfinite;
 				Status |= (0 != (InstanceRoot.DataEffect.FlagData & Script_SpriteStudio_DataEffect.FlagBit.SEEDRANDOM_LOCK)) ? FlagBitStatus.LOCKSEED : FlagBitStatus.CLEAR;
 
 				/* Effect's Length Get */
