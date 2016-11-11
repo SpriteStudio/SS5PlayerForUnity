@@ -42,6 +42,7 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		PLAYING_REVERSEPREVIOUS = 0x00200000,	/* Reserved */
 		PLAYING_TURN = 0x00100000,	/* Reserved */
 		PLAYING_FIRSTUPDATE = 0x00080000,	/* Reserved */
+		PLAYING_INFINITY = 0x00040000,
 
 //		DECODE_USERDATA = 0x00008000,	/* Reserved & Disuse */
 //		DECODE_INSTANCE = 0x00004000,	/* Reserved & Disuse */
@@ -138,6 +139,24 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		get
 		{
 			return(0 != (Status & FlagBitStatus.PLAYING_TURN));
+		}
+	}
+	internal bool StatusIsPlayingFirstUpdate
+	{
+		get
+		{
+			return(0 != (Status & FlagBitStatus.PLAYING_FIRSTUPDATE));
+		}
+	}
+	internal bool StatusIsPlayingInfinity
+	{
+		get
+		{
+			return(0 != (Status & FlagBitStatus.PLAYING_INFINITY));
+		}
+		set
+		{
+			Status = (true == value) ? (Status | FlagBitStatus.PLAYING_INFINITY) : (Status & ~FlagBitStatus.PLAYING_INFINITY);
 		}
 	}
 //	internal bool StatusIsDecodeUserData
@@ -256,7 +275,14 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 		ChainClusterDrawParts.ChainCleanUp();   /* DrawParts-Cluster-Chain Clear */
 		TimeElapsed += ((0 != (Status & FlagBitStatus.PAUSING)) || (0 != (Status & FlagBitStatus.PLAYING_START))) ? 0.0f : TimeDelta;
 		FrameNow = TimeElapsed * RateTimeToFrame;
-		FrameNow = Mathf.Clamp(FrameNow, 0.0f, FrameLength);
+		if(0 != (Status & FlagBitStatus.PLAYING_INFINITY))
+		{	/* Independent */
+//			FrameNow %= FrameLength;
+		}
+		else
+		{	/* Dependent */
+			FrameNow = Mathf.Clamp(FrameNow, 0.0f, FrameLength);
+		}
 		PoolParts.Update(this);
 
 		/* Set to DrawManager */

@@ -3962,7 +3962,7 @@ public static partial class Library_SpriteStudio
 				float TimeOffset = 0.0f;
 
 				bool FlagUpdatingForce = InstanceRoot.StatusIsPlayingTurn;
-				if((true == FlagUpdatingForce) && (0 == (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)))
+				if((true == FlagUpdatingForce) && (0 == (Status & FlagBitStatus.EFFECT_PLAYINDEPENDENT)))
 				{
 					FrameNoPreviousUpdateUnderControl = -1;
 				}
@@ -4390,6 +4390,7 @@ public static partial class Library_SpriteStudio
 					}
 				}
 				Status |= (true == FlagInfinite) ? FlagBitStatus.INFINITE : FlagBitStatus.CLEAR;
+				InstanceRoot.StatusIsPlayingInfinity = FlagInfinite;
 				Status |= (0 != (InstanceRoot.DataEffect.FlagData & Script_SpriteStudio_DataEffect.FlagBit.SEEDRANDOM_LOCK)) ? FlagBitStatus.LOCKSEED : FlagBitStatus.CLEAR;
 
 				/* Effect's Length Get */
@@ -5945,6 +5946,7 @@ public static partial class Library_SpriteStudio
 											ref Material[] InstanceMaterialWrite,
 											ref Mesh InstanceMeshDraw,
 											ref Material[] InstanceMaterialDraw,
+											ref CombineInstance[] CombineMesh,
 											MeshRenderer InstanceMeshRenderer,
 											MeshFilter InstanceMeshFilter,
 											Transform InstanceTrasnformDrawManager,
@@ -5990,13 +5992,15 @@ public static partial class Library_SpriteStudio
 			/* Create Combined Mesh */
 			Matrix4x4 MatrixCollect = (null != InstanceTrasnformDrawManager) ? InstanceTrasnformDrawManager.localToWorldMatrix.inverse : Matrix4x4.identity;
 
-			CombineInstance[] CombineMesh = new CombineInstance[CountMesh];
+			if((null == CombineMesh) || (CombineMesh.Length != CountMesh))
+			{
+				CombineMesh = new CombineInstance[CountMesh];
+			}
 //			int[] TableIndexVertex = new int[CountMaterial];
 			int[] TableIndexTriangle = new int[CountMaterial + 1];	/* +1 ... Total Data */
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
 			Index = 0;
-			int IndexVertex = 0;
 			int IndexTriangle = 0;
 			for(int i=0; i<CountMaterial; i++)
 			{
@@ -6012,10 +6016,8 @@ public static partial class Library_SpriteStudio
 						CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
 						Index++;
 #if false
-						IndexVertex += DataPartsNow.Data.InstanceMesh.vertices.Length;
 						IndexTriangle += DataPartsNow.Data.InstanceMesh.triangles.Length / 3;
 #else
-						IndexVertex += DataPartsNow.Data.InstanceMesh.vertexCount;
 						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
 #endif
 					}
@@ -6025,27 +6027,30 @@ public static partial class Library_SpriteStudio
 				ClusterNow = ClusterNow.ChainNext;
 			}
 			TableIndexTriangle[CountMaterial] = IndexTriangle;
+			for(int i=Index; i<CombineMesh.Length; i++)
+			{
+				CombineMesh[i].mesh = null;
+			}
 			InstanceMesh.CombineMeshes(CombineMesh);
 
 			/* SubMesh Construct */
-			int[] TriangleBuffer = InstanceMesh.triangles;
-			int[] VertexNoTriangle = null;
-			InstanceMesh.triangles = null;
-			InstanceMesh.subMeshCount = CountMaterial;
-			for(int i=0; i<CountMaterial; i++)
+			if(1 < CountMaterial)
 			{
-				CountMesh = TableIndexTriangle[i + 1] - TableIndexTriangle[i];
-				VertexNoTriangle = new int[CountMesh * 3];
-				for(int j=0; j<CountMesh; j++)
+				int[] TriangleBuffer = InstanceMesh.triangles;
+				int[] VertexNoTriangle = null;
+				InstanceMesh.triangles = null;
+				InstanceMesh.subMeshCount = CountMaterial;
+				for (int i=0; i<CountMaterial; i++)
 				{
-					IndexTriangle = (j + TableIndexTriangle[i]) * 3;
-					IndexVertex = j * 3;
-
-					VertexNoTriangle[IndexVertex] = TriangleBuffer[IndexTriangle];
-					VertexNoTriangle[IndexVertex + 1] = TriangleBuffer[IndexTriangle + 1];
-					VertexNoTriangle[IndexVertex + 2] = TriangleBuffer[IndexTriangle + 2];
+					CountMesh = TableIndexTriangle[i + 1] - TableIndexTriangle[i];
+					VertexNoTriangle = new int[CountMesh * 3];
+					int intSize = sizeof(int);
+					System.Buffer.BlockCopy(	TriangleBuffer, TableIndexTriangle[i] * 3 * intSize,
+												VertexNoTriangle, 0,
+												CountMesh * 3 * intSize
+											);
+					InstanceMesh.SetTriangles(VertexNoTriangle, i);
 				}
-				InstanceMesh.SetTriangles(VertexNoTriangle, i);
 			}
 
 			InstanceMesh.name = "BatchedMesh";
