@@ -32,6 +32,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		PLAYING_REVERSEPREVIOUS = 0x00200000,
 		PLAYING_TURN = 0x00100000,
 		PLAYING_FIRSTUPDATE = 0x00080000,
+		PLAYING_INFINITY = 0x00040000,	/* Reserved */
 
 		DECODE_USERDATA = 0x00008000,
 		DECODE_INSTANCE = 0x00004000,
@@ -136,6 +137,17 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		{
 			return(0 != (Status & FlagBitStatus.PLAYING_FIRSTUPDATE));
 		}
+	}
+	internal bool StatusIsPlayingInfinity
+	{
+		get
+		{
+			return(0 != (Status & FlagBitStatus.PLAYING_INFINITY));
+		}
+//		set
+//		{
+//			Status = (true == value) ? (Status | FlagBitStatus.PLAYING_INFINITY) : (Status & ~FlagBitStatus.PLAYING_INFINITY);
+//		}
 	}
 	internal bool StatusIsDecodeUserData
 	{
