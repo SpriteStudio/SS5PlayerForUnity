@@ -58,7 +58,8 @@ public partial class Script_SpriteStudio_DataAnimation : ScriptableObject
 		int Count = ListDataParts.Length;
 		for(int i=0; i<Count; i++)
 		{
-			if(0 == string.Compare(Name, ListDataParts[i].Name))
+//			if(0 == string.Compare(Name, ListDataParts[i].Name))
+			if(Name == ListDataParts[i].Name)
 			{
 				return(i);
 			}
@@ -80,7 +81,8 @@ public partial class Script_SpriteStudio_DataAnimation : ScriptableObject
 		int Count = ListDataAnimation.Length;
 		for(int i=0; i<Count; i++)
 		{
-			if(0 == string.Compare(Name, ListDataAnimation[i].Name))
+//			if(0 == string.Compare(Name, ListDataAnimation[i].Name))
+			if(Name == ListDataAnimation[i].Name)
 			{
 				return(i);
 			}

@@ -324,7 +324,8 @@ public static partial class Library_SpriteStudio
 				int Count = ListCell.Length;
 				for(int i=0; i<Count; i++)
 				{
-					if(0 == string.Compare(NameCell, ListCell[i].Name))
+//					if(0 == string.Compare(NameCell, ListCell[i].Name))
+					if(NameCell == ListCell[i].Name)
 					{
 						return(i);
 					}
@@ -448,7 +449,8 @@ public static partial class Library_SpriteStudio
 				Count = (int)Library_SpriteStudio.KindLabelAnimationReserved.TERMINATOR;
 				for(int i=0; i<Count; i++)
 				{
-					if(0 == string.Compare(NameLabel, ListNameLabelAnimationReserved[i]))
+//					if(0 == string.Compare(NameLabel, ListNameLabelAnimationReserved[i]))
+					if(NameLabel == ListNameLabelAnimationReserved[i])
 					{
 						return((int)Library_SpriteStudio.KindLabelAnimationReserved.INDEX_RESERVED + i);
 					}
@@ -457,7 +459,8 @@ public static partial class Library_SpriteStudio
 				Count = ListLabel.Length;
 				for(int i=0; i<Count; i++)
 				{
-					if(0 == string.Compare(NameLabel, ListLabel[i].Name))
+//					if(0 == string.Compare(NameLabel, ListLabel[i].Name))
+					if(NameLabel ==  ListLabel[i].Name)
 					{
 						return(i);
 					}
@@ -2217,7 +2220,8 @@ public static partial class Library_SpriteStudio
 							&& (Rectangle.xMax == TargetData.Rectangle.xMax)
 							&& (Rectangle.yMax == TargetData.Rectangle.yMax)
 							&& (Coordinate == TargetData.Coordinate)
-							&& (0 == string.Compare(Text, TargetData.Text))
+//							&& (0 == string.Compare(Text, TargetData.Text))
+							&& (Text == TargetData.Text)
 						) ? true : false);
 			}
 
@@ -2281,8 +2285,10 @@ public static partial class Library_SpriteStudio
 							&& (RateTime == TargetData.RateTime)
 							&& (OffsetStart == TargetData.OffsetStart)
 							&& (OffsetEnd == TargetData.OffsetEnd)
-							&& (0 == string.Compare(LabelStart, TargetData.LabelStart))
-							&& (0 == string.Compare(LabelEnd, TargetData.LabelEnd))
+//							&& (0 == string.Compare(LabelStart, TargetData.LabelStart))
+							&& (LabelStart == TargetData.LabelStart)
+//							&& (0 == string.Compare(LabelEnd, TargetData.LabelEnd))
+							&& (LabelEnd == TargetData.LabelEnd)
 						) ? true : false);
 			}
 
@@ -2464,7 +2470,8 @@ public static partial class Library_SpriteStudio
 			{
 				for(int i=0; i<(int)Library_SpriteStudio.KindLabelAnimationReserved.TERMINATOR; i++)
 				{
-					if(0 == string.Compare(Name, Library_SpriteStudio.ListNameLabelAnimationReserved[i]))
+//					if(0 == string.Compare(Name, Library_SpriteStudio.ListNameLabelAnimationReserved[i]))
+					if(Name == Library_SpriteStudio.ListNameLabelAnimationReserved[i])
 					{
 						return(i);
 					}

@@ -1480,7 +1480,8 @@ public static partial class LibraryEditor_SpriteStudio
 					for(int i=0; i<ListFileName.Count; i++)
 					{
 						string FileNameNow = ListFileName[i] as string;
-						if(0 == FileName.CompareTo(FileNameNow))
+//						if(0 == FileName.CompareTo(FileNameNow))
+						if(FileName == FileNameNow)
 						{
 							return(i);
 						}
@@ -1495,7 +1496,8 @@ public static partial class LibraryEditor_SpriteStudio
 					for(int i=0; i<ListFileName.Count; i++)
 					{
 						string FileNameBody = NameGetFileBody(ListFileName, i);
-						if(0 == FileName.CompareTo(FileNameBody))
+//						if(0 == FileName.CompareTo(FileNameBody))
+						if(FileName == FileNameBody)
 						{
 							return(i);
 						}
@@ -1869,7 +1871,8 @@ public static partial class LibraryEditor_SpriteStudio
 					int Count = ListCell.Length;
 					for(int i=0; i<Count; i++)
 					{
-						if(0 == string.Compare(Name, ListCell[i].Name))
+//						if(0 == string.Compare(Name, ListCell[i].Name))
+						if(Name == ListCell[i].Name)
 						{
 							return(i);
 						}
@@ -3378,7 +3381,8 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					for(int i=0; i<ListParts.Length; i++)
 					{
-						if(0 == string.Compare(Name, ListParts[i].Name))
+//						if(0 == string.Compare(Name, ListParts[i].Name))
+						if(Name == ListParts[i].Name)
 						{
 							return(i);
 						}
@@ -3393,7 +3397,8 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					for(int i=0; i<ListAnimation.Length; i++)
 					{
-						if(0 == string.Compare(Name, ListAnimation[i].Name))
+//						if(0 == string.Compare(Name, ListAnimation[i].Name))
+						if(Name ==  ListAnimation[i].Name)
 						{
 							return(i);
 						}

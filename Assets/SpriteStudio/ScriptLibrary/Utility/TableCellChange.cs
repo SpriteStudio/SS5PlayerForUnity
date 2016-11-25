@@ -554,7 +554,8 @@ public static partial class Library_SpriteStudio
 					{
 						continue;
 					}
-					if(0 == string.Compare(Name, NameCellNow))
+//					if(0 == string.Compare(Name, NameCellNow))
+					if(Name == NameCellNow)
 					{
 						return(i);
 					}
