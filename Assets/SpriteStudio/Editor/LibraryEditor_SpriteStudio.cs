@@ -787,8 +787,8 @@ public static partial class LibraryEditor_SpriteStudio
 					InformationTexture.Name = LibraryEditor_SpriteStudio.Utility.Text.DataNameGetFromPath(InformationTexture.Name, DataSettingImport.FlagNameDataRuleOld);
 					InformationTexture.WrapTexture = InformationSSCE.WrapTexture;
 					InformationTexture.FilterTexture = InformationSSCE.FilterTexture;
-//					InformationTexture.SizeX =
-//					InformationTexture.SizeY =
+					InformationTexture.SizeX = InformationSSCE.SizePixelX;
+					InformationTexture.SizeY = InformationSSCE.SizePixelY;
 					InformationTexture.NameDirectory = Path.GetDirectoryName(NamePathTexture) + "/";
 					InformationTexture.NameFileBody = Path.GetFileNameWithoutExtension(NamePathTexture);
 					InformationTexture.NameFileExtension = Path.GetExtension(NamePathTexture);
@@ -1694,6 +1694,21 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 			InformationCellMap.IndexTexture = InformationProject.AddTexture(NamePathTexture);
 
+			/* Get Texture Pixel-Size */
+			string TextureSizeText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeRoot, "pixelSize", ManagerNameSpace);
+			string[] TextureSizeTextSprit = null;
+			if(true == Path.IsPathRooted(TextureSizeText))
+			{
+				InformationCellMap.SizePixelX = -1;
+				InformationCellMap.SizePixelY = -1;
+			}
+			else
+			{
+				TextureSizeTextSprit = TextureSizeText.Split(' ');
+				InformationCellMap.SizePixelX = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(TextureSizeTextSprit[0]);
+				InformationCellMap.SizePixelY = LibraryEditor_SpriteStudio.Utility.Text.ValueGetInt(TextureSizeTextSprit[1]);
+			}
+
 			/* Get Texture Addressing */
 			InformationCellMap.WrapTexture = InformationProject.WrapTexture;
 			InformationCellMap.FilterTexture = InformationProject.FilterTexture;
@@ -1775,6 +1790,7 @@ public static partial class LibraryEditor_SpriteStudio
 					MessageError = "Not Enough Memory.";
 					goto ParseOPSS_ImportSSCE_ErrorEnd;
 				}
+				Cell.CleanUp();
 
 				ItemText = LibraryEditor_SpriteStudio.Utility.XML.TextGetNode(NodeCell, "name", ManagerNameSpace);
 				Cell.Name = string.Copy(ItemText);
@@ -1833,6 +1849,8 @@ public static partial class LibraryEditor_SpriteStudio
 			internal Library_SpriteStudio.KindWrapTexture WrapTexture;
 			internal Library_SpriteStudio.KindFilterTexture FilterTexture;
 			internal int IndexTexture;
+			internal int SizePixelX;
+			internal int SizePixelY;
 
 			/* SSCE Data: Cell Datas */
 			internal LibraryEditor_SpriteStudio.ParseOPSS.InformationCell[] ListCell;
@@ -1854,6 +1872,8 @@ public static partial class LibraryEditor_SpriteStudio
 				WrapTexture = Library_SpriteStudio.KindWrapTexture.CLAMP;
 				FilterTexture = Library_SpriteStudio.KindFilterTexture.LINEAR;
 				IndexTexture = -1;
+				SizePixelX = -1;
+				SizePixelY = -1;
 
 				ListCell = null;
 
@@ -1891,10 +1911,15 @@ public static partial class LibraryEditor_SpriteStudio
 			internal void CleanUp()
 			{
 				Name = "";
+#if UNITY_5_5_OR_NEWER
+				/* MEMO: avoiding CS0649 */
+				Area = Rect.zero;
+#else
 				Area.x = 0.0f;
 				Area.y = 0.0f;
 				Area.width = 0.0f;
 				Area.height = 0.0f;
+#endif
 				Pivot = Vector2.zero;
 				Rotate = 0.0f;
 			}
@@ -4476,7 +4501,18 @@ public static partial class LibraryEditor_SpriteStudio
 						Importer.filterMode = FilterMode.Bilinear;
 						break;
 				}
-
+#if UNITY_5_5_OR_NEWER
+				/* MEMO: For 5.5.0beta & later, with "Sprite" to avoid unnecessary interpolation. */
+				Importer.textureShape = TextureImporterShape.Texture2D;
+				Importer.isReadable = false;
+				Importer.mipmapEnabled = false;
+				Importer.maxTextureSize = DataSettingImport.TextureSizePixelMaximum;
+				Importer.alphaSource = TextureImporterAlphaSource.FromInput;
+				Importer.alphaIsTransparency = true;
+				Importer.npotScale = TextureImporterNPOTScale.None;
+				Importer.textureType = TextureImporterType.Sprite;
+#else
+				/* MEMO: For earlier than 5.5.0beta, with "Advanced". */
 				Importer.generateCubemap = TextureImporterGenerateCubemap.None;
 				Importer.generateMipsInLinearSpace = false;
 				Importer.grayscaleToAlpha = false;
@@ -4489,6 +4525,7 @@ public static partial class LibraryEditor_SpriteStudio
 				Importer.npotScale = TextureImporterNPOTScale.None;
 				Importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
 				Importer.textureType = TextureImporterType.Advanced;
+#endif
 				switch(InformationTexture.WrapTexture)
 				{
 					case Library_SpriteStudio.KindWrapTexture.REPEAT:
@@ -4505,8 +4542,11 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			InformationTexture.PrefabTexture = AssetDatabase.LoadAssetAtPath(InformationTexture.NamePrefabTexture, typeof(Texture2D)) as Texture2D;
-			InformationTexture.SizeX = InformationTexture.PrefabTexture.width;
-			InformationTexture.SizeY = InformationTexture.PrefabTexture.height;
+			if((0 >= InformationTexture.SizeX) || (0 >= InformationTexture.SizeY))
+			{	/* Only when texture size can not be get from SSCE */
+				InformationTexture.SizeX = InformationTexture.PrefabTexture.width;
+				InformationTexture.SizeY = InformationTexture.PrefabTexture.height;
+			}
 
 			/* Texture's Pixel-Size Check */
 			if((true != PixelSizeCheck(InformationTexture.SizeX)) || (true != PixelSizeCheck(InformationTexture.SizeY)))
