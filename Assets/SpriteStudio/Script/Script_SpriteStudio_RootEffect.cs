@@ -380,7 +380,8 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 			int CountEmitter = PoolParts.PoolEmitter.Length;
 			for(int i=0; i<CountEmitter; i++)
 			{
-				if(0 == string.Compare(Name, PoolParts.PoolEmitter[i].InstanceDataParts.Name))
+//				if(0 == string.Compare(Name, PoolParts.PoolEmitter[i].InstanceDataParts.Name))
+				if(Name == PoolParts.PoolEmitter[i].InstanceDataParts.Name)
 				{
 					return(i);
 				}
