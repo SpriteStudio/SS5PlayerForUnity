@@ -4853,7 +4853,8 @@ public static partial class LibraryEditor_SpriteStudio
 																									InformationAnimationSet,
 																									i,
 																									NameBaseAssetPath,
-																									FileName
+																									FileName,
+																									DataAnimationSet.Flyweight
 																								);
 				if(null == InformationAnimationSet.ListDataAnimationRuntime[i])
 				{
@@ -4906,7 +4907,8 @@ public static partial class LibraryEditor_SpriteStudio
 																i,
 																j,
 																NameBaseAssetPath,
-																FileName
+																FileName,
+																DataAnimationSet.Flyweight
 															);
 					}
 				}
@@ -5144,7 +5146,8 @@ public static partial class LibraryEditor_SpriteStudio
 																						LibraryEditor_SpriteStudio.ParseOPSS.InformationSSAE InformationAnimationSet,
 																						int Index,
 																						string NameBaseAssetPath,
-																						string FileName
+																						string FileName,
+																						Library_SpriteStudio_Flyweight.Flyweight flyweight
 																					)
 		{
 //			string MessageError = "";
@@ -5178,7 +5181,8 @@ public static partial class LibraryEditor_SpriteStudio
 															InformationAnimationRuntime,
 															i,
 															NameBaseAssetPath,
-															FileName
+															FileName,
+															flyweight
 														)
 					)
 				{
@@ -5199,7 +5203,8 @@ public static partial class LibraryEditor_SpriteStudio
 															Library_SpriteStudio.Data.Animation InformationAnimationRuntime,
 															int Index,
 															string NameBaseAssetPath,
-															string FileName
+															string FileName,
+															Library_SpriteStudio_Flyweight.Flyweight flyweight
 														)
 		{
 //			string MessageError = "";
@@ -5217,21 +5222,15 @@ public static partial class LibraryEditor_SpriteStudio
 				InformationPartsRuntime.Rotation = new Library_SpriteStudio.Data.ListAttributeVector3();
 					InformationPartsRuntime.Rotation.CleanUp();
 					InformationPartsRuntime.Rotation.BootUp(0);
-				InformationPartsRuntime.Scaling = new Library_SpriteStudio.Data.ListAttributeVector2();
-					InformationPartsRuntime.Scaling.CleanUp();
-					InformationPartsRuntime.Scaling.BootUp(0);
+				InformationPartsRuntime.Scaling = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
 				InformationPartsRuntime.RateOpacity = new Library_SpriteStudio.Data.ListAttributeFloat();
 					InformationPartsRuntime.RateOpacity.CleanUp();
 					InformationPartsRuntime.RateOpacity.BootUp(0);
 				InformationPartsRuntime.Priority = new Library_SpriteStudio.Data.ListAttributeFloat();
 					InformationPartsRuntime.Priority.CleanUp();
 					InformationPartsRuntime.Priority.BootUp(0);
-				InformationPartsRuntime.PositionAnchor = new Library_SpriteStudio.Data.ListAttributeVector2();
-					InformationPartsRuntime.PositionAnchor.CleanUp();
-					InformationPartsRuntime.PositionAnchor.BootUp(0);
-				InformationPartsRuntime.SizeForce = new Library_SpriteStudio.Data.ListAttributeVector2();
-					InformationPartsRuntime.SizeForce.CleanUp();
-					InformationPartsRuntime.SizeForce.BootUp(0);
+				InformationPartsRuntime.PositionAnchor = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
+				InformationPartsRuntime.SizeForce = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
 				InformationPartsRuntime.UserData = new Library_SpriteStudio.Data.ListAttributeUserData();
 					InformationPartsRuntime.UserData.CleanUp();
 					InformationPartsRuntime.UserData.BootUp(0);
@@ -5301,7 +5300,8 @@ public static partial class LibraryEditor_SpriteStudio
 																			NameBaseAssetPath,
 																			FileName
 																		);
-			InformationPartsRuntime.Scaling = ListVector2GetSSAEAttribute(	ref DataSettingImport,
+			InformationPartsRuntime.Scaling = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
+			InformationPartsRuntime.Scaling.Build(flyweight, ListVector2GetSSAEAttribute(	ref DataSettingImport,
 																			InformationProject,
 																			CountFrameFull,
 																			InformationParts.Attribute[(int)LibraryEditor_SpriteStudio.KeyFrame.KindAttribute.SCALING_X],
@@ -5309,7 +5309,7 @@ public static partial class LibraryEditor_SpriteStudio
 																			Vector2.one,
 																			NameBaseAssetPath,
 																			FileName
-																		);
+																		).ListValue);
 			InformationPartsRuntime.RateOpacity = ListFloatGetSSAEAttribute(	ref DataSettingImport,
 																				InformationProject,
 																				CountFrameFull,
@@ -5326,7 +5326,8 @@ public static partial class LibraryEditor_SpriteStudio
 																			NameBaseAssetPath,
 																			FileName
 																		);
-			InformationPartsRuntime.PositionAnchor = ListVector2GetSSAEAttribute(	ref DataSettingImport,
+			InformationPartsRuntime.PositionAnchor = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
+			InformationPartsRuntime.PositionAnchor.Build(flyweight, ListVector2GetSSAEAttribute(	ref DataSettingImport,
 																					InformationProject,
 																					CountFrameFull,
 																					InformationParts.Attribute[(int)LibraryEditor_SpriteStudio.KeyFrame.KindAttribute.ANCHOR_POSITION_X],
@@ -5334,15 +5335,16 @@ public static partial class LibraryEditor_SpriteStudio
 																					Vector2.zero,
 																					NameBaseAssetPath,
 																					FileName
-																				);
-			InformationPartsRuntime.SizeForce = ListSizeForceGetSSAEAttribute(	ref DataSettingImport,
+																				).ListValue);
+			InformationPartsRuntime.SizeForce = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
+			InformationPartsRuntime.SizeForce.Build(flyweight, ListSizeForceGetSSAEAttribute(ref DataSettingImport,
 																				InformationProject,
 																				CountFrameFull,
 																				InformationParts.Attribute[(int)LibraryEditor_SpriteStudio.KeyFrame.KindAttribute.SIZE_FORCE_X],
 																				InformationParts.Attribute[(int)LibraryEditor_SpriteStudio.KeyFrame.KindAttribute.SIZE_FORCE_Y],
 																				NameBaseAssetPath,
 																				FileName
-																			);
+																			).ListValue);
 			InformationPartsRuntime.UserData = ListUserDataGetSSAEAttribute(	ref DataSettingImport,
 																				InformationProject,
 																				CountFrameFull,
@@ -5759,7 +5761,7 @@ public static partial class LibraryEditor_SpriteStudio
 																										string NameBaseAssetPath,
 																										string FileName
 																									)
-		{	/* MEMO: Specialization "ListVector2GetSSAEAttribute" for SizeForce */
+		{    /* MEMO: Specialization "ListVector2GetSSAEAttribute" for SizeForce */
 			Library_SpriteStudio.Data.ListAttributeVector2 Rv = null;
 			int CountAttributeListX = (null != AttributeListX) ? AttributeListX.Count : 0;
 			int CountAttributeListY = (null != AttributeListY) ? AttributeListY.Count : 0;
@@ -6604,7 +6606,8 @@ public static partial class LibraryEditor_SpriteStudio
 																	int IndexAnimation,
 																	int IndexParts,
 																	string NameBaseAssetPath,
-																	string FileName
+																	string FileName,
+																	Library_SpriteStudio_Flyweight.Flyweight flyweight
 																)
 		{
 			Library_SpriteStudio.Data.Parts DataPartsRuntime = InformationAnimationSet.ListDataPartsRuntime[IndexParts];
@@ -6679,51 +6682,48 @@ public static partial class LibraryEditor_SpriteStudio
 			}
 
 			Library_SpriteStudio.Data.ListAttributeIndexCellMapFix IndexCellMapFix = new Library_SpriteStudio.Data.ListAttributeIndexCellMapFix();
-			Library_SpriteStudio.Data.ListAttributeCoordinateMeshFix CoordinateMesh = new Library_SpriteStudio.Data.ListAttributeCoordinateMeshFix();
-			Library_SpriteStudio.Data.ListAttributeColorBlendMeshFix ColorBlendMesh = new Library_SpriteStudio.Data.ListAttributeColorBlendMeshFix();
-			Library_SpriteStudio.Data.ListAttributeUVMeshFix UV0Mesh = new Library_SpriteStudio.Data.ListAttributeUVMeshFix();
+			Library_SpriteStudio.Data.AttributeCoordinateMeshFix[] CoordinateMesh;
+			Library_SpriteStudio.Data.AttributeColorBlendMeshFix[] ColorBlendMesh;
+			Library_SpriteStudio.Data.AttributeUVMeshFix[] UV0Mesh;
 			if(false == FlagHasMesh)
 			{	/* No-Datas */
 				IndexCellMapFix.BootUp(0);
-				CoordinateMesh.BootUp(0);
-				ColorBlendMesh.BootUp(0);
-				UV0Mesh.BootUp(0);
+				CoordinateMesh = null;
+				ColorBlendMesh = null;
+				UV0Mesh = null;
 			}
 			else
 			{
 				IndexCellMapFix.BootUp(CountFrame);
-				CoordinateMesh.BootUp(CountFrame);
-				ColorBlendMesh.BootUp(CountFrame);
-				UV0Mesh.BootUp(CountFrame);
+				CoordinateMesh = new Library_SpriteStudio.Data.AttributeCoordinateMeshFix[CountFrame];
+				ColorBlendMesh = new Library_SpriteStudio.Data.AttributeColorBlendMeshFix[CountFrame];
+				UV0Mesh = new Library_SpriteStudio.Data.AttributeUVMeshFix[CountFrame];
 
 				for(int FrameNo=0; FrameNo<CountFrame; FrameNo++)
 				{
-					for(int i=0; i<CountVertexData; i++)
-					{
-						CoordinateMesh.ListValue[FrameNo] = new Library_SpriteStudio.Data.AttributeCoordinateMeshFix();
-						CoordinateMesh.ListValue[FrameNo].Coordinate = new Vector3[CountVertexData];
+					CoordinateMesh[FrameNo] = new Library_SpriteStudio.Data.AttributeCoordinateMeshFix();
+					CoordinateMesh[FrameNo].Coordinate = new Vector3[CountVertexData];
 
-						ColorBlendMesh.ListValue[FrameNo] = new Library_SpriteStudio.Data.AttributeColorBlendMeshFix();
-						ColorBlendMesh.ListValue[FrameNo].ColorOverlay = new Color32[CountVertexData];
-						ColorBlendMesh.ListValue[FrameNo].UV = new Vector2[CountVertexData];
+					ColorBlendMesh[FrameNo] = new Library_SpriteStudio.Data.AttributeColorBlendMeshFix();
+					ColorBlendMesh[FrameNo].ColorOverlay = new Color32[CountVertexData];
+					ColorBlendMesh[FrameNo].UV = new Vector2[CountVertexData];
 
-						UV0Mesh.ListValue[FrameNo] = new Library_SpriteStudio.Data.AttributeUVMeshFix();
-						UV0Mesh.ListValue[FrameNo].UV = new Vector2[CountVertexData];
-					}
+					UV0Mesh[FrameNo] = new Library_SpriteStudio.Data.AttributeUVMeshFix();
+					UV0Mesh[FrameNo].UV = new Vector2[CountVertexData];
 				}
 			}
 
-			Library_SpriteStudio.Data.ListAttributeVector2 SizeCollision = new Library_SpriteStudio.Data.ListAttributeVector2();
-			Library_SpriteStudio.Data.ListAttributeVector2 PivotCollision = new Library_SpriteStudio.Data.ListAttributeVector2();
+			Vector2[] SizeCollision;
+			Vector2[] PivotCollision;
 			if(false == FlagHasCollider)
-			{	/* No-Datas */
-				SizeCollision.BootUp(0);
-				PivotCollision.BootUp(0);
+			{    /* No-Datas */
+				SizeCollision = null;
+				PivotCollision = null;
 			}
 			else
 			{
-				SizeCollision.BootUp(CountFrame);
-				PivotCollision.BootUp(CountFrame);
+				SizeCollision = new Vector2[CountFrame];
+				PivotCollision = new Vector2[CountFrame];
 			}
 
 			/* Calculate Datas */
@@ -6840,7 +6840,7 @@ public static partial class LibraryEditor_SpriteStudio
 				}
 
 				/* Recalc Mesh Size & Pivot (Considering SizeForce-X/Y & OffsetPivot-X/Y) */
-				MeshRecalcSizeAndPivot(ref PivotMesh, ref SizePixelMesh, ref RateScaleMesh, FrameNo, DataAnimationPartsRuntime);
+				MeshRecalcSizeAndPivot(ref PivotMesh, ref SizePixelMesh, ref RateScaleMesh, FrameNo, DataAnimationPartsRuntime, flyweight);
 
 				/* Calculate Collider Size & Pivot */
 				RateScaleBoxCollider = RateScaleMesh;
@@ -6850,8 +6850,8 @@ public static partial class LibraryEditor_SpriteStudio
 				PivotBoxCollider.y = (PivotBoxCollider.y - (SizeBoxCollider.y * 0.5f)) * RateScaleBoxCollider.y;
 				if(true == FlagHasCollider)
 				{
-					SizeCollision.ListValue[FrameNo] = SizeBoxCollider;
-					PivotCollision.ListValue[FrameNo] = PivotBoxCollider;
+					SizeCollision[FrameNo] = SizeBoxCollider;
+					PivotCollision[FrameNo] = PivotBoxCollider;
 				}
 
 				/* Calculate Matrix-Texture & Set Mapping-UV */
@@ -6875,7 +6875,7 @@ public static partial class LibraryEditor_SpriteStudio
 				{
 					for(int i=0; i<CountVertexData; i++)
 					{	/* Memo: "ArrayUVMappingUV0_Triangle4" of the data up to the "VertexNo.TERMINATOR2"-th elements are same as those of "ArrayUVMappingUV0_Triangle2". */
-						UV0Mesh.ListValue[FrameNo].UV[i] = MatrixTexture.MultiplyPoint3x4(Library_SpriteStudio.ArrayUVMappingUV0_Triangle4[i]);
+						UV0Mesh[FrameNo].UV[i] = MatrixTexture.MultiplyPoint3x4(Library_SpriteStudio.ArrayUVMappingUV0_Triangle4[i]);
 					}
 				}
 
@@ -6898,9 +6898,9 @@ public static partial class LibraryEditor_SpriteStudio
 						{
 							for(int i=0; i<(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2; i++)
 							{
-								ColorBlendMesh.ListValue[FrameNo].UV[i] = DataUV2;
-								ColorBlendMesh.ListValue[FrameNo].UV[i].x *= DataColorBlend.RatePixelAlpha[i];
-								ColorBlendMesh.ListValue[FrameNo].ColorOverlay[i] = DataColorBlend.VertexColor[i];
+								ColorBlendMesh[FrameNo].UV[i] = DataUV2;
+								ColorBlendMesh[FrameNo].UV[i].x *= DataColorBlend.RatePixelAlpha[i];
+								ColorBlendMesh[FrameNo].ColorOverlay[i] = DataColorBlend.VertexColor[i];
 							}
 							goto UpdateMesh_ColorBlend_End;
 						}
@@ -6909,8 +6909,8 @@ public static partial class LibraryEditor_SpriteStudio
 					/* MEMO: Trapping "No-Operation" */
 					for(int i=0; i<(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2; i++)
 					{
-						ColorBlendMesh.ListValue[FrameNo].UV[i] = DataUV2;
-						ColorBlendMesh.ListValue[FrameNo].ColorOverlay[i] = Color.white;
+						ColorBlendMesh[FrameNo].UV[i] = DataUV2;
+						ColorBlendMesh[FrameNo].ColorOverlay[i] = Color.white;
 					}
 
 				UpdateMesh_ColorBlend_End:;
@@ -6922,20 +6922,20 @@ public static partial class LibraryEditor_SpriteStudio
 					if((int)Library_SpriteStudio.KindVertexNo.TERMINATOR4 == CountVertexData)	/* Vertex-Coordinate */
 					{	/* 4-Triangles Mesh */
 						/* Get Color Blend (Center) */
-						ColorBlendMesh.ListValue[FrameNo].UV[(int)Library_SpriteStudio.KindVertexNo.C] = ColorBlendMesh.ListValue[FrameNo].UV[0];
-						Color DataColor = ColorBlendMesh.ListValue[FrameNo].ColorOverlay[0];
-						DataColor += ColorBlendMesh.ListValue[FrameNo].ColorOverlay[1];
-						DataColor += ColorBlendMesh.ListValue[FrameNo].ColorOverlay[2];
-						DataColor += ColorBlendMesh.ListValue[FrameNo].ColorOverlay[3];
+						ColorBlendMesh[FrameNo].UV[(int)Library_SpriteStudio.KindVertexNo.C] = ColorBlendMesh[FrameNo].UV[0];
+						Color DataColor = ColorBlendMesh[FrameNo].ColorOverlay[0];
+						DataColor += ColorBlendMesh[FrameNo].ColorOverlay[1];
+						DataColor += ColorBlendMesh[FrameNo].ColorOverlay[2];
+						DataColor += ColorBlendMesh[FrameNo].ColorOverlay[3];
 						DataColor *= 0.25f;
-						ColorBlendMesh.ListValue[FrameNo].ColorOverlay[(int)Library_SpriteStudio.KindVertexNo.C] = DataColor;
+						ColorBlendMesh[FrameNo].ColorOverlay[(int)Library_SpriteStudio.KindVertexNo.C] = DataColor;
 
-						Vector2 DataUV2 = ColorBlendMesh.ListValue[FrameNo].UV[0];
-						DataUV2 += ColorBlendMesh.ListValue[FrameNo].UV[1];
-						DataUV2 += ColorBlendMesh.ListValue[FrameNo].UV[2];
-						DataUV2 += ColorBlendMesh.ListValue[FrameNo].UV[3];
+						Vector2 DataUV2 = ColorBlendMesh[FrameNo].UV[0];
+						DataUV2 += ColorBlendMesh[FrameNo].UV[1];
+						DataUV2 += ColorBlendMesh[FrameNo].UV[2];
+						DataUV2 += ColorBlendMesh[FrameNo].UV[3];
 						DataUV2 *= 0.25f;
-						ColorBlendMesh.ListValue[FrameNo].UV[(int)Library_SpriteStudio.KindVertexNo.C] = DataUV2;
+						ColorBlendMesh[FrameNo].UV[(int)Library_SpriteStudio.KindVertexNo.C] = DataUV2;
 
 						/* Get Coordinates */
 						/* MEMO: No Check "AnimationDataVertexCorrection.Length", 'cause 4-Triangles-Mesh necessarily has "AnimationDataVertexCorrection" */
@@ -6946,27 +6946,27 @@ public static partial class LibraryEditor_SpriteStudio
 						IndexAttribute = DataAnimationPartsRuntime.DataPlain.VertexCorrection.IndexGetValue(out FrameNoOrigin, FrameNo);
 						Library_SpriteStudio.Data.AttributeVertexCorrection VertexCorrection = (0 <= IndexAttribute) ? DataAnimationPartsRuntime.DataPlain.VertexCorrection.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyVertexCorrection;
 
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector3(	Left + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.LU]].x,
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector3(	Left + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.LU]].x,
 																																Top + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.LU]].y,
 																																0.0f
 																															);
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector3(	Right + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.RU]].x,
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector3(	Right + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.RU]].x,
 																																Top + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.RU]].y,
 																																0.0f
 																															);
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector3(	Right + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.RD]].x,
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector3(	Right + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.RD]].x,
 																																Bottom + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.RD]].y,
 																																0.0f
 																															);
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector3(	Left + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.LD]].x,
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector3(	Left + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.LD]].x,
 																																Bottom + VertexCorrection.Coordinate[Library_SpriteStudio.VertexCollectionOrderVertex[IndexVertexCollectionTable, (int)Library_SpriteStudio.KindVertexNo.LD]].y,
 																																0.0f
 																															);
-						Vector3 CoordinateLURU = (CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] + CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU]) * 0.5f;
-						Vector3 CoordinateLULD = (CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] + CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD]) * 0.5f;
-						Vector3 CoordinateLDRD = (CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] + CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD]) * 0.5f;
-						Vector3 CoordinateRURD = (CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] + CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD]) * 0.5f;
-						Library_SpriteStudio.Miscellaneousness.Math.CoordinateGetDiagonalIntersection(	out CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.C],
+						Vector3 CoordinateLURU = (CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] + CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU]) * 0.5f;
+						Vector3 CoordinateLULD = (CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] + CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD]) * 0.5f;
+						Vector3 CoordinateLDRD = (CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] + CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD]) * 0.5f;
+						Vector3 CoordinateRURD = (CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] + CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD]) * 0.5f;
+						Library_SpriteStudio.Miscellaneousness.Math.CoordinateGetDiagonalIntersection(	out CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.C],
 																										ref CoordinateLURU,
 																										ref CoordinateRURD,
 																										ref CoordinateLULD,
@@ -6981,10 +6981,10 @@ public static partial class LibraryEditor_SpriteStudio
 						float Top = (-PivotMesh.y) * RateScaleMesh.y;
 						float Bottom = (SizePixelMesh.y - PivotMesh.y)* RateScaleMesh.y;
 
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector3(Left, -Top, 0.0f);
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector3(Right, -Top, 0.0f);
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector3(Right, -Bottom, 0.0f);
-						CoordinateMesh.ListValue[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector3(Left, -Bottom, 0.0f);
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LU] = new Vector3(Left, -Top, 0.0f);
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RU] = new Vector3(Right, -Top, 0.0f);
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.RD] = new Vector3(Right, -Bottom, 0.0f);
+						CoordinateMesh[FrameNo].Coordinate[(int)Library_SpriteStudio.KindVertexNo.LD] = new Vector3(Left, -Bottom, 0.0f);
 					}
 				}
 			}
@@ -6992,11 +6992,16 @@ public static partial class LibraryEditor_SpriteStudio
 			/* Data-Exchange */
 			DataAnimationPartsRuntime.DataFix = new Library_SpriteStudio.Data.AnimationPartsPartsFix();
 			DataAnimationPartsRuntime.DataFix.IndexCellMapMesh = IndexCellMapFix;
-			DataAnimationPartsRuntime.DataFix.CoordinateMesh = CoordinateMesh;
-			DataAnimationPartsRuntime.DataFix.ColorBlendMesh = ColorBlendMesh;
-			DataAnimationPartsRuntime.DataFix.UV0Mesh = UV0Mesh;
-			DataAnimationPartsRuntime.DataFix.SizeCollision = SizeCollision;
-			DataAnimationPartsRuntime.DataFix.PivotCollision = PivotCollision;
+			DataAnimationPartsRuntime.DataFix.CoordinateMesh = new Library_SpriteStudio_Flyweight.ListAttributeCoordinateMeshFix();
+			DataAnimationPartsRuntime.DataFix.CoordinateMesh.Build(flyweight, CoordinateMesh);
+			DataAnimationPartsRuntime.DataFix.ColorBlendMesh = new Library_SpriteStudio_Flyweight.ListAttributeColorBlendMeshFix();
+			DataAnimationPartsRuntime.DataFix.ColorBlendMesh.Build(flyweight, ColorBlendMesh);
+			DataAnimationPartsRuntime.DataFix.UV0Mesh = new Library_SpriteStudio_Flyweight.ListAttributeUVMeshFix();
+			DataAnimationPartsRuntime.DataFix.UV0Mesh.Build(flyweight, UV0Mesh);
+			DataAnimationPartsRuntime.DataFix.SizeCollision = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
+			DataAnimationPartsRuntime.DataFix.SizeCollision.Build(flyweight, SizeCollision);
+			DataAnimationPartsRuntime.DataFix.PivotCollision = new Library_SpriteStudio_Flyweight.ListAttributeVector2();
+			DataAnimationPartsRuntime.DataFix.PivotCollision.Build(flyweight, PivotCollision);
 			DataAnimationPartsRuntime.DataFix.RadiusCollision = DataAnimationPartsRuntime.DataPlain.RadiusCollision;
 
 			DataAnimationPartsRuntime.SizeForce = null;	/* Delete */
@@ -7009,7 +7014,8 @@ public static partial class LibraryEditor_SpriteStudio
 													ref Vector2 Size,
 													ref Vector2 RateScale,
 													int FrameNo,
-													Library_SpriteStudio.Data.AnimationParts DataAnimationPartsRuntime
+													Library_SpriteStudio.Data.AnimationParts DataAnimationPartsRuntime,
+													Library_SpriteStudio_Flyweight.Flyweight flyweight
 												)
 		{
 			int FrameNoOrigin;
@@ -7020,11 +7026,10 @@ public static partial class LibraryEditor_SpriteStudio
 			Pivot.y -= (Size.y * PivotOffset.y) * RateScale.y;
 
 			/* Arbitrate Anchor-Size */
-			IndexAttribute = DataAnimationPartsRuntime.SizeForce.IndexGetValue(out FrameNoOrigin, FrameNo);
-			if(0 <= IndexAttribute)
+			Vector2 SizeForce;
+			if (DataAnimationPartsRuntime.SizeForce.TryGetValue(out SizeForce, FrameNo, flyweight))
 			{
 				float RatePivot;
-				Vector2 SizeForce = DataAnimationPartsRuntime.SizeForce.ListValue[IndexAttribute];
 				if(0.0f <= SizeForce.x)
 				{
 					RatePivot = Pivot.x / Size.x;
