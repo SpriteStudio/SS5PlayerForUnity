@@ -633,13 +633,13 @@ public static partial class Library_SpriteStudio
 
 			public Library_SpriteStudio.Data.ListAttributeVector3 Position;		/* Always Compressed */
 			public Library_SpriteStudio.Data.ListAttributeVector3 Rotation;		/* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeVector2 Scaling;		/* Always Compressed */
+			public Library_SpriteStudio_Flyweight.ListAttributeVector2 Scaling;	/* Always Compressed */
 
 			public Library_SpriteStudio.Data.ListAttributeFloat RateOpacity;
 			public Library_SpriteStudio.Data.ListAttributeFloat Priority;
 
-			public Library_SpriteStudio.Data.ListAttributeVector2 PositionAnchor;	/* Reserved. */
-			public Library_SpriteStudio.Data.ListAttributeVector2 SizeForce;
+			public Library_SpriteStudio_Flyweight.ListAttributeVector2 PositionAnchor;	/* Reserved. */
+			public Library_SpriteStudio_Flyweight.ListAttributeVector2 SizeForce;
 
 			public Library_SpriteStudio.Data.ListAttributeUserData UserData;	/* Always Compressed */
 			public Library_SpriteStudio.Data.ListAttributeInstance Instance;	/* Always Compressed */
@@ -684,10 +684,6 @@ public static partial class Library_SpriteStudio
 				if(null != Rotation)
 				{
 					Rotation.CompressCPE(CountFrame);
-				}
-				if(null != Scaling)
-				{
-					Scaling.CompressCPE(CountFrame);
 				}
 
 				/* MEMO: Always Compressed */
@@ -738,12 +734,6 @@ public static partial class Library_SpriteStudio
 //				{
 //					Rotation.CompressCPE(CountFrame);
 //				}
-				/* MEMO: Always Compressed */
-//				if(null != Scaling)
-//				{
-//					Scaling.CompressCPE(CountFrame);
-//				}
-
 				if(null != RateOpacity)
 				{
 					RateOpacity.CompressCPE(CountFrame);
@@ -751,15 +741,6 @@ public static partial class Library_SpriteStudio
 				if(null != Priority)
 				{
 					Priority.CompressCPE(CountFrame);
-				}
-
-				if(null != PositionAnchor)
-				{
-					PositionAnchor.CompressCPE(CountFrame);
-				}
-				if(null != SizeForce)
-				{
-					SizeForce.CompressCPE(CountFrame);
 				}
 
 				/* MEMO: Always Compressed */
@@ -806,11 +787,6 @@ public static partial class Library_SpriteStudio
 //				{
 //					Rotation.DecompressCPE(CountFrame);
 //				}
-				/* MEMO: Always Compressed */
-//				if(null != Scaling)
-//				{
-//					Scaling.DecompressCPE(CountFrame);
-//				}
 
 				if(null != RateOpacity)
 				{
@@ -819,15 +795,6 @@ public static partial class Library_SpriteStudio
 				if(null != Priority)
 				{
 					Priority.DecompressCPE(CountFrame);
-				}
-
-				if(null != PositionAnchor)
-				{
-					PositionAnchor.DecompressCPE(CountFrame);
-				}
-				if(null != SizeForce)
-				{
-					SizeForce.DecompressCPE(CountFrame);
 				}
 
 				/* MEMO: Always Compressed */
@@ -994,12 +961,12 @@ public static partial class Library_SpriteStudio
 		public class AnimationPartsPartsFix
 		{
 			public Library_SpriteStudio.Data.ListAttributeIndexCellMapFix IndexCellMapMesh;
-			public Library_SpriteStudio.Data.ListAttributeCoordinateMeshFix CoordinateMesh;
-			public Library_SpriteStudio.Data.ListAttributeColorBlendMeshFix ColorBlendMesh;
-			public Library_SpriteStudio.Data.ListAttributeUVMeshFix UV0Mesh;
+			public Library_SpriteStudio_Flyweight.ListAttributeCoordinateMeshFix CoordinateMesh;
+			public Library_SpriteStudio_Flyweight.ListAttributeColorBlendMeshFix ColorBlendMesh;
+			public Library_SpriteStudio_Flyweight.ListAttributeUVMeshFix UV0Mesh;
 
-			public Library_SpriteStudio.Data.ListAttributeVector2 SizeCollision;	/* for Box-Collider *//* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeVector2 PivotCollision;	/* for Box-Collider *//* Always Compressed */
+			public Library_SpriteStudio_Flyweight.ListAttributeVector2 SizeCollision;	/* for Box-Collider *//* Always Compressed */
+			public Library_SpriteStudio_Flyweight.ListAttributeVector2 PivotCollision;	/* for Box-Collider *//* Always Compressed */
 
 			public Library_SpriteStudio.Data.ListAttributeFloat RadiusCollision;	/* for Sphere-Collider *//* Always Compressed */
 
@@ -1022,16 +989,6 @@ public static partial class Library_SpriteStudio
 					IndexCellMapMesh.CompressCPE(CountFrame);
 				}
 				/* MEMO: Always Compressed */
-				if(null != SizeCollision)
-				{
-					SizeCollision.CompressCPE(CountFrame);
-				}
-				/* MEMO: Always Compressed */
-				if(null != PivotCollision)
-				{
-					PivotCollision.CompressCPE(CountFrame);
-				}
-				/* MEMO: Always Compressed */
 				if(null != RadiusCollision)
 				{
 					RadiusCollision.CompressCPE(CountFrame);
@@ -1048,31 +1005,6 @@ public static partial class Library_SpriteStudio
 //					IndexCellMapMesh.CompressCPE(CountFrame);
 //				}
 
-				if(null != CoordinateMesh)
-				{
-					CoordinateMesh.CompressCPE(CountFrame);
-				}
-
-				if(null != ColorBlendMesh)
-				{
-					ColorBlendMesh.CompressCPE(CountFrame);
-				}
-
-				if(null != UV0Mesh)
-				{
-					UV0Mesh.CompressCPE(CountFrame);
-				}
-
-				/* MEMO: Always Compressed */
-//				if(null != SizeCollision)
-//				{
-//					SizeCollision.CompressCPE(CountFrame);
-//				}
-				/* MEMO: Always Compressed */
-//				if(null != PivotCollision)
-//				{
-//					PivotCollision.CompressCPE(CountFrame);
-//				}
 				/* MEMO: Always Compressed */
 //				if(null != RadiusCollision)
 //				{
@@ -1089,31 +1021,6 @@ public static partial class Library_SpriteStudio
 //					IndexCellMapMesh.DecompressCPE(CountFrame);
 //				}
 
-				if(null != CoordinateMesh)
-				{
-					CoordinateMesh.DecompressCPE(CountFrame);
-				}
-
-				if(null != ColorBlendMesh)
-				{
-					ColorBlendMesh.DecompressCPE(CountFrame);
-				}
-
-				if(null != UV0Mesh)
-				{
-					UV0Mesh.DecompressCPE(CountFrame);
-				}
-
-				/* MEMO: Always Compressed */
-//				if(null != SizeCollision)
-//				{
-//					SizeCollision.DecompressCPE(CountFrame);
-//				}
-				/* MEMO: Always Compressed */
-//				if(null != PivotCollision)
-//				{
-//					PivotCollision.DecompressCPE(CountFrame);
-//				}
 				/* MEMO: Always Compressed */
 //				if(null != RadiusCollision)
 //				{
@@ -1844,18 +1751,6 @@ public static partial class Library_SpriteStudio
 
 		[System.Serializable]
 		public class ListAttributeIndexCellMapFix : ListAttribute_Base<int>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeCoordinateMeshFix : ListAttribute_Base<Library_SpriteStudio.Data.AttributeCoordinateMeshFix>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeColorBlendMeshFix : ListAttribute_Base<Library_SpriteStudio.Data.AttributeColorBlendMeshFix>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeUVMeshFix : ListAttribute_Base<Library_SpriteStudio.Data.AttributeUVMeshFix>
 		{
 		}
 
@@ -2928,7 +2823,7 @@ public static partial class Library_SpriteStudio
 					if(IndexPreviousScaling != IndexAttribute)
 					{
 //						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
-						Vector3 VectorTemp = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						Vector3 VectorTemp = DataAnimationParts.Scaling.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						VectorTemp.z = 1.0f;
 						InstanceTransform.localScale = VectorTemp;
 						IndexPreviousScaling = IndexAttribute;
@@ -3087,7 +2982,8 @@ public static partial class Library_SpriteStudio
 							MeshRecalcSizeAndPivot(	ref BufferParameterParts.PivotMesh,
 													ref BufferParameterParts.SizePixelMesh,
 													ref BufferParameterParts.RateScaleMesh,
-													FrameNo
+													FrameNo,
+													InstanceRoot.DataAnimation.Flyweight
 												);
 						}
 
@@ -3177,8 +3073,8 @@ public static partial class Library_SpriteStudio
 							int IndexAttributeCollisionPivot = DataAnimationParts.DataFix.PivotCollision.IndexGetValue(out FrameNoOrigin, FrameNo);
 							if((0 <= IndexAttribute) && (0 <= IndexAttributeCollisionPivot))
 							{
-								Vector2 DataSizeCollision = DataAnimationParts.DataFix.SizeCollision.ListValue[IndexAttribute];
-								Vector2 DataPivotCollision = DataAnimationParts.DataFix.PivotCollision.ListValue[IndexAttributeCollisionPivot];
+								Vector2 DataSizeCollision = DataAnimationParts.DataFix.SizeCollision.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
+								Vector2 DataPivotCollision = DataAnimationParts.DataFix.PivotCollision.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttributeCollisionPivot);
 								if((DataPivotCollision != InstanceCollider.ColliderRectPivotPrevious) || (DataSizeCollision != InstanceCollider.ColliderRectSizePrevious))
 								{	/* Update */
 									/* Update Previous Buffer */
@@ -3441,14 +3337,14 @@ public static partial class Library_SpriteStudio
 					IndexAttribute = DataAnimationParts.DataFix.CoordinateMesh.IndexGetValue(out FrameNoOrigin, FrameNo);
 					if(0 <= IndexAttribute)
 					{
-						Library_SpriteStudio.Data.AttributeCoordinateMeshFix CoordinateMeshFix = DataAnimationParts.DataFix.CoordinateMesh.ListValue[IndexAttribute];
+						Library_SpriteStudio.Data.AttributeCoordinateMeshFix CoordinateMeshFix = DataAnimationParts.DataFix.CoordinateMesh.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						for(int i=0; i<CountVertexData; i++)
 						{
 							InstanceParameterMesh.Coordinate[i] = CoordinateMeshFix.Coordinate[i];
 						}
 
 						IndexAttribute = DataAnimationParts.DataFix.ColorBlendMesh.IndexGetValue(out FrameNoOrigin, FrameNo);
-						Library_SpriteStudio.Data.AttributeColorBlendMeshFix ColorBlendMeshFix = DataAnimationParts.DataFix.ColorBlendMesh.ListValue[IndexAttribute];
+						Library_SpriteStudio.Data.AttributeColorBlendMeshFix ColorBlendMeshFix = DataAnimationParts.DataFix.ColorBlendMesh.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						if((null != DataColorBlendOverwrite) && (KindColorOperation.NON != DataColorBlendOverwrite.Operation))
 						{	/* Overwrite */
 							float KindOperation = (float)DataColorBlendOverwrite.Operation + 0.01f;	/* "+0.01f" for Rounding-off-Error */
@@ -3482,8 +3378,8 @@ public static partial class Library_SpriteStudio
 							}
 						}
 
-						IndexAttribute = DataAnimationParts.DataFix.UV0Mesh.IndexGetValue(out FrameNoOrigin, FrameNo);
-						Library_SpriteStudio.Data.AttributeUVMeshFix UVMeshFix = DataAnimationParts.DataFix.UV0Mesh.ListValue[IndexAttribute];
+						Library_SpriteStudio.Data.AttributeUVMeshFix UVMeshFix;
+						DataAnimationParts.DataFix.UV0Mesh.TryGetValue(out UVMeshFix, IndexAttribute, InstanceRoot.DataAnimation.Flyweight);
 						for(int i=0; i<CountVertexData; i++)
 						{
 							InstanceParameterMesh.UV[i] = UVMeshFix.UV[i];
@@ -3521,8 +3417,8 @@ public static partial class Library_SpriteStudio
 				}
 				return(true);
 			}
-
-			public void MeshRecalcSizeAndPivot(ref Vector2 Pivot, ref Vector2 Size, ref Vector2 RateScale, int FrameNo)
+			
+			public void MeshRecalcSizeAndPivot(ref Vector2 Pivot, ref Vector2 Size, ref Vector2 RateScale, int FrameNo, Library_SpriteStudio_Flyweight.Flyweight flyweight)
 			{
 				int FrameNoOrigin;
 				int IndexAttribute;
@@ -3532,11 +3428,10 @@ public static partial class Library_SpriteStudio
 				Pivot.y -= (Size.y * PivotOffset.y) * RateScale.y;
 
 				/* Arbitrate Anchor-Size */
-				IndexAttribute = DataAnimationParts.SizeForce.IndexGetValue(out FrameNoOrigin, FrameNo);
-				if(0 <= IndexAttribute)
+				Vector2 SizeForce;
+				if (DataAnimationParts.SizeForce.TryGetValue(out SizeForce, FrameNo, flyweight))
 				{
 					float RatePivot;
-					Vector2 SizeForce = DataAnimationParts.SizeForce.ListValue[IndexAttribute];
 					if(0.0f <= SizeForce.x)
 					{
 						RatePivot = Pivot.x / Size.x;
