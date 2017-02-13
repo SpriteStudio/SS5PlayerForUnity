@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<SpriteStudioProject version="1.02.00">
-	<name>character_template1</name>
+<SpriteStudioProject version="1.02.02">
+	<name>instance_test</name>
 	<exportPath></exportPath>
 	<settings>
 		<animeBaseDirectory></animeBaseDirectory>
@@ -15,10 +15,11 @@
 			<keepAngleAsIsIfNegativeScale>1</keepAngleAsIsIfNegativeScale>
 		</ssaxImport>
 		<copyWhenImportImageIsOutside>1</copyWhenImportImageIsOutside>
-		<exportAnimeFileFormat>SSP for Cocos2d-x (.ssba)</exportAnimeFileFormat>
+		<exportAnimeFileFormat>SSAX</exportAnimeFileFormat>
 		<exportCellMapFileFormat>invalid</exportCellMapFileFormat>
 		<exportCellMap>0</exportCellMap>
 		<copyImageWhenExportCellmap>1</copyImageWhenExportCellmap>
+		<ssConverterOptions></ssConverterOptions>
 		<ssaxExport>
 			<addAnimeNameEvenIfSingle>1</addAnimeNameEvenIfSingle>
 			<listAllCellMaps>1</listAllCellMaps>
@@ -86,6 +87,7 @@
 			<addTimeStamp>0</addTimeStamp>
 			<addAlphaChanel>1</addAlphaChanel>
 		</renderingSettings>
+		<cellTags />
 	</settings>
 	<animeSettings>
 		<fps>30</fps>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<SpriteStudioProject version="1.00.03">
+<SpriteStudioProject version="1.02.02">
 	<name>effect_comipo</name>
 	<exportPath></exportPath>
 	<settings>
 		<animeBaseDirectory></animeBaseDirectory>
 		<cellMapBaseDirectory></cellMapBaseDirectory>
 		<imageBaseDirectory></imageBaseDirectory>
+		<effectBaseDirectory></effectBaseDirectory>
 		<exportBaseDirectory>../export</exportBaseDirectory>
 		<queryExportBaseDirectory>1</queryExportBaseDirectory>
 		<ssaxImport>
@@ -14,10 +15,11 @@
 			<keepAngleAsIsIfNegativeScale>1</keepAngleAsIsIfNegativeScale>
 		</ssaxImport>
 		<copyWhenImportImageIsOutside>1</copyWhenImportImageIsOutside>
-		<exportAnimeFileFormat>SSP for Cocos2d-x (.ssba)</exportAnimeFileFormat>
-		<exportCellMapFileFormat></exportCellMapFileFormat>
+		<exportAnimeFileFormat>SSAX</exportAnimeFileFormat>
+		<exportCellMapFileFormat>invalid</exportCellMapFileFormat>
 		<exportCellMap>0</exportCellMap>
 		<copyImageWhenExportCellmap>1</copyImageWhenExportCellmap>
+		<ssConverterOptions></ssConverterOptions>
 		<ssaxExport>
 			<addAnimeNameEvenIfSingle>1</addAnimeNameEvenIfSingle>
 			<listAllCellMaps>1</listAllCellMaps>
@@ -67,6 +69,7 @@
 			<item>BNDR</item>
 			<item>USER</item>
 		</availableAttributes>
+		<availableFeatures />
 		<defaultSetAttributes>
 			<item>POSX</item>
 			<item>POSY</item>
@@ -76,7 +79,15 @@
 		<wrapMode>clamp</wrapMode>
 		<filterMode>nearlest</filterMode>
 		<interpolationType>linear</interpolationType>
-		<renderingOutputDirectory></renderingOutputDirectory>
+		<renderingSettings>
+			<outputFolder></outputFolder>
+			<outputType>AVI</outputType>
+			<bgColor>FF606060</bgColor>
+			<addAnimeName>0</addAnimeName>
+			<addTimeStamp>0</addTimeStamp>
+			<addAlphaChanel>1</addAlphaChanel>
+		</renderingSettings>
+		<cellTags />
 	</settings>
 	<animeSettings>
 		<fps>30</fps>

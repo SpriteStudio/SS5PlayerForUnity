@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<SpriteStudioProject version="1.02.01">
-	<name>Counter</name>
+<SpriteStudioProject version="1.02.02">
+	<name>BitmapFontNumeric_Complex</name>
 	<exportPath></exportPath>
 	<settings>
 		<animeBaseDirectory></animeBaseDirectory>
@@ -77,6 +77,7 @@
 			<addTimeStamp>0</addTimeStamp>
 			<addAlphaChanel>1</addAlphaChanel>
 		</renderingSettings>
+		<cellTags />
 	</settings>
 	<animeSettings>
 		<fps>30</fps>
