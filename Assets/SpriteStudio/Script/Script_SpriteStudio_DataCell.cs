@@ -25,7 +25,8 @@ public partial class Script_SpriteStudio_DataCell : ScriptableObject
 		int Count = ListDataCellMap.Length;
 		for(int i=0; i<Count; i++)
 		{
-			if(0 == string.Compare(Name, ListDataCellMap[i].Name))
+//			if(0 == string.Compare(Name, ListDataCellMap[i].Name))
+			if(Name == ListDataCellMap[i].Name)
 			{
 				return(i);
 			}
