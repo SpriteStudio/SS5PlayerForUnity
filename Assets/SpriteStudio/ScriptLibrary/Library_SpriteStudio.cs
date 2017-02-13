@@ -5948,6 +5948,13 @@ public static partial class Library_SpriteStudio
 			}
 		}
 
+#if UNITY_5_3_OR_NEWER
+		static System.WeakReference VertexNoTriangleBuffer;
+#endif
+#if UNITY_5_6_OR_NEWER
+/* Unity5.5.1p1 or newer*/
+		static System.WeakReference TriangleBuffer;
+#endif
 		internal static void MeshCreate(	TerminalClusterDrawParts ClusterTerminal,
 											ref Mesh InstanceMeshWrite,
 											ref Material[] InstanceMaterialWrite,
@@ -6003,17 +6010,28 @@ public static partial class Library_SpriteStudio
 			{
 				CombineMesh = new CombineInstance[CountMesh];
 			}
-//			int[] TableIndexVertex = new int[CountMaterial];
 			int[] TableIndexTriangle = new int[CountMaterial + 1];	/* +1 ... Total Data */
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
 			Index = 0;
 			int IndexTriangle = 0;
+			int MaxTriangleCountForSubmesh = 0;
 			for(int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
-//				TableIndexVertex[i] = IndexVertex;
 				TableIndexTriangle[i] = IndexTriangle;
+
+				if(i == 0)
+				{
+					MaxTriangleCountForSubmesh = IndexTriangle;
+				}
+				else
+				{
+					if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[i - 1])
+					{
+						MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[i - 1];
+					}
+				}
 
 				while(null != DataPartsNow)
 				{
@@ -6033,7 +6051,12 @@ public static partial class Library_SpriteStudio
 				}
 				ClusterNow = ClusterNow.ChainNext;
 			}
+
 			TableIndexTriangle[CountMaterial] = IndexTriangle;
+			if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[CountMaterial - 1])
+			{
+				MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[CountMaterial - 1];
+			}
 			for(int i=Index; i<CombineMesh.Length; i++)
 			{
 				CombineMesh[i].mesh = null;
@@ -6043,20 +6066,63 @@ public static partial class Library_SpriteStudio
 			/* SubMesh Construct */
 			if(1 < CountMaterial)
 			{
-				int[] TriangleBuffer = InstanceMesh.triangles;
+#if UNITY_5_6_OR_NEWER
+/* Unity5.5.1p1 or newer*/
+				List<int> Triangles = null;
+				if (TriangleBuffer != null)
+				{
+					Triangles = TriangleBuffer.Target as List<int>;
+				}
+				if (Triangles == null)
+				{
+					Triangles = new List<int>(IndexTriangle * 3);
+					TriangleBuffer = new System.WeakReference(Triangles);
+				}
+				InstanceMesh.GetTriangles(Triangles, 0);
+#else
+				int[] Triangles = InstanceMesh.triangles;
+#endif
+
+#if UNITY_5_3_OR_NEWER
+				List<int> VertexNoTriangle = null;
+				if (VertexNoTriangleBuffer != null)
+				{
+					VertexNoTriangle = VertexNoTriangleBuffer.Target as List<int>;
+				}
+				if (VertexNoTriangle == null)
+				{
+					VertexNoTriangle = new List<int>(MaxTriangleCountForSubmesh * 3);
+					VertexNoTriangleBuffer = new System.WeakReference(VertexNoTriangle);
+				}
+#else
 				int[] VertexNoTriangle = null;
+				int intSize = sizeof(int);
+#endif
 				InstanceMesh.triangles = null;
 				InstanceMesh.subMeshCount = CountMaterial;
 				for (int i=0; i<CountMaterial; i++)
 				{
+#if UNITY_5_3_OR_NEWER
+					VertexNoTriangle.Clear();
+					for(int j = TableIndexTriangle[i]; j < TableIndexTriangle[i + 1]; ++j)
+					{
+						VertexNoTriangle.Add(Triangles[j * 3]);
+						VertexNoTriangle.Add(Triangles[j * 3 + 1]);
+						VertexNoTriangle.Add(Triangles[j * 3 + 2]);
+					}
+					InstanceMesh.SetTriangles(VertexNoTriangle, i);
+#else
 					CountMesh = TableIndexTriangle[i + 1] - TableIndexTriangle[i];
-					VertexNoTriangle = new int[CountMesh * 3];
-					int intSize = sizeof(int);
-					System.Buffer.BlockCopy(	TriangleBuffer, TableIndexTriangle[i] * 3 * intSize,
+					if (VertexNoTriangle == null || VertexNoTriangle.Length != CountMesh * 3)
+					{
+						VertexNoTriangle = new int[CountMesh * 3];
+					}
+					System.Buffer.BlockCopy(	Triangles, TableIndexTriangle[i] * 3 * intSize,
 												VertexNoTriangle, 0,
 												CountMesh * 3 * intSize
 											);
 					InstanceMesh.SetTriangles(VertexNoTriangle, i);
+#endif
 				}
 			}
 
