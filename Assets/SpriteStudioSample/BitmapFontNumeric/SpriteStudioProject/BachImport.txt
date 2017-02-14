@@ -9,7 +9,8 @@
 ? FlagAttachControlGameObject > true
 ? FlagConfirmOverWrite > false
 ? FlagCreateProjectFolder > true
-? FlagDataCalculateInAdvance > true
+* セルを変更する場合はFlagDataCalculateInAdvanceをfalseにする必要があります。. 
+? FlagDataCalculateInAdvance > false
 
 ? NameBaseFolderSS5Data > Assets/SpriteStudioSample/BitmapFontNumeric/SpriteStudioProject/Numeric
 ? NameBaseFolderAsset > Assets/SpriteStudioSample/BitmapFontNumeric/Complex/Datas
