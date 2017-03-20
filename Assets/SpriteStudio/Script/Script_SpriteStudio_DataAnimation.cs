@@ -15,6 +15,9 @@ public partial class Script_SpriteStudio_DataAnimation : ScriptableObject
 	/* Animation Data */
 	public Library_SpriteStudio.Data.Animation[] ListDataAnimation;
 
+	/* Data-Instance Factory */
+	public Library_SpriteStudio.Data.Pack.Flyweight.Factory Flyweight;
+
 	public int CountGetParts()
 	{
 		return(ListDataParts.Length);

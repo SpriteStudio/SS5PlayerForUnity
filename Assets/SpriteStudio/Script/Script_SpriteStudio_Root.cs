@@ -4,6 +4,8 @@
 	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
+#define DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -233,10 +235,24 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 	void Awake()
 	{
+#if false
 		foreach(Material MaterialNow in TableMaterial)
 		{
 			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
 		}
+#else
+		int Count = (null != TableMaterial) ? TableMaterial.Length : 0;
+		Material InstanceMaterial = null;
+		for(int i=0; i<Count; i++)
+		{
+			InstanceMaterial = TableMaterial[i];
+			if(null != InstanceMaterial)
+			{
+				InstanceMaterial.shader = Shader.Find(InstanceMaterial.shader.name);
+			}
+		}
+		InstanceMaterial = null;
+#endif
 	}
 
 	void Start()
@@ -309,6 +325,9 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			/* Transform/Collider Update */
 			ListControlParts[i].UpdateGameObject(this, FrameNoNow);
 
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+			/* MEMO: No process the display-parts here */
+#else
 			/* Draw-Parts */
 			switch(ListControlParts[i].DataParts.Kind)
 			{
@@ -334,6 +353,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 				default:
 					break;
 			}
+#endif
 
 			/* Exec CallBack (User-Data) */
 			if(0 != (Status & FlagBitStatus.PLAYING))
@@ -344,6 +364,42 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 				}
 			}
 		}
+
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+		int PartIDGetDrawNext = ListControlParts[0].PartIDGetDrawNext(FrameNoNow);	/* Root-Parts */
+		while(0 < PartIDGetDrawNext)
+		{
+			/* Draw-Parts */
+			switch(ListControlParts[PartIDGetDrawNext].DataParts.Kind)
+			{
+				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
+				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
+					/* Mesh Data Update */
+					if(null != ListControlParts[PartIDGetDrawNext].BufferParameterMesh)
+					{
+						ListControlParts[PartIDGetDrawNext].UpdateMesh(this, FrameNoNow);
+					}
+					break;
+
+				case Library_SpriteStudio.KindParts.INSTANCE:
+					/* Instance Update */
+					ListControlParts[PartIDGetDrawNext].UpdateInstance(this, FrameNoNow);
+					break;
+
+				case Library_SpriteStudio.KindParts.EFFECT:
+					/* Effect Update */
+					ListControlParts[PartIDGetDrawNext].UpdateEffect(this, FrameNoNow);
+					break;
+
+				default:
+					break;
+			}
+
+			PartIDGetDrawNext = ListControlParts[PartIDGetDrawNext].PartIDGetDrawNext(FrameNoNow);
+		}
+#else
+		/* MEMO: No process the display-parts here */
+#endif
 
 		Status &= ~(FlagBitStatus.DECODE_USERDATA | FlagBitStatus.DECODE_INSTANCE | FlagBitStatus.DECODE_EFFECT);
 		Status &= ~FlagBitStatus.PLAYING_START;
