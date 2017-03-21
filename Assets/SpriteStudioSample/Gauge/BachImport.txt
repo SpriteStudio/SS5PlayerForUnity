@@ -1,0 +1,22 @@
+* ++++++++++++++++++++++++++++++++++++++++
+* Reference:
+* https://github.com/SpriteStudio/SS5PlayerForUnity/wiki/%E3%83%90%E3%83%83%E3%83%81%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%BC%E3%83%88%E6%A9%9F%E8%83%BD
+* ++++++++++++++++++++++++++++++++++++++++
+
+? TextureSizePixelMaximum > 4096
+? CollisionThicknessZ > 1.0
+? FlagAttachRigidBody > true
+? FlagAttachControlGameObject > true
+? FlagConfirmOverWrite > false
+? FlagCreateProjectFolder > true
+
+? NameBaseFolderSS5Data > Assets/SpriteStudioSample/Gauge/Meter/SpriteStudioProject
+? NameBaseFolderAsset > Assets/SpriteStudioSample/Gauge/Meter/Datas
+
+Meter/Gage_Meter.sspj
+
+? NameBaseFolderSS5Data > Assets/SpriteStudioSample/Gauge/Bar/SpriteStudioProject
+? NameBaseFolderAsset > Assets/SpriteStudioSample/Gauge/Bar/Datas
+
+Bar/Gage_Bar.sspj
+
