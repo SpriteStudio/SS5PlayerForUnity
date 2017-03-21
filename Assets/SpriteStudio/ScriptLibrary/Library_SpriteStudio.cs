@@ -4,6 +4,7 @@
 	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
+#define DRAWPARTS_ORDER_SOLVINGJUSTINTIME
 #define DRAWPARTS_POOLEFFECT_GENERATEJUSTINTIME
 
 using UnityEngine;
@@ -151,6 +152,14 @@ public static partial class Library_SpriteStudio
 		PLAIN = 0,				/* Data-Format: Plain-Data */
 		FIX						/* Data-Format: Deformation of "Mesh" and "Collider" are Calculated-In-Advance. */
 	}
+	public enum KindPack
+	{
+		STANDARD_UNCOMPRESSED = 0,	/* Data-Compress: Standard (Uncompressed/Linear) */
+		STANDARD_CPE,				/* Data-Compress: Standaed (Changing-Point Extracting) */
+		FLYWEIGHT,					/* GoF Flyweight-Pattern */
+
+		TERMINATOR,
+	}
 	public enum KindLabelAnimationReserved
 	{
 		START = 0,				/* (START + INDEX_RESERVED): "_start" */
@@ -280,7 +289,7 @@ public static partial class Library_SpriteStudio
 		"_end",
 	};
 
-	public partial class Data
+	public static partial class Data
 	{
 		/* Dummy Attribute Datas */
 		public readonly static AttributeStatus DummyStatus = new AttributeStatus
@@ -629,21 +638,21 @@ public static partial class Library_SpriteStudio
 
 			public FlagBitStatus StatusParts;
 
-			public Library_SpriteStudio.Data.ListAttributeStatus Status;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeStatus Status;
 
-			public Library_SpriteStudio.Data.ListAttributeVector3 Position;		/* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeVector3 Rotation;		/* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeVector2 Scaling;		/* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeVector3 Position;	/* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeVector3 Rotation;	/* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeVector2 Scaling;	/* Always Compressed */
 
-			public Library_SpriteStudio.Data.ListAttributeFloat RateOpacity;
-			public Library_SpriteStudio.Data.ListAttributeFloat Priority;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeFloat RateOpacity;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeFloat Priority;
 
-			public Library_SpriteStudio.Data.ListAttributeVector2 PositionAnchor;	/* Reserved. */
-			public Library_SpriteStudio.Data.ListAttributeVector2 SizeForce;
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeVector2 PositionAnchor;	/* Reserved. */
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeVector2 SizeForce;
 
-			public Library_SpriteStudio.Data.ListAttributeUserData UserData;	/* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeInstance Instance;	/* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeEffect Effect;		/* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeUserData UserData;	/* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeInstance Instance;	/* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeEffect Effect;	/* Always Compressed */
 
 			public Library_SpriteStudio.Data.AnimationPartsPartsPlain DataPlain;
 			public Library_SpriteStudio.Data.AnimationPartsPartsFix DataFix;
@@ -684,10 +693,6 @@ public static partial class Library_SpriteStudio
 				if(null != Rotation)
 				{
 					Rotation.CompressCPE(CountFrame);
-				}
-				if(null != Scaling)
-				{
-					Scaling.CompressCPE(CountFrame);
 				}
 
 				/* MEMO: Always Compressed */
@@ -738,12 +743,6 @@ public static partial class Library_SpriteStudio
 //				{
 //					Rotation.CompressCPE(CountFrame);
 //				}
-				/* MEMO: Always Compressed */
-//				if(null != Scaling)
-//				{
-//					Scaling.CompressCPE(CountFrame);
-//				}
-
 				if(null != RateOpacity)
 				{
 					RateOpacity.CompressCPE(CountFrame);
@@ -751,15 +750,6 @@ public static partial class Library_SpriteStudio
 				if(null != Priority)
 				{
 					Priority.CompressCPE(CountFrame);
-				}
-
-				if(null != PositionAnchor)
-				{
-					PositionAnchor.CompressCPE(CountFrame);
-				}
-				if(null != SizeForce)
-				{
-					SizeForce.CompressCPE(CountFrame);
 				}
 
 				/* MEMO: Always Compressed */
@@ -806,11 +796,6 @@ public static partial class Library_SpriteStudio
 //				{
 //					Rotation.DecompressCPE(CountFrame);
 //				}
-				/* MEMO: Always Compressed */
-//				if(null != Scaling)
-//				{
-//					Scaling.DecompressCPE(CountFrame);
-//				}
 
 				if(null != RateOpacity)
 				{
@@ -819,15 +804,6 @@ public static partial class Library_SpriteStudio
 				if(null != Priority)
 				{
 					Priority.DecompressCPE(CountFrame);
-				}
-
-				if(null != PositionAnchor)
-				{
-					PositionAnchor.DecompressCPE(CountFrame);
-				}
-				if(null != SizeForce)
-				{
-					SizeForce.DecompressCPE(CountFrame);
 				}
 
 				/* MEMO: Always Compressed */
@@ -861,17 +837,17 @@ public static partial class Library_SpriteStudio
 		[System.Serializable]
 		public class AnimationPartsPartsPlain
 		{
-			public Library_SpriteStudio.Data.ListAttributeCell Cell;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeCell Cell;
 
-			public Library_SpriteStudio.Data.ListAttributeColorBlend ColorBlend;
-			public Library_SpriteStudio.Data.ListAttributeVertexCorrection VertexCorrection;
-			public Library_SpriteStudio.Data.ListAttributeVector2 OffsetPivot;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeColorBlend ColorBlend;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeVertexCorrection VertexCorrection;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeVector2 OffsetPivot;
 
-			public Library_SpriteStudio.Data.ListAttributeVector2 PositionTexture;
-			public Library_SpriteStudio.Data.ListAttributeVector2 ScalingTexture;
-			public Library_SpriteStudio.Data.ListAttributeFloat RotationTexture;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeVector2 PositionTexture;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeVector2 ScalingTexture;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeFloat RotationTexture;
 
-			public Library_SpriteStudio.Data.ListAttributeFloat RadiusCollision;	/* for Sphere-Collider *//* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeFloat RadiusCollision;	/* for Sphere-Collider *//* Always Compressed */
 
 			public void CleanUp()
 			{
@@ -993,15 +969,15 @@ public static partial class Library_SpriteStudio
 		[System.Serializable]
 		public class AnimationPartsPartsFix
 		{
-			public Library_SpriteStudio.Data.ListAttributeIndexCellMapFix IndexCellMapMesh;
-			public Library_SpriteStudio.Data.ListAttributeCoordinateMeshFix CoordinateMesh;
-			public Library_SpriteStudio.Data.ListAttributeColorBlendMeshFix ColorBlendMesh;
-			public Library_SpriteStudio.Data.ListAttributeUVMeshFix UV0Mesh;
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeIndexCellMapFix IndexCellMapMesh;
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeCoordinateMeshFix CoordinateMesh;
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeColorBlendMeshFix ColorBlendMesh;
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeUVMeshFix UV0Mesh;
 
-			public Library_SpriteStudio.Data.ListAttributeVector2 SizeCollision;	/* for Box-Collider *//* Always Compressed */
-			public Library_SpriteStudio.Data.ListAttributeVector2 PivotCollision;	/* for Box-Collider *//* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeVector2 SizeCollision;	/* for Box-Collider *//* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Flyweight.ListAttributeVector2 PivotCollision;	/* for Box-Collider *//* Always Compressed */
 
-			public Library_SpriteStudio.Data.ListAttributeFloat RadiusCollision;	/* for Sphere-Collider *//* Always Compressed */
+			public Library_SpriteStudio.Data.Pack.Standard.ListAttributeFloat RadiusCollision;	/* for Sphere-Collider *//* Always Compressed */
 
 			public void CleanUp()
 			{
@@ -1022,16 +998,6 @@ public static partial class Library_SpriteStudio
 					IndexCellMapMesh.CompressCPE(CountFrame);
 				}
 				/* MEMO: Always Compressed */
-				if(null != SizeCollision)
-				{
-					SizeCollision.CompressCPE(CountFrame);
-				}
-				/* MEMO: Always Compressed */
-				if(null != PivotCollision)
-				{
-					PivotCollision.CompressCPE(CountFrame);
-				}
-				/* MEMO: Always Compressed */
 				if(null != RadiusCollision)
 				{
 					RadiusCollision.CompressCPE(CountFrame);
@@ -1048,31 +1014,6 @@ public static partial class Library_SpriteStudio
 //					IndexCellMapMesh.CompressCPE(CountFrame);
 //				}
 
-				if(null != CoordinateMesh)
-				{
-					CoordinateMesh.CompressCPE(CountFrame);
-				}
-
-				if(null != ColorBlendMesh)
-				{
-					ColorBlendMesh.CompressCPE(CountFrame);
-				}
-
-				if(null != UV0Mesh)
-				{
-					UV0Mesh.CompressCPE(CountFrame);
-				}
-
-				/* MEMO: Always Compressed */
-//				if(null != SizeCollision)
-//				{
-//					SizeCollision.CompressCPE(CountFrame);
-//				}
-				/* MEMO: Always Compressed */
-//				if(null != PivotCollision)
-//				{
-//					PivotCollision.CompressCPE(CountFrame);
-//				}
 				/* MEMO: Always Compressed */
 //				if(null != RadiusCollision)
 //				{
@@ -1089,31 +1030,6 @@ public static partial class Library_SpriteStudio
 //					IndexCellMapMesh.DecompressCPE(CountFrame);
 //				}
 
-				if(null != CoordinateMesh)
-				{
-					CoordinateMesh.DecompressCPE(CountFrame);
-				}
-
-				if(null != ColorBlendMesh)
-				{
-					ColorBlendMesh.DecompressCPE(CountFrame);
-				}
-
-				if(null != UV0Mesh)
-				{
-					UV0Mesh.DecompressCPE(CountFrame);
-				}
-
-				/* MEMO: Always Compressed */
-//				if(null != SizeCollision)
-//				{
-//					SizeCollision.DecompressCPE(CountFrame);
-//				}
-				/* MEMO: Always Compressed */
-//				if(null != PivotCollision)
-//				{
-//					PivotCollision.DecompressCPE(CountFrame);
-//				}
 				/* MEMO: Always Compressed */
 //				if(null != RadiusCollision)
 //				{
@@ -1491,25 +1407,6 @@ public static partial class Library_SpriteStudio
 		}
 
 		[System.Serializable]
-		public class AttributeEffectRangeFloat
-		{
-			public float Main;
-			public float Sub;
-		}
-		[System.Serializable]
-		public class AttributeEffectRangeVector2
-		{
-			public Vector2 Main;
-			public Vector2 Sub;
-		}
-		[System.Serializable]
-		public class AttributeEffectRangeColor
-		{
-			public Color Main;
-			public Color Sub;
-		}
-
-		[System.Serializable]
 		public class PartsEffect
 		{
 			public string Name;
@@ -1534,943 +1431,12 @@ public static partial class Library_SpriteStudio
 			}
 		}
 
-		public class ListAttribute_Base<_TypeValue>
-		{
-			[System.Flags]
-			public enum FlagBit : int
-			{
-				FRAMENO = 0x00007fff,
-				INDEX = 0x3fff8000,
-
-				CLEAR = 0x00000000,
-			}
-
-			public FlagBit[] ListStatus;
-			public _TypeValue[] ListValue;
-
-			public bool IsValid
-			{
-				get
-				{
-					return(0 < ListValue.Length);
-				}
-			}
-
-			public void CleanUp()
-			{
-				ListStatus = null;
-				ListValue = null;
-			}
-
-			public void BootUp(int CountFrame)
-			{	/* MEMO: FrameCount==0 ... No-Data *//* MEMO: Always Uncompressed */
-				ListStatus = new FlagBit[0];
-				ListValue = new _TypeValue[CountFrame];
-			}
-
-			public void BootUpCompressedForce(int CountData)
-			{	/* MEMO: Always Uncompressed */
-				ListStatus = new FlagBit[CountData];
-				ListValue = new _TypeValue[CountData];
-				for(int i=0; i<CountData; i++)
-				{
-					ListStatus[i] = FlagBit.INDEX;	/* .CLEAR; */	/* Invalid Data */
-				}
-			}
-			public static FlagBit GetFlagBit(int FrameNo, int IndexData)
-			{
-				FlagBit FlagBitNow = ((FlagBit)FrameNo) & FlagBit.FRAMENO;
-				FlagBitNow |= ((FlagBit)(IndexData << 15)) & FlagBit.INDEX;
-				return(FlagBitNow);
-			}
-
-			public int IndexGetForce(out int FrameNo, int IndexStatus)
-			{
-				FlagBit StatusTemp = ListStatus[IndexStatus];
-				FrameNo = (int)(StatusTemp & FlagBit.FRAMENO);
-				StatusTemp &= FlagBit.INDEX;
-				return((FlagBit.INDEX == StatusTemp) ? -1 : ((int)StatusTemp >> 15));
-			}
-
-			public int IndexGetValue(out int FrameNoOrigin, int FrameNo)
-			{
-#if true
-				int Index = -1;
-				int FrameNoKey = -1;
-
-				if(0 >= ListStatus.Length)
-				{	/* MEMO: Uncompressed or No-Data */
-					if(0 >= ListValue.Length)
-					{	/* MEMO: No-Data */
-						goto IndexGetValue_End;
-					}
-
-					FrameNoKey = FrameNo;
-					Index = FrameNo;
-					goto IndexGetValue_End;
-				}
-
-				FlagBit StatusTemp;
-				int Min = 0;
-				int Max = ListStatus.Length - 1;
-				int Medium;
-				int Range;
-				while(Min != Max)
-				{
-					Range = Min + Max;
-					Medium = (Range / 2) + (Range % 2);
-					StatusTemp = ListStatus[Medium] & FlagBit.FRAMENO;
-					FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
-					if(FrameNo == FrameNoKey)
-					{
-						Min = Medium;
-						Max = Medium;
-					}
-					else
-					{
-						if((FrameNo < FrameNoKey) || (-1 == FrameNoKey))
-						{
-							Max = Medium - 1;
-						}
-						else
-						{
-							Min = Medium;
-						}
-					}
-				}
-					
-				StatusTemp = ListStatus[Min];
-				FlagBit ValueTemp = StatusTemp & FlagBit.FRAMENO;
-				FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
-				ValueTemp = StatusTemp & FlagBit.INDEX;
-				Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
-
-			IndexGetValue_End:;
-				FrameNoOrigin = FrameNoKey;
-				return(Index);
-#else
-				int Index = -1;
-				int FrameNoKey = -1;
-
-				if(0 >= ListStatus.Length)
-				{	/* MEMO: Uncompressed or No-Data */
-					if(0 >= ListValue.Length)
-					{	/* MEMO: No-Data */
-						goto IndexGetValue_End;
-					}
-
-					FrameNoKey = FrameNo;
-					Index = FrameNo;
-					goto IndexGetValue_End;
-				}
-
-				int Count = ListStatus.Length;
-				FlagBit StatusTemp;
-				FlagBit ValueTemp;
-				for(int i=1; i<Count; i++)
-				{
-					StatusTemp = ListStatus[i] & FlagBit.FRAMENO;
-					FrameNoKey = (FlagBit.FRAMENO == StatusTemp) ? -1 : (int)StatusTemp;
-					if(FrameNo < FrameNoKey)
-					{
-						StatusTemp = ListStatus[i - 1];
-						ValueTemp = StatusTemp & FlagBit.INDEX;
-						Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
-						ValueTemp = StatusTemp & FlagBit.FRAMENO;
-						FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
-						goto IndexGetValue_End;
-					}
-				}
-
-				Count--;    /* Last Data */
-				StatusTemp = ListStatus[Count];
-				ValueTemp = StatusTemp & FlagBit.FRAMENO;
-				FrameNoKey = (FlagBit.FRAMENO == ValueTemp) ? -1 : (int)ValueTemp;
-				ValueTemp = StatusTemp & FlagBit.INDEX;
-				Index = (FlagBit.INDEX == ValueTemp) ? -1 : ((int)ValueTemp >> 15);
-
-			IndexGetValue_End:;
-				FrameNoOrigin = FrameNoKey;
-				return(Index);
-#endif
-			}
-
-			public bool CompressCPE(int CountFrame)
-			{	/* MEMO: CPE(Changing-Point Extracting) */
-				if(0 < ListStatus.Length)
-				{	/* Already Compressed */
-					return(true);
-				}
-
-				if(0 >= ListValue.Length)
-				{	/* No-Data */
-					return(true);
-				}
-
-				/* WorkArea Boot-Up */
-				List<int> ArrayFrameNo = new List<int>();
-				List<int> ArrayIndex = new List<int>();
-				List<_TypeValue> ArrayValue = new List<_TypeValue>();
-				ArrayFrameNo.Clear();
-				ArrayIndex.Clear();
-				ArrayValue.Clear();
-
-				/* Top-Data Store-Force */
-				ArrayFrameNo.Add(0);
-				ArrayIndex.Add(0);
-				ArrayValue.Add(ListValue[0]);
-
-				/* Extructing Changing Point */
-				int Count = ListValue.Length;
-				int CountArray = -1;
-				int IndexExist = -1;
-				for(int i=1; i<Count; i++)
-				{
-					if(true == ListValue[i].Equals(ListValue[i - 1]))
-					{	/* Unchanging */
-						continue;
-					}
-
-					CountArray = ArrayValue.Count;
-					IndexExist = -1;
-					for(int j=0; j<CountArray; j++)
-					{
-						if(true == ListValue[i].Equals(ArrayValue[j]))
-						{
-							IndexExist = j;
-							break;
-						}
-					}
-					if(-1 == IndexExist)
-					{	/* Data-New */
-						ArrayValue.Add(ListValue[i]);
-						ArrayFrameNo.Add(i);
-						ArrayIndex.Add(ArrayValue.Count - 1);
-					}
-					else
-					{	/* Data-Exist */
-						ArrayFrameNo.Add(i);
-						ArrayIndex.Add(IndexExist);
-					}
-				}
-
-				/* Rebuilding Array */
-				CountArray = ArrayFrameNo.Count;
-				if(CountArray >= Count)
-				{	/* All value is Changing-Point ... Uncompress */
-					ListStatus = new FlagBit[0];
-					return(true);
-				}
-				ListStatus = new FlagBit[CountArray];
-				for(int i=0; i<CountArray; i++)
-				{
-					ListStatus[i] = GetFlagBit((int)ArrayFrameNo[i], (int)ArrayIndex[i]);
-				}
-				ListValue = ArrayValue.ToArray();
-
-				return(true);
-			}
-
-			public bool DecompressCPE(int CountFrame)
-			{	/* MEMO: CPE(Changing-Point Extracting) */
-				if(0 >= ListStatus.Length)
-				{	/* Already Decompressed */
-					return(true);
-				}
-
-				if(0 >= ListValue.Length)
-				{	/* No Data */
-					return(true);
-				}
-
-				_TypeValue[] ListValueNew = new _TypeValue[CountFrame];
-				int Index;
-				int FrameNoOriginDummy;
-				for(int i=0; i<CountFrame; i++)
-				{
-					Index = IndexGetValue(out FrameNoOriginDummy, i);
-					ListValueNew[i] = ListValue[Index];
-				}
-				ListStatus = new FlagBit[0];
-				ListValue = ListValueNew;
-				return(true);
-			}
-		}
-
-		[System.Serializable]
-		public class ListAttributeInt : ListAttribute_Base<int>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeFloat : ListAttribute_Base<float>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeVector2 : ListAttribute_Base<Vector2>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeVector3 : ListAttribute_Base<Vector3>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeStatus : ListAttribute_Base<Library_SpriteStudio.Data.AttributeStatus>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeColorBlend : ListAttribute_Base<Library_SpriteStudio.Data.AttributeColorBlend>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeVertexCorrection : ListAttribute_Base<Library_SpriteStudio.Data.AttributeVertexCorrection>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeCell : ListAttribute_Base<Library_SpriteStudio.Data.AttributeCell>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeUserData : ListAttribute_Base<Library_SpriteStudio.Data.AttributeUserData>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeInstance : ListAttribute_Base<Library_SpriteStudio.Data.AttributeInstance>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeEffect : ListAttribute_Base<Library_SpriteStudio.Data.AttributeEffect>
-		{
-		}
-
-		[System.Serializable]
-		public class ListAttributeIndexCellMapFix : ListAttribute_Base<int>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeCoordinateMeshFix : ListAttribute_Base<Library_SpriteStudio.Data.AttributeCoordinateMeshFix>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeColorBlendMeshFix : ListAttribute_Base<Library_SpriteStudio.Data.AttributeColorBlendMeshFix>
-		{
-		}
-		[System.Serializable]
-		public class ListAttributeUVMeshFix : ListAttribute_Base<Library_SpriteStudio.Data.AttributeUVMeshFix>
-		{
-		}
-
-		[System.Serializable]
-		public class AttributeStatus
-		{
-			[System.Flags]
-			public enum FlagBit : int
-			{
-				VALID = 0x00000001,
-				HIDE = 0x00000002,
-
-				FLIPX = 0x00000010,
-				FLIPY = 0x00000020,
-				FLIPXTEXTURE = 0x00000040,
-				FLIPYTEXTURE = 0x00000080,
-
-				PARTSIDNEXT = 0x7fff0000,
-
-				CLEAR = PARTSIDNEXT
-			}
-
-			public FlagBit Flags;
-
-			public bool IsValid
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.VALID));
-				}
-			}
-			public bool IsHide
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.HIDE));
-				}
-			}
-			public bool IsFlipX
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.FLIPX));
-				}
-			}
-			public bool IsFlipY
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.FLIPY));
-				}
-			}
-			public bool IsTextureFlipX
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.FLIPXTEXTURE));
-				}
-			}
-			public bool IsTextureFlipY
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.FLIPYTEXTURE));
-				}
-			}
-			public int PartsIDNext
-			{
-				get
-				{
-					FlagBit Data = Flags & FlagBit.PARTSIDNEXT;
-					return((FlagBit.PARTSIDNEXT == Data) ? (-1) : ((int)Data >> 16));
-				}
-			}
-
-			public void CleanUp()
-			{
-				Flags = FlagBit.CLEAR;
-			}
-
-//			public void Duplicate(AttributeStatus Original)
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeStatus TargetData = (AttributeStatus)Target;
-				if(	(IsValid == TargetData.IsValid)
-					&& (IsHide == TargetData.IsHide)
-					&& (IsFlipX == TargetData.IsFlipX)
-					&& (IsFlipY == TargetData.IsFlipY)
-					&& (IsTextureFlipX == TargetData.IsTextureFlipX)
-					&& (IsTextureFlipY == TargetData.IsTextureFlipY)
-					)
-				{
-					return(true);
-				}
-				return(false);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeColorBlend
-		{
-			public KindColorBound Bound;
-			public KindColorOperation Operation;
-			public Color[] VertexColor;
-			public float[] RatePixelAlpha;
-
-			public void CleanUp()
-			{
-				Bound = KindColorBound.NON;
-				Operation = KindColorOperation.NON;
-				VertexColor = null;
-				RatePixelAlpha = null;
-			}
-
-			public void Duplicate(AttributeColorBlend Original)
-			{
-				Bound = Original.Bound;
-				Operation = Original.Operation;
-				for(int i=0; i<(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2; i++)
-				{
-					VertexColor[i] = Original.VertexColor[i];
-					RatePixelAlpha[i] = Original.RatePixelAlpha[i];
-				}
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeColorBlend TargetData = (AttributeColorBlend)Target;
-				int Count;
-
-				if(Bound != TargetData.Bound)
-				{
-					return(false);
-				}
-				if(Operation == TargetData.Operation)
-				{
-					return(false);
-				}
-
-				Count = VertexColor.Length;
-				if(Count != TargetData.VertexColor.Length)
-				{
-					return(false);
-				}
-				for(int i=0; i<Count; i++)
-				{
-					if(VertexColor[i] != TargetData.VertexColor[i])
-					{
-						return(false);
-					}
-				}
-
-				Count = RatePixelAlpha.Length;
-				if(Count != TargetData.RatePixelAlpha.Length)
-				{
-					return(false);
-				}
-				for(int i=0; i<Count; i++)
-				{
-					if(RatePixelAlpha[i] != TargetData.RatePixelAlpha[i])
-					{
-						return(false);
-					}
-				}
-
-				return(true);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeVertexCorrection
-		{
-			public Vector2[] Coordinate;
-
-			public void CleanUp()
-			{
-				Coordinate = null;
-			}
-
-			public void Duplicate(AttributeVertexCorrection Original)
-			{
-				for(int i=0; i<Coordinate.Length; i++)
-				{
-					Coordinate[i] = Original.Coordinate[i];
-				}
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeVertexCorrection TargetData = (AttributeVertexCorrection)Target;
-				int Count;
-
-				Count = Coordinate.Length;
-				if(Count != TargetData.Coordinate.Length)
-				{
-					return(false);
-				}
-				for(int i=0; i<Count; i++)
-				{
-					if(Coordinate[i] != TargetData.Coordinate[i])
-					{
-						return(false);
-					}
-				}
-				return(true);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeCell
-		{
-			public int IndexCellMap;
-			public int IndexCell;
-
-			public void CleanUp()
-			{
-				IndexCellMap = -1;
-				IndexCell = -1;
-			}
-
-			public void Duplicate(AttributeCell Original)
-			{
-				IndexCellMap = Original.IndexCellMap;
-				IndexCell = Original.IndexCell;
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeCell TargetData = (AttributeCell)Target;
-				return(((IndexCellMap == TargetData.IndexCellMap) && (IndexCell == TargetData.IndexCell)) ? true : false);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeUserData
-		{
-			[System.Flags]
-			public enum FlagBit
-			{
-				CLEAR = 0x00000000,
-				NUMBER = 0x00000001,
-				RECTANGLE = 0x00000002,
-				COORDINATE = 0x00000004,
-				TEXT = 0x00000008,
-			}
-
-			public FlagBit Flags;
-			public int NumberInt;
-			public Rect Rectangle;
-			public Vector2 Coordinate;
-			public string Text;
-
-			public bool IsNumber
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.NUMBER));
-				}
-			}
-			public bool IsRectangle
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.RECTANGLE));
-				}
-			}
-			public bool IsCoordinate
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.COORDINATE));
-				}
-			}
-			public bool IsText
-			{
-				get
-				{
-					return(0 != (Flags & FlagBit.TEXT));
-				}
-			}
-			public uint Number
-			{
-				get
-				{
-					return((uint)NumberInt);
-				}
-			}
-
-			public void CleanUp()
-			{
-				Flags = FlagBit.CLEAR;
-				NumberInt = 0;
-				Rectangle.xMin = 0.0f;
-				Rectangle.yMin = 0.0f;
-				Rectangle.xMax = 0.0f;
-				Rectangle.yMax = 0.0f;
-				Coordinate = Vector2.zero;
-				Text = "";
-			}
-
-			public void Duplicate(AttributeUserData Original)
-			{
-				Flags = Original.Flags;
-				NumberInt = Original.NumberInt;
-				Rectangle.xMin = Original.Rectangle.xMin;
-				Rectangle.yMin = Original.Rectangle.yMin;
-				Rectangle.xMax = Original.Rectangle.xMax;
-				Rectangle.yMax = Original.Rectangle.yMax;
-				Coordinate = Original.Coordinate;
-				Text = (true == string.IsNullOrEmpty(Original.Text)) ? "" : string.Copy(Original.Text);
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeUserData TargetData = (AttributeUserData)Target;
-				return((	(Flags == TargetData.Flags)
-							&& (NumberInt == TargetData.NumberInt)
-							&& (Rectangle.xMin == TargetData.Rectangle.xMin)
-							&& (Rectangle.yMin == TargetData.Rectangle.yMin)
-							&& (Rectangle.xMax == TargetData.Rectangle.xMax)
-							&& (Rectangle.yMax == TargetData.Rectangle.yMax)
-							&& (Coordinate == TargetData.Coordinate)
-//							&& (0 == string.Compare(Text, TargetData.Text))
-							&& (Text == TargetData.Text)
-						) ? true : false);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeInstance
-		{
-			[System.Flags]
-			public enum FlagBit
-			{
-				PINGPONG = 0x00000001,
-				INDEPENDENT = 0x00000002,
-
-				CLEAR = 0x00000000,
-			}
-
-			public FlagBit Flags;
-			public int PlayCount;
-			public float RateTime;
-			public int OffsetStart;
-			public int OffsetEnd;
-			public string LabelStart;
-			public string LabelEnd;
-
-			public void CleanUp()
-			{
-				Flags = FlagBit.CLEAR;
-				PlayCount = 1;
-				RateTime = 1.0f;
-				OffsetStart = 0;
-				OffsetEnd = 0;
-				LabelStart = "";
-				LabelEnd = "";
-			}
-
-			public void Duplicate(AttributeInstance Original)
-			{
-				Flags = Original.Flags;
-				PlayCount = Original.PlayCount;
-				RateTime = Original.RateTime;
-				OffsetStart = Original.OffsetStart;
-				OffsetEnd = Original.OffsetEnd;
-				LabelStart = string.Copy(Original.LabelStart);
-				LabelEnd = string.Copy(Original.LabelEnd);
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeInstance TargetData = (AttributeInstance)Target;
-				return((	(Flags == TargetData.Flags)
-							&& (PlayCount == TargetData.PlayCount)
-							&& (RateTime == TargetData.RateTime)
-							&& (OffsetStart == TargetData.OffsetStart)
-							&& (OffsetEnd == TargetData.OffsetEnd)
-//							&& (0 == string.Compare(LabelStart, TargetData.LabelStart))
-							&& (LabelStart == TargetData.LabelStart)
-//							&& (0 == string.Compare(LabelEnd, TargetData.LabelEnd))
-							&& (LabelEnd == TargetData.LabelEnd)
-						) ? true : false);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeEffect
-		{
-			[System.Flags]
-			public enum FlagBit
-			{
-				PINGPONG = 0x00000001,	/* Reserved. */
-				INDEPENDENT = 0x00000002,
-
-				CLEAR = 0x00000000,
-			}
-
-			public FlagBit Flags;
-			public int FrameStart;
-			public float RateTime;
-
-			public void CleanUp()
-			{
-				Flags = FlagBit.CLEAR;
-				FrameStart = 0;
-				RateTime = 1.0f;
-			}
-
-			public void Duplicate(AttributeEffect Original)
-			{
-				Flags = Original.Flags;
-				FrameStart = Original.FrameStart;
-				RateTime = Original.RateTime;
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeEffect TargetData = (AttributeEffect)Target;
-				return(((Flags == TargetData.Flags) && (FrameStart == TargetData.FrameStart) && (RateTime == TargetData.RateTime)) ? true : false);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-
-		[System.Serializable]
-		public class AttributeCoordinateMeshFix
-		{
-			public Vector3[] Coordinate;
-
-			public void CleanUp()
-			{
-				Coordinate = null;
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeCoordinateMeshFix TargetData = (AttributeCoordinateMeshFix)Target;
-				int Count = Coordinate.Length;
-				if(Count != TargetData.Coordinate.Length)
-				{
-					return(false);
-				}
-				for(int i=0; i<Count; i++)
-				{
-					if(Coordinate[i] != TargetData.Coordinate[i])
-					{
-						return(false);
-					}
-				}
-				return(true);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeUVMeshFix
-		{
-			public Vector2[] UV;
-
-			public void CleanUp()
-			{
-				UV = null;
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeUVMeshFix TargetData = (AttributeUVMeshFix)Target;
-				int Count = UV.Length;
-				if(Count != TargetData.UV.Length)
-				{
-					return(false);
-				}
-				for(int i=0; i<Count; i++)
-				{
-					if(UV[i] != TargetData.UV[i])
-					{
-						return(false);
-					}
-				}
-				return(true);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-		[System.Serializable]
-		public class AttributeColorBlendMeshFix : Library_SpriteStudio.Data.AttributeUVMeshFix
-		{
-			public Color32[] ColorOverlay;
-
-			public new void CleanUp()
-			{
-				base.CleanUp();
-				ColorOverlay = null;
-			}
-
-			public override bool Equals(System.Object Target)
-			{
-				if((null == Target) || (GetType() != Target.GetType()))
-				{
-					return(false);
-				}
-
-				AttributeColorBlendMeshFix TargetData = (AttributeColorBlendMeshFix)Target;
-				if(false == base.Equals(TargetData))
-				{
-					return(false);
-				}
-				int Count = ColorOverlay.Length;
-				if(Count != TargetData.ColorOverlay.Length)
-				{
-					return(false);
-				}
-				for(int i=0; i<Count; i++)
-				{
-					if(false == ColorOverlay[i].Equals(TargetData.ColorOverlay[i]))
-					{
-						return(false);
-					}
-				}
-				return(true);
-			}
-
-			public override int GetHashCode()
-			{
-				return(base.GetHashCode());
-			}
-		}
-
 		public static int NameCheckLabelReserved(string Name)
 		{
 			if(false == string.IsNullOrEmpty(Name))
 			{
 				for(int i=0; i<(int)Library_SpriteStudio.KindLabelAnimationReserved.TERMINATOR; i++)
 				{
-//					if(0 == string.Compare(Name, Library_SpriteStudio.ListNameLabelAnimationReserved[i]))
 					if(Name == Library_SpriteStudio.ListNameLabelAnimationReserved[i])
 					{
 						return(i);
@@ -2478,6 +1444,10 @@ public static partial class Library_SpriteStudio
 				}
 			}
 			return(-1);
+		}
+
+		public static partial class Pack
+		{
 		}
 	}
 
@@ -2534,6 +1504,9 @@ public static partial class Library_SpriteStudio
 
 			public Library_SpriteStudio.Data.Parts DataParts;
 			internal Library_SpriteStudio.Data.AnimationParts DataAnimationParts;
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+			internal int PartsIDNext;
+#endif
 
 			public GameObject InstanceGameObject;
 			internal Transform InstanceTransform;
@@ -2567,7 +1540,9 @@ public static partial class Library_SpriteStudio
 
 				DataParts = null;
 //				DataAnimationParts =
-
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+//				PartsIDNext = 
+#endif
 				InstanceGameObject = null;
 //				InstanceTransform =
 //				IndexPreviousPosition =
@@ -2598,6 +1573,9 @@ public static partial class Library_SpriteStudio
 
 //				DataParts =
 				DataAnimationParts = null;
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+//				PartsIDNext = 
+#endif
 
 //				InstanceGameObject =
 				InstanceTransform = null;
@@ -2629,6 +1607,9 @@ public static partial class Library_SpriteStudio
 
 //				DataParts =
 //				DataAnimationParts =
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+				PartsIDNext = 0;
+#endif
 
 //				InstanceGameObject =
 //				InstanceTransform =
@@ -2858,6 +1839,15 @@ public static partial class Library_SpriteStudio
 				return(true);
 			}
 
+			internal int PartIDGetDrawNext(int FrameNo)
+			{
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+				return(PartsIDNext);
+#else
+				return(0);
+#endif
+			}
+
 			internal bool UpdateGameObject(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
 				int IndexAttribute;
@@ -2866,26 +1856,6 @@ public static partial class Library_SpriteStudio
 				/* Update Transform */
 				/* MEMO: No Transform-Datas, Not Changing "Transform" */
 				IndexAttribute = DataAnimationParts.Position.IndexGetValue(out FrameNoOrigin, FrameNo);
-#if false
-				if((0 <= IndexAttribute) && (IndexPreviousPosition != IndexAttribute))
-				{
-					InstanceTransform.localPosition = DataAnimationParts.Position.ListValue[IndexAttribute];
-					IndexPreviousPosition = IndexAttribute;
-				}
-				IndexAttribute = DataAnimationParts.Rotation.IndexGetValue(out FrameNoOrigin, FrameNo);
-				if((0 <= IndexAttribute) && (IndexPreviousRotation != IndexAttribute))
-				{
-					Quaternion QuaternionTemp = Quaternion.Euler(DataAnimationParts.Rotation.ListValue[IndexAttribute]);
-					InstanceTransform.localRotation = QuaternionTemp;
-					IndexPreviousRotation = IndexAttribute;
-				}
-				IndexAttribute = DataAnimationParts.Scaling.IndexGetValue(out FrameNoOrigin, FrameNo);
-				if((0 <= IndexAttribute) && (IndexPreviousScaling != IndexAttribute))
-				{
-					InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
-					IndexPreviousScaling = IndexAttribute;
-				}
-#else
 				if(0 <= IndexAttribute)
 				{	/* Has Data */
 					if(IndexPreviousPosition != IndexAttribute)
@@ -2928,7 +1898,7 @@ public static partial class Library_SpriteStudio
 					if(IndexPreviousScaling != IndexAttribute)
 					{
 //						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
-						Vector3 VectorTemp = DataAnimationParts.Scaling.ListValue[IndexAttribute];
+						Vector3 VectorTemp = DataAnimationParts.Scaling.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						VectorTemp.z = 1.0f;
 						InstanceTransform.localScale = VectorTemp;
 						IndexPreviousScaling = IndexAttribute;
@@ -2943,11 +1913,13 @@ public static partial class Library_SpriteStudio
 						Status &= ~FlagBitStatus.CHANGE_TRANSFORM_SCALING;
 					}
 				}
-#endif
 
 				/* Status Get */
 				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+				PartsIDNext = DataStatus.PartsIDNext;	/* Cache */
+#endif
 				BufferParameterParts.FlagHide = DataStatus.IsHide;
 				BufferParameterParts.IndexVertexCollectionTable = 0;
 				if(true == DataStatus.IsFlipX)
@@ -3087,7 +2059,8 @@ public static partial class Library_SpriteStudio
 							MeshRecalcSizeAndPivot(	ref BufferParameterParts.PivotMesh,
 													ref BufferParameterParts.SizePixelMesh,
 													ref BufferParameterParts.RateScaleMesh,
-													FrameNo
+													FrameNo,
+													InstanceRoot.DataAnimation.Flyweight
 												);
 						}
 
@@ -3177,8 +2150,8 @@ public static partial class Library_SpriteStudio
 							int IndexAttributeCollisionPivot = DataAnimationParts.DataFix.PivotCollision.IndexGetValue(out FrameNoOrigin, FrameNo);
 							if((0 <= IndexAttribute) && (0 <= IndexAttributeCollisionPivot))
 							{
-								Vector2 DataSizeCollision = DataAnimationParts.DataFix.SizeCollision.ListValue[IndexAttribute];
-								Vector2 DataPivotCollision = DataAnimationParts.DataFix.PivotCollision.ListValue[IndexAttributeCollisionPivot];
+								Vector2 DataSizeCollision = DataAnimationParts.DataFix.SizeCollision.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
+								Vector2 DataPivotCollision = DataAnimationParts.DataFix.PivotCollision.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttributeCollisionPivot);
 								if((DataPivotCollision != InstanceCollider.ColliderRectPivotPrevious) || (DataSizeCollision != InstanceCollider.ColliderRectSizePrevious))
 								{	/* Update */
 									/* Update Previous Buffer */
@@ -3441,14 +2414,14 @@ public static partial class Library_SpriteStudio
 					IndexAttribute = DataAnimationParts.DataFix.CoordinateMesh.IndexGetValue(out FrameNoOrigin, FrameNo);
 					if(0 <= IndexAttribute)
 					{
-						Library_SpriteStudio.Data.AttributeCoordinateMeshFix CoordinateMeshFix = DataAnimationParts.DataFix.CoordinateMesh.ListValue[IndexAttribute];
+						Library_SpriteStudio.Data.AttributeCoordinateMeshFix CoordinateMeshFix = DataAnimationParts.DataFix.CoordinateMesh.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						for(int i=0; i<CountVertexData; i++)
 						{
 							InstanceParameterMesh.Coordinate[i] = CoordinateMeshFix.Coordinate[i];
 						}
 
 						IndexAttribute = DataAnimationParts.DataFix.ColorBlendMesh.IndexGetValue(out FrameNoOrigin, FrameNo);
-						Library_SpriteStudio.Data.AttributeColorBlendMeshFix ColorBlendMeshFix = DataAnimationParts.DataFix.ColorBlendMesh.ListValue[IndexAttribute];
+						Library_SpriteStudio.Data.AttributeColorBlendMeshFix ColorBlendMeshFix = DataAnimationParts.DataFix.ColorBlendMesh.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						if((null != DataColorBlendOverwrite) && (KindColorOperation.NON != DataColorBlendOverwrite.Operation))
 						{	/* Overwrite */
 							float KindOperation = (float)DataColorBlendOverwrite.Operation + 0.01f;	/* "+0.01f" for Rounding-off-Error */
@@ -3482,8 +2455,8 @@ public static partial class Library_SpriteStudio
 							}
 						}
 
-						IndexAttribute = DataAnimationParts.DataFix.UV0Mesh.IndexGetValue(out FrameNoOrigin, FrameNo);
-						Library_SpriteStudio.Data.AttributeUVMeshFix UVMeshFix = DataAnimationParts.DataFix.UV0Mesh.ListValue[IndexAttribute];
+						Library_SpriteStudio.Data.AttributeUVMeshFix UVMeshFix;
+						DataAnimationParts.DataFix.UV0Mesh.TryGetValue(out UVMeshFix, FrameNo, InstanceRoot.DataAnimation.Flyweight);
 						for(int i=0; i<CountVertexData; i++)
 						{
 							InstanceParameterMesh.UV[i] = UVMeshFix.UV[i];
@@ -3517,12 +2490,16 @@ public static partial class Library_SpriteStudio
 
 					/* Set to Parts-Cluster */
 					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRoot;
+#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+					DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, InstanceMaterial, KeyPriority);
+#else
 					DataPartsDrawManager.PartsSetDraw(InstanceRoot, InstanceMaterial, KeyPriority);
+#endif
 				}
 				return(true);
 			}
-
-			public void MeshRecalcSizeAndPivot(ref Vector2 Pivot, ref Vector2 Size, ref Vector2 RateScale, int FrameNo)
+			
+			public void MeshRecalcSizeAndPivot(ref Vector2 Pivot, ref Vector2 Size, ref Vector2 RateScale, int FrameNo, Library_SpriteStudio.Data.Pack.Flyweight.Factory flyweight)
 			{
 				int FrameNoOrigin;
 				int IndexAttribute;
@@ -3532,11 +2509,10 @@ public static partial class Library_SpriteStudio
 				Pivot.y -= (Size.y * PivotOffset.y) * RateScale.y;
 
 				/* Arbitrate Anchor-Size */
-				IndexAttribute = DataAnimationParts.SizeForce.IndexGetValue(out FrameNoOrigin, FrameNo);
-				if(0 <= IndexAttribute)
+				Vector2 SizeForce;
+				if (DataAnimationParts.SizeForce.TryGetValue(out SizeForce, FrameNo, flyweight))
 				{
 					float RatePivot;
-					Vector2 SizeForce = DataAnimationParts.SizeForce.ListValue[IndexAttribute];
 					if(0.0f <= SizeForce.x)
 					{
 						RatePivot = Pivot.x / Size.x;
@@ -3848,7 +2824,6 @@ public static partial class Library_SpriteStudio
 				}
 
 				/* Decode Instance-Attribute */
-//				if(true == FlagDecode)
 				if((true == FlagDecode) || (-1 == FrameNoPreviousUpdateUnderControl))
 				{
 					/* Data Index (& Frame-No) Get */
@@ -5657,7 +4632,7 @@ public static partial class Library_SpriteStudio
 						}
 
 						if(Key < KeyBottom)
-						{	/* Interrupt ("Interrupt","Effect" and Another-Material-Sprite) ... not attach Draw-Parts' bottom */
+						{	/* Interrupt ("Instance","Effect" and Another-Material-Sprite) ... not attach Draw-Parts' bottom */
 							if(Key < ClusterNow.Data.ChainDrawParts.KeyTop)
 							{
 								goto PartsSetDraw_End_ClusterNewAdd;
@@ -5719,6 +4694,36 @@ public static partial class Library_SpriteStudio
 
 				/* Add Cluster to Cluster-Chain */
 				InstanceRoot.ChainClusterDrawParts.ChainInsert(ClusterAdd, ClusterPrevious);
+
+				return(true);
+			}
+
+			internal bool PartsSetDrawFixed(Library_SpriteStudio.Script.Root InstanceRoot, Material InstanceMaterial, float Key)
+			{
+				/* FragmentClusterDrawParts */	Library_SpriteStudio.Miscellaneousness.Chain<DataClusterDrawParts>.Fragment ClusterNow = InstanceRoot.ChainClusterDrawParts.ChainBottom;
+				/* FragmentClusterDrawParts */	Library_SpriteStudio.Miscellaneousness.Chain<DataClusterDrawParts>.Fragment ClusterAdd = null;
+
+				DrawParts.ChainCleanUp();
+				DrawParts.Key = Key;
+
+				if((null != InstanceMaterial) && (null != ClusterNow) && (ClusterNow.Data.InstanceMaterial == InstanceMaterial))
+				{
+					/* MEMO: Add DrawParts to Now-Cluster */
+					ClusterNow.Data.ChainDrawParts.ChainAddForce(DrawParts);
+					return(true);
+				}
+
+				/* MEMO: Add Cluster */
+				/* Initialize Cluster */
+				ClusterAdd = InstanceRoot.ChainClusterDrawParts.InsntaceAdmitClusterDrawParts();
+				ClusterAdd.Data.InstanceRoot = DrawParts.Data.InstanceRoot;
+				ClusterAdd.Data.InstanceMaterial = InstanceMaterial;
+
+				/* Add Draw-Parts to Cluster */
+				ClusterAdd.Data.ChainDrawParts.ChainAddForce(DrawParts);
+
+				/* Add Cluster to Cluster-Chain */
+				InstanceRoot.ChainClusterDrawParts.ChainInsert(ClusterAdd, ClusterNow);
 
 				return(true);
 			}
@@ -6040,11 +5045,7 @@ public static partial class Library_SpriteStudio
 						CombineMesh[Index].mesh = DataPartsNow.Data.InstanceMesh;
 						CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
 						Index++;
-#if false
-						IndexTriangle += DataPartsNow.Data.InstanceMesh.triangles.Length / 3;
-#else
 						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
-#endif
 					}
 
 					DataPartsNow = DataPartsNow.ChainNext;
