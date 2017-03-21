@@ -92,7 +92,6 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 				Library_SpriteStudio.ManagerDraw.ClusterFix(ChainClusterDrawParts);
 
 				/* Meshes Combine */
-//				FlagDelayFrame = true;
 				int IndexParameterMeshWrite = IndexParameterMesh;
 				int IndexParameterMeshDraw = (true == FlagDelayFrame) ? ((IndexParameterMesh + 1) % (int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER) : IndexParameterMesh; 
 				if(null == InstanceMesh)
@@ -116,9 +115,6 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 															);
 				IndexParameterMesh++;
 				IndexParameterMesh %= (int)Library_SpriteStudio.ManagerDraw.Constant.MAX_MESHPARAMETERBUFFER;
-
-				/* Draw-Object Clear */
-//				ChainDrawObject.ChainCleanUp();
 			}
 
 			/* Draw-Object Clear */
