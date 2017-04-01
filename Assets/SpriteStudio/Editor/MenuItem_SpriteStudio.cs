@@ -21,6 +21,8 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	private static bool FlagDataCalculateInAdvance = true;
 	private static bool FlagDataCompress = true;
 	private static bool FlagDataTakeOverSettingPrefab = false;
+	private static bool FlagDataCellTrimTransparentPixels = false;
+
 	private static float CollisionThicknessZ = 1.0f;
 	private static bool FlagAttachRigidBody = false;
 	private static bool FlagConfirmOverWrite = false;
@@ -97,6 +99,9 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			FlagDataTakeOverSettingPrefab = EditorGUILayout.Toggle("Take over setting", FlagDataTakeOverSettingPrefab);
 			EditorGUILayout.LabelField(" Takes over the setting of \"Script_SpriteStudio_Root\"");
 			EditorGUILayout.LabelField("   and \"Script_SpriteStudio_RootEffect\" in Prefabs.");
+			EditorGUILayout.Space();
+
+			FlagDataCellTrimTransparentPixels = EditorGUILayout.Toggle("Trim transparent pixels", FlagDataCellTrimTransparentPixels);
 			EditorGUILayout.Space();
 
 			EditorGUI.indentLevel = LevelIndent;
@@ -374,6 +379,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			SettingImport.FlagDataCalculateInAdvance = FlagDataCalculateInAdvance;
 			SettingImport.FlagDataCompress = FlagDataCompress;
 			SettingImport.FlagDataTakeOverSettingPrefab = FlagDataTakeOverSettingPrefab;
+			SettingImport.FlagDataCellTrimTransparentPixels = FlagDataCellTrimTransparentPixels;
 
 			SettingImport.CollisionThicknessZ = CollisionThicknessZ;
 			SettingImport.FlagAttachRigidBody = FlagAttachRigidBody;
