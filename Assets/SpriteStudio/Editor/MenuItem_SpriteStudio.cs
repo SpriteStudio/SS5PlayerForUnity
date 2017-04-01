@@ -75,6 +75,8 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 		{
 			EditorGUI.indentLevel = LevelIndent + 1;
 
+			EditorGUILayout.LabelField("-Animation Data");
+			EditorGUI.indentLevel = LevelIndent + 2;
 			FlagDataCalculateInAdvance = EditorGUILayout.Toggle("Calculate in advance", FlagDataCalculateInAdvance);
 			EditorGUILayout.LabelField(" Deformations of \"Mesh\" and \"Collider\" are calculated at importing.");
 			EditorGUILayout.LabelField(" Checked: Improving execution speed of the runtime.");
@@ -86,8 +88,22 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			EditorGUILayout.LabelField(" Checked: Compress.");
 			EditorGUILayout.LabelField(" Unchecked: Uncompress. CPU-Load is reduced.");
 			EditorGUILayout.Space();
+			EditorGUI.indentLevel = LevelIndent + 1;
 			EditorGUILayout.Space();
 
+			EditorGUILayout.LabelField("-Cell Data");
+			EditorGUI.indentLevel = LevelIndent + 2;
+			FlagDataCellTrimTransparentPixels = EditorGUILayout.Toggle("Trim transparent-pixels", FlagDataCellTrimTransparentPixels);
+			EditorGUILayout.LabelField(" Adjust the cells' size so that");
+			EditorGUILayout.LabelField("  unnecessary transparent-pixels are not drawn.");
+			EditorGUILayout.LabelField(" When checked, some functions");
+			EditorGUILayout.LabelField("  may not produce the intended result.");
+
+			EditorGUILayout.Space();
+			EditorGUI.indentLevel = LevelIndent + 1;
+
+			EditorGUILayout.LabelField("-Others");
+			EditorGUI.indentLevel = LevelIndent + 2;
 			FlagAttachControlGameObject = EditorGUILayout.Toggle("Create Control-Prefab", FlagAttachControlGameObject);
 			EditorGUILayout.LabelField(" \"Control-Prefab\" is GameObject attached the script");
 			EditorGUILayout.LabelField("   for Auto-Instantiate Body-Prefab (\"Script_SpriteStudio_ControlPrefab.cs\").");
@@ -100,9 +116,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			EditorGUILayout.LabelField(" Takes over the setting of \"Script_SpriteStudio_Root\"");
 			EditorGUILayout.LabelField("   and \"Script_SpriteStudio_RootEffect\" in Prefabs.");
 			EditorGUILayout.Space();
-
-			FlagDataCellTrimTransparentPixels = EditorGUILayout.Toggle("Trim transparent pixels", FlagDataCellTrimTransparentPixels);
-			EditorGUILayout.Space();
+			EditorGUI.indentLevel = LevelIndent + 1;
 
 			EditorGUI.indentLevel = LevelIndent;
 		}
@@ -279,7 +293,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 			EditorGUILayout.Space();
 
 			FlagAttachRigidBody = EditorGUILayout.Toggle("Attach Rigid-Body", FlagAttachRigidBody);
-			EditorGUILayout.LabelField(" to Collider");
+			EditorGUILayout.LabelField("   to Collider");
 			EditorGUILayout.Space();
 
 			EditorGUI.indentLevel = LevelIndent;
@@ -468,7 +482,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.5.0";
+		string VersionText = "1.5.1";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
