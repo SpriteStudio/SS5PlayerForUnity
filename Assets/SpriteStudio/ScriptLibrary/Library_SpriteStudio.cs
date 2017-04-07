@@ -3252,7 +3252,6 @@ public static partial class Library_SpriteStudio
 					InstanceMesh.uv2 = UV2;
 					InstanceMesh.colors32 = ColorVertex;
 					InstanceMesh.vertices = Coordinate;
-					InstanceMesh.triangles = Library_SpriteStudio.ArrayVertexIndex_Triangle2;
 
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices = Coordinate;
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv = UV;
