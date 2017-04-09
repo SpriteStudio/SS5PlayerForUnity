@@ -2213,8 +2213,11 @@ public static partial class Library_SpriteStudio
 
 				/* Update Sprite-Base Data & Collider */
 				Library_SpriteStudio.Control.ParameterMesh InstanceParameterMesh = BufferParameterMesh;
+				Vector3[] nextCoordinate;
+				Vector2[] nextUV;
+				Vector2[] nextUV2;
+				Color32[] nextColor;
 
-				int CountVertexData = InstanceParameterMesh.Coordinate.Length;
 				int FrameNoOrigin;
 				int IndexAttribute;
 				switch(DataAnimationParts.KindFormat)
@@ -2233,6 +2236,12 @@ public static partial class Library_SpriteStudio
 			UpdateMesh_Plain:;
 				/* for PLAIN */
 				{
+					int CountVertexData = InstanceParameterMesh.Coordinate.Length;
+					nextCoordinate = InstanceParameterMesh.Coordinate;
+					nextUV = InstanceParameterMesh.UV;
+					nextUV2 = InstanceParameterMesh.UV2;
+					nextColor = InstanceParameterMesh.ColorOverlay;
+
 					int	VertexCollectionIndexTableNo = BufferParameterParts.IndexVertexCollectionTable;
 					Vector2 PivotMesh = BufferParameterParts.PivotMesh;
 					Vector2 RateScaleMesh = BufferParameterParts.RateScaleMesh;
@@ -2415,15 +2424,16 @@ public static partial class Library_SpriteStudio
 					if(0 <= IndexAttribute)
 					{
 						Library_SpriteStudio.Data.AttributeCoordinateMeshFix CoordinateMeshFix = DataAnimationParts.DataFix.CoordinateMesh.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
-						for(int i=0; i<CountVertexData; i++)
-						{
-							InstanceParameterMesh.Coordinate[i] = CoordinateMeshFix.Coordinate[i];
-						}
+						nextCoordinate = CoordinateMeshFix.Coordinate;
+						int CountVertexData = nextCoordinate.Length;
 
 						IndexAttribute = DataAnimationParts.DataFix.ColorBlendMesh.IndexGetValue(out FrameNoOrigin, FrameNo);
 						Library_SpriteStudio.Data.AttributeColorBlendMeshFix ColorBlendMeshFix = DataAnimationParts.DataFix.ColorBlendMesh.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						if((null != DataColorBlendOverwrite) && (KindColorOperation.NON != DataColorBlendOverwrite.Operation))
 						{	/* Overwrite */
+							nextColor = InstanceParameterMesh.ColorOverlay;
+							nextUV2 = InstanceParameterMesh.UV2;
+
 							float KindOperation = (float)DataColorBlendOverwrite.Operation + 0.01f;	/* "+0.01f" for Rounding-off-Error */
 							Color ColorAverage = Color.clear;
 							Color ColorData;
@@ -2432,35 +2442,45 @@ public static partial class Library_SpriteStudio
 								ColorData = DataColorBlendOverwrite.VertexColor[i];
 								InstanceParameterMesh.ColorOverlay[i] = ColorData;
 								ColorAverage += ColorData;
-								InstanceParameterMesh.UV2[i] = ColorBlendMeshFix.UV[i];
-								InstanceParameterMesh.UV2[i].x *= InstanceRoot.RateOpacity;
+								InstanceParameterMesh.UV2[i].x = ColorBlendMeshFix.UV[i].x * InstanceRoot.RateOpacity;
 								InstanceParameterMesh.UV2[i].y = KindOperation;
 							}
 							ColorAverage *= (float)Library_SpriteStudio.KindVertexNo.TERMINATOR2;
 							for(int i=(int)Library_SpriteStudio.KindVertexNo.TERMINATOR2; i<CountVertexData; i++)
 							{
 								InstanceParameterMesh.ColorOverlay[i] = ColorAverage;
-								InstanceParameterMesh.UV2[i] = ColorBlendMeshFix.UV[i];
-								InstanceParameterMesh.UV2[i].x *= InstanceRoot.RateOpacity;
+								InstanceParameterMesh.UV2[i].x = ColorBlendMeshFix.UV[i].x * InstanceRoot.RateOpacity;
 								InstanceParameterMesh.UV2[i].y = KindOperation;
 							}
 						}
 						else
 						{
-							for(int i=0; i<CountVertexData; i++)
+							nextColor = ColorBlendMeshFix.ColorOverlay;
+							if (InstanceRoot.RateOpacity == 1f)
 							{
-								InstanceParameterMesh.ColorOverlay[i] = ColorBlendMeshFix.ColorOverlay[i];
-								InstanceParameterMesh.UV2[i] = ColorBlendMeshFix.UV[i];
-								InstanceParameterMesh.UV2[i].x *= InstanceRoot.RateOpacity;
+								nextUV2 = ColorBlendMeshFix.UV;
+							}
+							else
+							{
+								nextUV2 = InstanceParameterMesh.UV2;
+								for (int i = 0; i < CountVertexData; i++)
+								{
+									InstanceParameterMesh.UV2[i].x = ColorBlendMeshFix.UV[i].x * InstanceRoot.RateOpacity;
+									InstanceParameterMesh.UV2[i].y = ColorBlendMeshFix.UV[i].y;
+								}
 							}
 						}
 
 						Library_SpriteStudio.Data.AttributeUVMeshFix UVMeshFix;
 						DataAnimationParts.DataFix.UV0Mesh.TryGetValue(out UVMeshFix, FrameNo, InstanceRoot.DataAnimation.Flyweight);
-						for(int i=0; i<CountVertexData; i++)
-						{
-							InstanceParameterMesh.UV[i] = UVMeshFix.UV[i];
-						}
+						nextUV = UVMeshFix.UV;
+					}
+					else
+					{
+						nextCoordinate = InstanceParameterMesh.Coordinate;
+						nextUV = InstanceParameterMesh.UV;
+						nextUV2 = InstanceParameterMesh.UV2;
+						nextColor = InstanceParameterMesh.ColorOverlay;
 					}
 				}
 				/* goto UpdateMesh_End; */
@@ -2472,11 +2492,31 @@ public static partial class Library_SpriteStudio
 //				Object.DestroyImmediate(InstanceMesh);
 //				InstanceMesh = new Mesh();
 //				InstanceMesh.Clear();
-				InstanceMesh.vertices = InstanceParameterMesh.Coordinate;
+				bool updateCoordinateAlways = (nextCoordinate == InstanceParameterMesh.Coordinate);
+				if (updateCoordinateAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices != nextCoordinate)
+				{
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices = nextCoordinate;
+					InstanceMesh.vertices = nextCoordinate;
+				}
 //				InstanceMesh.triangles = TrianglesMesh;
-				InstanceMesh.uv = InstanceParameterMesh.UV;
-				InstanceMesh.uv2 = InstanceParameterMesh.UV2;
-				InstanceMesh.colors32 = InstanceParameterMesh.ColorOverlay;
+				bool updateUVAlways = (nextUV == InstanceParameterMesh.UV);
+				if (updateUVAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshUv != nextUV)
+				{
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv = nextUV;
+					InstanceMesh.uv = nextUV;
+				}
+				bool updateUV2Always = (nextUV2 == InstanceParameterMesh.UV2);
+				if (updateUV2Always || DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 != nextUV2)
+				{
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 = nextUV2;
+					InstanceMesh.uv2 = nextUV2;
+				}
+				bool updateColorAlways = (nextColor == InstanceParameterMesh.ColorOverlay);
+				if (updateColorAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshColor != nextColor)
+				{
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshColor = nextColor;
+					InstanceMesh.colors32 = InstanceParameterMesh.ColorOverlay;
+				}
 //				InstanceMesh.RecalculateBounds();
 
 				/* Draw Mesh */
@@ -3212,7 +3252,11 @@ public static partial class Library_SpriteStudio
 					InstanceMesh.uv2 = UV2;
 					InstanceMesh.colors32 = ColorVertex;
 					InstanceMesh.vertices = Coordinate;
-					InstanceMesh.triangles = Library_SpriteStudio.ArrayVertexIndex_Triangle2;
+
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices = Coordinate;
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv = UV;
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 = UV2;
+					DataPartsDrawManager.DrawParts.Data.CurrentMeshColor = ColorVertex;
 
 					/* Draw Mesh */
 					Material InstanceMaterial = InstanceRoot.MaterialGet(InstanceEmitter.IndexCellMapParticle, InstanceEmitter.InstanceDataEmitter.KindBlendTarget);
@@ -4414,6 +4458,10 @@ public static partial class Library_SpriteStudio
 			internal Library_SpriteStudio.Script.Root InstanceRoot;
 //			internal FragmentClusterDrawParts InstanceFragmentClusterDrawPartsPartsPair;
 			internal Mesh InstanceMesh;	/* null == Instance/Effect Parts */
+			internal Vector3[] CurrentMeshVertices;
+			internal Vector2[] CurrentMeshUv;
+			internal Vector2[] CurrentMeshUv2;
+			internal Color32[] CurrentMeshColor;
 		}
 		internal class FragmentDrawParts : Miscellaneousness.Chain<DataDrawParts>.Fragment
 		{
@@ -4425,6 +4473,10 @@ public static partial class Library_SpriteStudio
 				Data.InstanceRoot = null;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = null;
 				Data.InstanceMesh = null;
+				Data.CurrentMeshVertices = null;
+				Data.CurrentMeshUv = null;
+				Data.CurrentMeshUv2 = null;
+				Data.CurrentMeshColor = null;
 			}
 
 			internal bool BootUp(	Library_SpriteStudio.Script.Root InstanceRootInitial,
@@ -4437,6 +4489,10 @@ public static partial class Library_SpriteStudio
 				Data.InstanceRoot = InstanceRootInitial;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = InstanceFragmentClusterDrawPartsPartsPairInitial;
 				Data.InstanceMesh = null;
+				Data.CurrentMeshVertices = null;
+				Data.CurrentMeshUv = null;
+				Data.CurrentMeshUv2 = null;
+				Data.CurrentMeshColor = null;
 
 				switch(KindParts)
 				{
