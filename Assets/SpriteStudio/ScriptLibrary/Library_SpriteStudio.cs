@@ -5043,8 +5043,12 @@ public static partial class Library_SpriteStudio
 				goto MeshCreate_MeshNoDraw;
 			}
 
+			if(InstanceMaterialWrite == null || InstanceMaterialWrite.Length != CountMaterial)
+			{
+				InstanceMaterialWrite = new Material[CountMaterial];
+			}
+			Material[] TableMaterial = InstanceMaterialWrite;
 			int CountMesh = 0;
-			Material[] TableMaterial = new Material[CountMaterial];
 			Index = 0;
 			ClusterNow = ClusterTerminal.ChainTop;
 			while(null != ClusterNow)
@@ -5058,7 +5062,6 @@ public static partial class Library_SpriteStudio
 			{
 				goto MeshCreate_MeshNoDraw;
 			}
-			InstanceMaterialWrite = TableMaterial;
 			if(null != InstanceMaterialDraw)
 			{
 				InstanceMeshRenderer.sharedMaterials = InstanceMaterialDraw;
