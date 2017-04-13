@@ -5016,6 +5016,8 @@ public static partial class Library_SpriteStudio
 /* Unity5.5.1p1 or newer*/
 		static System.WeakReference TriangleBuffer;
 #endif
+		static System.WeakReference TableIndexTriangleBuffer;
+
 		internal static void MeshCreate(	TerminalClusterDrawParts ClusterTerminal,
 											ref Mesh InstanceMeshWrite,
 											ref Material[] InstanceMaterialWrite,
@@ -5074,14 +5076,18 @@ public static partial class Library_SpriteStudio
 			{
 				CombineMesh = new CombineInstance[CountMesh];
 			}
-			int[] TableIndexTriangle;
+			List<int> TableIndexTriangle = null;
 			if(1 < CountMaterial)
 			{
-				TableIndexTriangle = new int[CountMaterial + 1];  /* +1 ... Total Data */
-			}
-			else
-			{
-				TableIndexTriangle = null;
+				if(TableIndexTriangleBuffer != null)
+				{
+					TableIndexTriangle = TableIndexTriangleBuffer.Target as List<int>;
+				}
+				if(TableIndexTriangle == null)
+				{
+					TableIndexTriangle = new List<int>(CountMaterial + 1);  /* +1 ... Total Data */
+					TableIndexTriangleBuffer = new System.WeakReference(TableIndexTriangle);
+				}
 			}
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
@@ -5091,20 +5097,19 @@ public static partial class Library_SpriteStudio
 			for(int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
-				if (TableIndexTriangle != null)
+				if(TableIndexTriangle != null)
 				{
-					TableIndexTriangle[i] = IndexTriangle;
-				}
-
-				if(i == 0)
-				{
-					MaxTriangleCountForSubmesh = IndexTriangle;
-				}
-				else
-				{
-					if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[i - 1])
+					TableIndexTriangle.Add(IndexTriangle);
+					if(i == 0)
 					{
-						MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[i - 1];
+						MaxTriangleCountForSubmesh = IndexTriangle;
+					}
+					else
+					{
+						if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2])
+						{
+							MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2];
+						}
 					}
 				}
 
@@ -5129,15 +5134,18 @@ public static partial class Library_SpriteStudio
 			}
 			InstanceMesh.CombineMeshes(CombineMesh);
 
+			if(TableIndexTriangle != null)
+			{
+				TableIndexTriangle.Add(IndexTriangle);
+				if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2])
+				{
+					MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2];
+				}
+			}
+
 			/* SubMesh Construct */
 			if(1 < CountMaterial)
 			{
-				TableIndexTriangle[CountMaterial] = IndexTriangle;
-				if (MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[CountMaterial - 1])
-				{
-					MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[CountMaterial - 1];
-				}
-
 #if UNITY_5_6_OR_NEWER
 /* Unity5.5.1p1 or newer*/
 				List<int> Triangles = null;
