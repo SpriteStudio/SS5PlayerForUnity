@@ -5071,7 +5071,15 @@ public static partial class Library_SpriteStudio
 			{
 				CombineMesh = new CombineInstance[CountMesh];
 			}
-			int[] TableIndexTriangle = new int[CountMaterial + 1];	/* +1 ... Total Data */
+			int[] TableIndexTriangle;
+			if(1 < CountMaterial)
+			{
+				TableIndexTriangle = new int[CountMaterial + 1];  /* +1 ... Total Data */
+			}
+			else
+			{
+				TableIndexTriangle = null;
+			}
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
 			Index = 0;
@@ -5080,7 +5088,10 @@ public static partial class Library_SpriteStudio
 			for(int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
-				TableIndexTriangle[i] = IndexTriangle;
+				if (TableIndexTriangle != null)
+				{
+					TableIndexTriangle[i] = IndexTriangle;
+				}
 
 				if(i == 0)
 				{
@@ -5109,11 +5120,6 @@ public static partial class Library_SpriteStudio
 				ClusterNow = ClusterNow.ChainNext;
 			}
 
-			TableIndexTriangle[CountMaterial] = IndexTriangle;
-			if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[CountMaterial - 1])
-			{
-				MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[CountMaterial - 1];
-			}
 			for(int i=Index; i<CombineMesh.Length; i++)
 			{
 				CombineMesh[i].mesh = null;
@@ -5123,6 +5129,12 @@ public static partial class Library_SpriteStudio
 			/* SubMesh Construct */
 			if(1 < CountMaterial)
 			{
+				TableIndexTriangle[CountMaterial] = IndexTriangle;
+				if (MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[CountMaterial - 1])
+				{
+					MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[CountMaterial - 1];
+				}
+
 #if UNITY_5_6_OR_NEWER
 /* Unity5.5.1p1 or newer*/
 				List<int> Triangles = null;
