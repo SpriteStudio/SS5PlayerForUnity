@@ -5088,6 +5088,10 @@ public static partial class Library_SpriteStudio
 					TableIndexTriangle = new List<int>(CountMaterial + 1);  /* +1 ... Total Data */
 					TableIndexTriangleBuffer = new System.WeakReference(TableIndexTriangle);
 				}
+				else
+				{
+					TableIndexTriangle.Clear();
+				}
 			}
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
