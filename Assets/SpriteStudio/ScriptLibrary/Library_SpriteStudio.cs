@@ -5016,6 +5016,8 @@ public static partial class Library_SpriteStudio
 /* Unity5.5.1p1 or newer*/
 		static System.WeakReference TriangleBuffer;
 #endif
+		static System.WeakReference TableIndexTriangleBuffer;
+
 		internal static void MeshCreate(	TerminalClusterDrawParts ClusterTerminal,
 											ref Mesh InstanceMeshWrite,
 											ref Material[] InstanceMaterialWrite,
@@ -5043,8 +5045,12 @@ public static partial class Library_SpriteStudio
 				goto MeshCreate_MeshNoDraw;
 			}
 
+			if(InstanceMaterialWrite == null || InstanceMaterialWrite.Length != CountMaterial)
+			{
+				InstanceMaterialWrite = new Material[CountMaterial];
+			}
+			Material[] TableMaterial = InstanceMaterialWrite;
 			int CountMesh = 0;
-			Material[] TableMaterial = new Material[CountMaterial];
 			Index = 0;
 			ClusterNow = ClusterTerminal.ChainTop;
 			while(null != ClusterNow)
@@ -5058,7 +5064,6 @@ public static partial class Library_SpriteStudio
 			{
 				goto MeshCreate_MeshNoDraw;
 			}
-			InstanceMaterialWrite = TableMaterial;
 			if(null != InstanceMaterialDraw)
 			{
 				InstanceMeshRenderer.sharedMaterials = InstanceMaterialDraw;
@@ -5071,7 +5076,23 @@ public static partial class Library_SpriteStudio
 			{
 				CombineMesh = new CombineInstance[CountMesh];
 			}
-			int[] TableIndexTriangle = new int[CountMaterial + 1];	/* +1 ... Total Data */
+			List<int> TableIndexTriangle = null;
+			if(1 < CountMaterial)
+			{
+				if(TableIndexTriangleBuffer != null)
+				{
+					TableIndexTriangle = TableIndexTriangleBuffer.Target as List<int>;
+				}
+				if(TableIndexTriangle == null)
+				{
+					TableIndexTriangle = new List<int>(CountMaterial + 1);  /* +1 ... Total Data */
+					TableIndexTriangleBuffer = new System.WeakReference(TableIndexTriangle);
+				}
+				else
+				{
+					TableIndexTriangle.Clear();
+				}
+			}
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
 			Index = 0;
@@ -5080,17 +5101,19 @@ public static partial class Library_SpriteStudio
 			for(int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
-				TableIndexTriangle[i] = IndexTriangle;
-
-				if(i == 0)
+				if(TableIndexTriangle != null)
 				{
-					MaxTriangleCountForSubmesh = IndexTriangle;
-				}
-				else
-				{
-					if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[i - 1])
+					TableIndexTriangle.Add(IndexTriangle);
+					if(i == 0)
 					{
-						MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[i - 1];
+						MaxTriangleCountForSubmesh = IndexTriangle;
+					}
+					else
+					{
+						if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2])
+						{
+							MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2];
+						}
 					}
 				}
 
@@ -5109,16 +5132,20 @@ public static partial class Library_SpriteStudio
 				ClusterNow = ClusterNow.ChainNext;
 			}
 
-			TableIndexTriangle[CountMaterial] = IndexTriangle;
-			if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[CountMaterial - 1])
-			{
-				MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[CountMaterial - 1];
-			}
 			for(int i=Index; i<CombineMesh.Length; i++)
 			{
 				CombineMesh[i].mesh = null;
 			}
 			InstanceMesh.CombineMeshes(CombineMesh);
+
+			if(TableIndexTriangle != null)
+			{
+				TableIndexTriangle.Add(IndexTriangle);
+				if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2])
+				{
+					MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2];
+				}
+			}
 
 			/* SubMesh Construct */
 			if(1 < CountMaterial)
