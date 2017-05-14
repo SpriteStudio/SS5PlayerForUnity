@@ -2515,7 +2515,7 @@ public static partial class Library_SpriteStudio
 				if (updateColorAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshColor != nextColor)
 				{
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshColor = nextColor;
-					InstanceMesh.colors32 = InstanceParameterMesh.ColorOverlay;
+					InstanceMesh.colors32 = nextColor;
 				}
 //				InstanceMesh.RecalculateBounds();
 
