@@ -67,6 +67,7 @@ public static partial class LibraryEditor_SpriteStudio
 		public bool FlagDataCalculateInAdvance;
 		public bool FlagDataCompress;
 		public bool FlagDataTakeOverSettingPrefab;
+		public bool FlagDataCellTrimTransparentPixels;
 
 		public float CollisionThicknessZ;
 		public bool FlagAttachRigidBody;
@@ -98,6 +99,7 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static string PrefsKeyFlagDataCalculateInAdvance = "SS5PU_Importer_FlagDataCalculateInAdvance";
 	internal readonly static string PrefsKeyFlagDataCompress = "SS5PU_Importer_FlagDataCompress";
 	internal readonly static string PrefsKeyFlagTakeOverSettingPrefab = "SS5PU_Importer_FlagTakeOverSettingPrefab";
+	internal readonly static string PrefsKeyFlagDataCellTrimTransparentPixels = "SS5PU_Importer_FlagDataCellTrimTransparentPixels";
 	internal readonly static string PrefsKeyCollisionThicknessZ = "SS5PU_Importer_CollisionThicknessZ";
 	internal readonly static string PrefsKeyFlagAttachRigidBody = "SS5PU_Importer_FlagAttachRigidBody";
 	internal readonly static string PrefsKeyFlagConfirmOverWrite = "SS5PU_Importer_FlagConfirmOverWrite";
@@ -127,6 +129,7 @@ public static partial class LibraryEditor_SpriteStudio
 	internal readonly static bool DefaultFlagDataCompress = true;
 	internal readonly static bool DefaultFlagDataCalculateInAdvance = false;
 	internal readonly static bool DefaultFlagTakeOverSettingPrefab = false;
+	internal readonly static bool DefaultFlagDataCellTrimTransparentPixels = false;
 	internal readonly static float DefaultCollisionThicknessZ = 1.0f;
 	internal readonly static bool DefaultFlagAttachRigidBody = true;
 	internal readonly static bool DefaultFlagConfirmOverWrite = true;
@@ -163,6 +166,7 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagDataCalculateInAdvance, DefaultFlagDataCalculateInAdvance);
 			EditorPrefs.SetBool(PrefsKeyFlagDataCompress, DefaultFlagDataCompress);
 			EditorPrefs.SetBool(PrefsKeyFlagTakeOverSettingPrefab, DefaultFlagTakeOverSettingPrefab);
+			EditorPrefs.SetBool(PrefsKeyFlagDataCellTrimTransparentPixels, DefaultFlagDataCellTrimTransparentPixels);
 
 			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, DefaultFlagAttachRigidBody);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachControlGameObject, DefaultFlagAttachControlGameObject);
@@ -199,6 +203,7 @@ public static partial class LibraryEditor_SpriteStudio
 			DataSettingImport.FlagDataCalculateInAdvance = EditorPrefs.GetBool(PrefsKeyFlagDataCalculateInAdvance, DefaultFlagDataCalculateInAdvance);
 			DataSettingImport.FlagDataCompress = EditorPrefs.GetBool(PrefsKeyFlagDataCompress, DefaultFlagDataCompress);
 			DataSettingImport.FlagDataTakeOverSettingPrefab = EditorPrefs.GetBool(PrefsKeyFlagTakeOverSettingPrefab, DefaultFlagTakeOverSettingPrefab);
+			DataSettingImport.FlagDataCellTrimTransparentPixels = EditorPrefs.GetBool(PrefsKeyFlagDataCellTrimTransparentPixels, DefaultFlagDataCellTrimTransparentPixels);
 
 			DataSettingImport.CollisionThicknessZ = EditorPrefs.GetFloat(PrefsKeyCollisionThicknessZ, DefaultCollisionThicknessZ);
 			DataSettingImport.FlagAttachRigidBody = EditorPrefs.GetBool(PrefsKeyFlagAttachRigidBody, DefaultFlagAttachRigidBody);
@@ -232,6 +237,7 @@ public static partial class LibraryEditor_SpriteStudio
 			EditorPrefs.SetBool(PrefsKeyFlagDataCalculateInAdvance, DataSettingImport.FlagDataCalculateInAdvance);
 			EditorPrefs.SetBool(PrefsKeyFlagDataCompress, DataSettingImport.FlagDataCompress);
 			EditorPrefs.SetBool(PrefsKeyFlagTakeOverSettingPrefab, DataSettingImport.FlagDataTakeOverSettingPrefab);
+			EditorPrefs.SetBool(PrefsKeyFlagDataCellTrimTransparentPixels, DataSettingImport.FlagDataCellTrimTransparentPixels);
 
 			EditorPrefs.SetFloat(PrefsKeyCollisionThicknessZ, DataSettingImport.CollisionThicknessZ);
 			EditorPrefs.SetBool(PrefsKeyFlagAttachRigidBody, DataSettingImport.FlagAttachRigidBody);
@@ -4781,6 +4787,21 @@ public static partial class LibraryEditor_SpriteStudio
 					DataCellMap.ListCell[j].Rectangle = InformationSSCE.ListCell[j].Area;
 					DataCellMap.ListCell[j].Pivot = InformationSSCE.ListCell[j].Pivot;
 				}
+
+				if (DataSettingImport.FlagDataCellTrimTransparentPixels)
+				{
+					var texturePath = AssetDatabase.GetAssetPath(InformationTexture.PrefabTexture);
+					var textureImporter = AssetImporter.GetAtPath(texturePath) as TextureImporter;
+					textureImporter.isReadable = true;
+					AssetDatabase.ImportAsset(texturePath, ImportAssetOptions.ForceSynchronousImport);
+					for (int j = 0; j < CountListCell; j++)
+					{
+						Utility.Cell.TrimTransparentPixel(DataCellMap.ListCell[j], InformationTexture.PrefabTexture);
+					}
+					textureImporter.isReadable = false;
+					AssetDatabase.ImportAsset(texturePath);
+				}
+
 				DataPrefabCell.ListDataCellMap[i] = InformationSSCE.DataCellMap;
 			}
 			EditorUtility.SetDirty(DataPrefabCell);
@@ -8935,6 +8956,138 @@ public static partial class LibraryEditor_SpriteStudio
 
 	internal static class Utility
 	{
+		public static class Cell
+		{
+			public static void TrimTransparentPixel(Library_SpriteStudio.Data.Cell target, Texture2D texture)
+			{
+				var trimmedRectangle = GetTrimmedRect(texture, target.Rectangle);
+				var diffX = trimmedRectangle.xMin - target.Rectangle.xMin;
+				var diffY = trimmedRectangle.yMin - target.Rectangle.yMin;
+
+				target.Rectangle = trimmedRectangle;
+				target.Pivot.x -= diffX;
+				target.Pivot.y -= diffY;
+			}
+
+			static Rect GetTrimmedRect(Texture2D texture, Rect originalRect)
+			{
+				var emptyCell = true;
+				var result = originalRect;
+
+				for (int i=0; i<originalRect.width; ++i)
+				{
+					var x = i + originalRect.xMin;
+					var trimmable = true;
+					for(int j = 0; j<originalRect.height; ++j)
+					{
+						var y = j + originalRect.yMin;
+						var pixel = texture.GetPixel((int)x, texture.height - 1 - (int)y);
+						if (pixel.a > 0f)
+						{
+							emptyCell = false;
+							trimmable = false;
+							break;
+						}
+					}
+
+					if (trimmable)
+					{
+						result.xMin = x;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if (emptyCell)
+				{
+					result.xMin = originalRect.center.x;
+					result.xMax = originalRect.center.x;
+					result.yMin = originalRect.center.y;
+					result.yMax = originalRect.center.y;
+					return result;
+				}
+
+				for (int i = 0; i < originalRect.width; ++i)
+				{
+					var x = originalRect.xMax - 1 - i;
+					var trimmable = true;
+					for (int j = 0; j < originalRect.height; ++j)
+					{
+						var y = j + originalRect.yMin;
+						var pixel = texture.GetPixel((int)x, texture.height - 1 - (int)y);
+						if (pixel.a > 0f)
+						{
+							trimmable = false;
+							break;
+						}
+					}
+
+					if (trimmable)
+					{
+						result.xMax = x + 1f;
+					}
+					else
+					{
+						break;
+					}
+				}
+				
+				for (int j = 0; j < originalRect.height; ++j)
+				{
+					var y = j + originalRect.yMin;
+					var trimmable = true;
+					for (int i = 0; i < originalRect.width; ++i)
+					{
+						var x = i + originalRect.xMin;
+						var pixel = texture.GetPixel((int)x, texture.height - 1 - (int)y);
+						if (pixel.a > 0f)
+						{
+							trimmable = false;
+							break;
+						}
+					}
+
+					if (trimmable)
+					{
+						result.yMin = y;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				for (int j = 0; j < originalRect.height; ++j)
+				{
+					var y = originalRect.yMax - 1 - j;
+					var trimmable = true;
+					for (int i = 0; i < originalRect.width; ++i)
+					{
+						var x = i + originalRect.xMin;
+						var pixel = texture.GetPixel((int)x, texture.height - 1 - (int)y);
+						if (pixel.a > 0f)
+						{
+							trimmable = false;
+							break;
+						}
+					}
+
+					if (trimmable)
+					{
+						result.yMax = y + 1f;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				return result;
+			}
+		}
+
 		internal static class File
 		{
 			internal readonly static string NamePathRootFile = Application.dataPath;
