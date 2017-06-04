@@ -1461,7 +1461,6 @@ public static partial class Library_SpriteStudio
 			{
 				VALID = 0x40000000,
 				RUNNING = 0x20000000,
-				REFRESH_INSTANCEUNDERCONTROL = 0x10000000,	/* disuse */
 
 				HIDEFORCE = 0x08000000,
 
@@ -1734,7 +1733,6 @@ public static partial class Library_SpriteStudio
 							{
 								NameAnimationUnderControl = DataParts.NameAnimationUnderControl;
 							}
-//							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 							RebootPrefabInstance(InstanceRootInitial, IDPartsInitial, false);
 						}
 						break;
@@ -1751,7 +1749,6 @@ public static partial class Library_SpriteStudio
 							{
 								PrefabUnderControl = (InstanceRootInitial.DataAnimation.DataGetParts(IDPartsInitial)).PrefabUnderControl;
 							}
-//							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 							RebootPrefabInstanceEffect(InstanceRootInitial, IDPartsInitial, false);
 						}
 						break;
@@ -1780,11 +1777,7 @@ public static partial class Library_SpriteStudio
 				if(null != PrefabUnderControl)
 				{
 					/* Create UnderControl-Instance */
-//					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
-//					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
-//						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-//					}
+					InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
 					if(null != InstanceGameObjectUnderControl)
 					{
 						InstanceRootUnderControl = InstanceGameObjectUnderControl.GetComponent<Script_SpriteStudio_Root>();
@@ -1806,11 +1799,7 @@ public static partial class Library_SpriteStudio
 				if(null != PrefabUnderControl)
 				{
 					/* Create UnderControl-Instance */
-//					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
-//					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
-//						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-//					}
+					InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
 					if(null != InstanceGameObjectUnderControl)
 					{
 						InstanceRootUnderControlEffect = InstanceGameObjectUnderControl.GetComponent<Script_SpriteStudio_RootEffect>();
@@ -1844,7 +1833,7 @@ public static partial class Library_SpriteStudio
 #if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
 				return(PartsIDNext);
 #else
-				return(0);
+				return(-1);
 #endif
 			}
 
@@ -1897,7 +1886,6 @@ public static partial class Library_SpriteStudio
 				{	/* Has Data */
 					if(IndexPreviousScaling != IndexAttribute)
 					{
-//						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
 						Vector3 VectorTemp = DataAnimationParts.Scaling.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						VectorTemp.z = 1.0f;
 						InstanceTransform.localScale = VectorTemp;
@@ -1957,9 +1945,6 @@ public static partial class Library_SpriteStudio
 						{
 							/* Cell Get */
 							/* MEMO: It is able to perform "Cell-Table Change" and "Cell Overwrite", only when data is "Plain" format. */
-#if false
-							IndexAttribute = DataAnimationParts.DataPlain.Cell.IndexGetValue(out FrameNoOrigin, FrameNo);
-#else
 							bool FlagCellOverwrite = (0 != (Status & (FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE | FlagBitStatus.OVERWRITE_CELL_UNREFLECTED))) ? true : false;
 							Status &= ~FlagBitStatus.OVERWRITE_CELL_UNREFLECTED;
 							IndexAttribute = DataAnimationParts.DataPlain.Cell.IndexGetValue(out FrameNoOrigin, FrameNo);
@@ -1972,34 +1957,9 @@ public static partial class Library_SpriteStudio
 									IndexCellOverwrite = -1;
 								}
 							}
-#endif
+
 							if(0 <= IndexAttribute)
 							{
-#if false
-								Library_SpriteStudio.Data.AttributeCell AttributeCell = DataAnimationParts.DataPlain.Cell.ListValue[IndexAttribute];
-								BufferParameterParts.IndexCellMap = AttributeCell.IndexCellMap;
-								int IndexCell = AttributeCell.IndexCell;
-								Library_SpriteStudio.Data.CellMap DataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(BufferParameterParts.IndexCellMap);
-								if(null != DataCellMap)
-								{
-									BufferParameterParts.SizeTextureOriginal = DataCellMap.SizeOriginal;
-
-									Library_SpriteStudio.Data.Cell DataCell = DataCellMap.DataGetCell(IndexCell);
-									BufferParameterParts.DataCell = DataCell;
-									if(null == DataCell)
-									{	/* Invalid */
-										BufferParameterParts.PivotMesh = Vector2.zero;
-										BufferParameterParts.SizePixelMesh.x = 64.0f;
-										BufferParameterParts.SizePixelMesh.y = 64.0f;
-									}
-									else
-									{	/* Valid */
-										BufferParameterParts.PivotMesh = DataCell.Pivot;
-										BufferParameterParts.SizePixelMesh.x = DataCell.Rectangle.width;
-										BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
-									}
-								}
-#else
 								int IndexCellMap = IndexCellMapOverwrite;
 								int IndexCell = IndexCellOverwrite;
 								if((0 > IndexCellMap) || (0 > IndexCell))
@@ -2052,7 +2012,6 @@ public static partial class Library_SpriteStudio
 									BufferParameterParts.SizePixelMesh.x = DataCell.Rectangle.width;
 									BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
 								}
-#endif
 							}
 
 							/* Recalc Mesh Size & Pivot (Considering SizeForce-X/Y & OffsetPivot-X/Y) */
@@ -2257,7 +2216,6 @@ public static partial class Library_SpriteStudio
 						SizeTextureOriginal = BufferParameterParts.SizeTextureOriginal;
 
 						RectCell = BufferParameterParts.DataCell.Rectangle;
-//						PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
 						PivotTexture.x = RectCell.width * 0.5f;
 						PivotTexture.y = RectCell.height * 0.5f;
 
@@ -2827,22 +2785,21 @@ public static partial class Library_SpriteStudio
 
 			internal bool UpdateInstance(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
+				if(null == InstanceRootUnderControl)
+				{
+					return(true);
+				}
+
 				int FrameNoOrigin;
 				int IndexAttribute;
-				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 				Library_SpriteStudio.Data.AttributeInstance DataInstance = null;
 				bool FlagDecode = InstanceRoot.StatusIsDecodeInstance;
 				bool FlagPlayIndependentNowInstance = (0 != (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)) ? true : false;
 				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
 				bool FlagPlayTurn = InstanceRoot.StatusIsPlayingTurn;
-				bool FlagTopFrame = false;	// (FrameNo == ((true == FlagPlayReverse) ? InstanceRoot.FrameNoEnd : InstanceRoot.FrameNoStart)) ? true : false;
+				bool FlagTopFrame = false;
 				bool FlagTimeWrap = false;
 				float TimeOffset = 0.0f;
-
-				if(null == InstanceRootUnderControl)
-				{
-					return(true);
-				}
 
 				/* Top Frame Check */
 				if (true == FlagPlayReverse)
@@ -2948,12 +2905,8 @@ public static partial class Library_SpriteStudio
 					}
 				}
 
-				/* Status-Data Get */
-				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
-				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
-
 				/* Draw Instance */
-				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager) && (false == DataStatus.IsHide))
+				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager) && (false == BufferParameterParts.FlagHide))
 				{
 					/* Alpha Get */
 					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
@@ -2979,7 +2932,6 @@ public static partial class Library_SpriteStudio
 				/* Ver.SS5.7 */
 				int FrameNoOrigin;
 				int IndexAttribute;
-				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
 				float TimeOffset = 0.0f;
 
@@ -2988,10 +2940,6 @@ public static partial class Library_SpriteStudio
 				{
 					FrameNoPreviousUpdateUnderControl = -1;
 				}
-
-				/* Status-Data Get */
-				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
-				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
 
 				/* Decode Instance-Data */
 				if(true == InstanceRoot.StatusIsDecodeEffect)
@@ -3030,7 +2978,7 @@ public static partial class Library_SpriteStudio
 				}
 
 				/* Draw Instance */
-				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager) && (false == DataStatus.IsHide))
+				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager) && (false == BufferParameterParts.FlagHide))
 				{
 					/* Alpha Get */
 					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);

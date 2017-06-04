@@ -40,10 +40,10 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		DECODE_INSTANCE = 0x00004000,
 		DECODE_EFFECT = 0x00002000,
 
-		REQUEST_DESTROY = 0x00000800,
-		REQUEST_PLAYEND = 0x00000400,
+		REQUEST_DESTROY = 0x00000080,
+		REQUEST_PLAYEND = 0x00000040,
 
-		CELL_TABLECHANGED = 0x00000080,
+		CELL_TABLECHANGED = 0x00000008,
 
 		CLEAR = 0x00000000,
 	}
@@ -146,10 +146,6 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		{
 			return(0 != (Status & FlagBitStatus.PLAYING_INFINITY));
 		}
-//		set
-//		{
-//			Status = (true == value) ? (Status | FlagBitStatus.PLAYING_INFINITY) : (Status & ~FlagBitStatus.PLAYING_INFINITY);
-//		}
 	}
 	internal bool StatusIsDecodeUserData
 	{
@@ -235,12 +231,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 	void Awake()
 	{
-#if false
-		foreach(Material MaterialNow in TableMaterial)
-		{
-			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
-		}
-#else
+		/* Reassignment when shader lost */
 		int Count = (null != TableMaterial) ? TableMaterial.Length : 0;
 		Material InstanceMaterial = null;
 		for(int i=0; i<Count; i++)
@@ -252,7 +243,6 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			}
 		}
 		InstanceMaterial = null;
-#endif
 	}
 
 	void Start()
@@ -300,6 +290,8 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 	void LateUpdate()
 	{
+		Library_SpriteStudio.Control.Parts InstanceControlParts = null;
+
 		int CountParts = DataAnimation.CountGetParts();
 		if(0 == (Status & FlagBitStatus.VALID))
 		{	/* Not Start */
@@ -322,32 +314,49 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		ChainClusterDrawParts.ChainCleanUp();
 		for(int i=0; i<CountParts; i++)
 		{
+			InstanceControlParts = ListControlParts[i];
+
 			/* Transform/Collider Update */
-			ListControlParts[i].UpdateGameObject(this, FrameNoNow);
+			InstanceControlParts.UpdateGameObject(this, FrameNoNow);
 
 #if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
-			/* MEMO: No process the display-parts here */
+			/* Draw-Parts */
+			switch(InstanceControlParts.DataParts.Kind)
+			{
+				case Library_SpriteStudio.KindParts.INSTANCE:
+					/* Instance Update */
+					InstanceControlParts.UpdateInstance(this, FrameNoNow);
+					break;
+
+				case Library_SpriteStudio.KindParts.EFFECT:
+					/* Effect Update */
+					InstanceControlParts.UpdateEffect(this, FrameNoNow);
+					break;
+
+				default:
+					break;
+			}
 #else
 			/* Draw-Parts */
-			switch(ListControlParts[i].DataParts.Kind)
+			switch(InstanceControlParts.DataParts.Kind)
 			{
 				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
 				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
 					/* Mesh Data Update */
-					if(null != ListControlParts[i].BufferParameterMesh)
+					if(null != InstanceControlParts.BufferParameterMesh)
 					{
-						ListControlParts[i].UpdateMesh(this, FrameNoNow);
+						InstanceControlParts.UpdateMesh(this, FrameNoNow);
 					}
 					break;
 
 				case Library_SpriteStudio.KindParts.INSTANCE:
 					/* Instance Update */
-					ListControlParts[i].UpdateInstance(this, FrameNoNow);
+					InstanceControlParts.UpdateInstance(this, FrameNoNow);
 					break;
 
 				case Library_SpriteStudio.KindParts.EFFECT:
 					/* Effect Update */
-					ListControlParts[i].UpdateEffect(this, FrameNoNow);
+					InstanceControlParts.UpdateEffect(this, FrameNoNow);
 					break;
 
 				default:
@@ -360,7 +369,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			{
 				if((0 != (Status & FlagBitStatus.DECODE_USERDATA)) && (null != FunctionUserData))
 				{
-					ListControlParts[i].UpdateUserData(this, FrameNoNow);
+					InstanceControlParts.UpdateUserData(this, FrameNoNow);
 				}
 			}
 		}
@@ -369,33 +378,25 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		int PartIDGetDrawNext = ListControlParts[0].PartIDGetDrawNext(FrameNoNow);	/* Root-Parts */
 		while(0 < PartIDGetDrawNext)
 		{
+			InstanceControlParts = ListControlParts[PartIDGetDrawNext];
+
 			/* Draw-Parts */
-			switch(ListControlParts[PartIDGetDrawNext].DataParts.Kind)
+			switch(InstanceControlParts.DataParts.Kind)
 			{
 				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
 				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
 					/* Mesh Data Update */
-					if(null != ListControlParts[PartIDGetDrawNext].BufferParameterMesh)
+					if(null != InstanceControlParts.BufferParameterMesh)
 					{
-						ListControlParts[PartIDGetDrawNext].UpdateMesh(this, FrameNoNow);
+						InstanceControlParts.UpdateMesh(this, FrameNoNow);
 					}
-					break;
-
-				case Library_SpriteStudio.KindParts.INSTANCE:
-					/* Instance Update */
-					ListControlParts[PartIDGetDrawNext].UpdateInstance(this, FrameNoNow);
-					break;
-
-				case Library_SpriteStudio.KindParts.EFFECT:
-					/* Effect Update */
-					ListControlParts[PartIDGetDrawNext].UpdateEffect(this, FrameNoNow);
 					break;
 
 				default:
 					break;
 			}
 
-			PartIDGetDrawNext = ListControlParts[PartIDGetDrawNext].PartIDGetDrawNext(FrameNoNow);
+			PartIDGetDrawNext = InstanceControlParts.PartIDGetDrawNext(FrameNoNow);
 		}
 #else
 		/* MEMO: No process the display-parts here */
@@ -1648,7 +1649,6 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		ControlParts.NameAnimationUnderControl = NameAnimation;
 
 		/* Refresh Instance */
-//		ControlParts.Status |= Library_SpriteStudio.Control.Parts.FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 		ControlParts.FrameNoPreviousUpdateUnderControl = -1;	/* ReDecode Instance-Attribute */
 		return(ControlParts.RebootPrefabInstance(this, IDParts, FlagRenewInstance));
 	}

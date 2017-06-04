@@ -6653,11 +6653,11 @@ public static partial class LibraryEditor_SpriteStudio
 						case Library_SpriteStudio.KindParts.NORMAL:
 						case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
 						case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
-						case Library_SpriteStudio.KindParts.INSTANCE:
-						case Library_SpriteStudio.KindParts.EFFECT:
 							ListIndexParts.Add(i);
 							break;
 
+						case Library_SpriteStudio.KindParts.INSTANCE:
+						case Library_SpriteStudio.KindParts.EFFECT:
 						case Library_SpriteStudio.KindParts.ROOT:
 						case Library_SpriteStudio.KindParts.NULL:
 						case Library_SpriteStudio.KindParts.NON:
