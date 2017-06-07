@@ -5212,7 +5212,6 @@ public static partial class Library_SpriteStudio
 			/* Playing Datas */
 			public bool FlagHideForce;
 			public float RateSpeed;
-			internal bool FlagUpdatingAnimation;
 
 			/* Playing Datas: for Runtime (WorkArea) */
 			internal float TimePerFrame = 1.0f;

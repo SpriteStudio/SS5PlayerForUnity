@@ -275,7 +275,6 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 		/* Status Set */
 		Status |= FlagBitStatus.VALID;
-		FlagUpdatingAnimation = false;
 
 		/* Play Animation Initialize */
 		AnimationPlay();
