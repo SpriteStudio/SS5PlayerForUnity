@@ -275,6 +275,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 		/* Status Set */
 		Status |= FlagBitStatus.VALID;
+		FlagUpdatingAnimation = false;
 
 		/* Play Animation Initialize */
 		AnimationPlay();
@@ -289,6 +290,15 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 //	}
 
 	void LateUpdate()
+	{
+		if(null == InstanceRootParent)
+		{	/* "Highest Parent"-Root parts */
+			/* MEMO: Execute only at the "Highest Parent"-Root part.                                   */
+			/*       "Child"-Root parts' LateUpdatesMain are called from Parent's internal processing. */
+			LateUpdateMain();
+		}
+	}
+	internal void LateUpdateMain()
 	{
 		Library_SpriteStudio.Control.Parts InstanceControlParts = null;
 
@@ -375,28 +385,31 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		}
 
 #if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
-		int PartIDGetDrawNext = ListControlParts[0].PartIDGetDrawNext(FrameNoNow);	/* Root-Parts */
-		while(0 < PartIDGetDrawNext)
+		if(false == FlagHideForce)
 		{
-			InstanceControlParts = ListControlParts[PartIDGetDrawNext];
-
-			/* Draw-Parts */
-			switch(InstanceControlParts.DataParts.Kind)
+			int PartIDGetDrawNext = ListControlParts[0].PartIDGetDrawNext(FrameNoNow);	/* Root-Parts */
+			while(0 < PartIDGetDrawNext)
 			{
-				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
-				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
+				InstanceControlParts = ListControlParts[PartIDGetDrawNext];
+
+				/* Draw-Parts */
+				switch(InstanceControlParts.DataParts.Kind)
+				{
+					case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
+					case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
 					/* Mesh Data Update */
-					if(null != InstanceControlParts.BufferParameterMesh)
-					{
-						InstanceControlParts.UpdateMesh(this, FrameNoNow);
-					}
-					break;
+						if(null != InstanceControlParts.BufferParameterMesh)
+						{
+							InstanceControlParts.UpdateMesh(this, FrameNoNow);
+						}
+						break;
 
-				default:
-					break;
+					default:
+						break;
+				}
+
+				PartIDGetDrawNext = InstanceControlParts.PartIDGetDrawNext(FrameNoNow);
 			}
-
-			PartIDGetDrawNext = InstanceControlParts.PartIDGetDrawNext(FrameNoNow);
 		}
 #else
 		/* MEMO: No process the display-parts here */

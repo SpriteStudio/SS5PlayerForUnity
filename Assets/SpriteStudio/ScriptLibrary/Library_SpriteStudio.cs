@@ -2905,22 +2905,28 @@ public static partial class Library_SpriteStudio
 					}
 				}
 
+				/* Update Instance */
+				InstanceRootUnderControl.LateUpdateMain();
+
 				/* Draw Instance */
-				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager) && (false == BufferParameterParts.FlagHide))
+				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager))
 				{
-					/* Alpha Get */
-					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
-					InstanceRootUnderControl.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControl.FlagHideForce))
+					{
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControl.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
 
-					/* Priority Get */
-					IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
-					KeyPriority += (float)DataParts.ID * 0.00001f;
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
 
-					/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
-					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControl;
-					DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControl;
+						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+					}
 				}
 
 				return(true);
@@ -2977,22 +2983,28 @@ public static partial class Library_SpriteStudio
 					}
 				}
 
+				/* Update Instance */
+				InstanceRootUnderControlEffect.LateUpdateMain();
+
 				/* Draw Instance */
-				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager) && (false == BufferParameterParts.FlagHide))
+				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager))
 				{
-					/* Alpha Get */
-					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
-					InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControlEffect.FlagHideForce))
+					{
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
 
-					/* Priority Get */
-					IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
-					KeyPriority += (float)DataParts.ID * 0.00001f;
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
 
-					/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
-					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
-					DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
+						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+					}
 				}
 				return(true);
 			}
@@ -5200,6 +5212,7 @@ public static partial class Library_SpriteStudio
 			/* Playing Datas */
 			public bool FlagHideForce;
 			public float RateSpeed;
+			internal bool FlagUpdatingAnimation;
 
 			/* Playing Datas: for Runtime (WorkArea) */
 			internal float TimePerFrame = 1.0f;

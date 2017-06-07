@@ -243,6 +243,15 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 
 	void LateUpdate()
 	{
+		if(false == FlagUnderControl)
+		{	/* "Highest Parent"-Root parts */
+			/* MEMO: Execute only at the "Highest Parent"-Root part.                                   */
+			/*       "Child"-Root parts' LateUpdatesMain are called from Parent's internal processing. */
+			LateUpdateMain();
+		}
+	}
+	internal void LateUpdateMain()
+	{
 		float TimeDelta = Time.deltaTime * RateSpeed;
 
 		if((null == DataEffect) || (null == DataCellMap))
