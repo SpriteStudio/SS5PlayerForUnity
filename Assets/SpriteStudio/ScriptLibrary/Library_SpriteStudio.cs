@@ -4,7 +4,7 @@
 	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
-#define DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#define DRAWPARTS_ORDER_CALCULATEINADVANCE
 #define DRAWPARTS_POOLEFFECT_GENERATEJUSTINTIME
 
 using UnityEngine;
@@ -43,7 +43,7 @@ public static partial class Library_SpriteStudio
 
 	public enum KindParts
 	{
-		NON = -1,				/* ERROR-Code */
+//		NON = -1,				/* ERROR-Code */
 
 		ROOT = 0,				/* Root-Parts (Subspecies of "NULL"-Parts) */
 		NULL,					/* NULL-Parts */
@@ -412,7 +412,7 @@ public static partial class Library_SpriteStudio
 				ID = -1;
 				IDParent = -1;
 
-				Kind = Library_SpriteStudio.KindParts.NON;
+				Kind = (Library_SpriteStudio.KindParts)(-1);	/* Library_SpriteStudio.KindParts.NON */
 				KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
 				KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
 
@@ -1503,7 +1503,7 @@ public static partial class Library_SpriteStudio
 
 			public Library_SpriteStudio.Data.Parts DataParts;
 			internal Library_SpriteStudio.Data.AnimationParts DataAnimationParts;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 			internal int PartsIDNext;
 #endif
 
@@ -1539,7 +1539,7 @@ public static partial class Library_SpriteStudio
 
 				DataParts = null;
 //				DataAnimationParts =
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 //				PartsIDNext = 
 #endif
 				InstanceGameObject = null;
@@ -1572,7 +1572,7 @@ public static partial class Library_SpriteStudio
 
 //				DataParts =
 				DataAnimationParts = null;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 //				PartsIDNext = 
 #endif
 
@@ -1606,7 +1606,7 @@ public static partial class Library_SpriteStudio
 
 //				DataParts =
 //				DataAnimationParts =
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 				PartsIDNext = 0;
 #endif
 
@@ -1828,14 +1828,12 @@ public static partial class Library_SpriteStudio
 				return(true);
 			}
 
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 			internal int PartIDGetDrawNext(int FrameNo)
 			{
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
 				return(PartsIDNext);
-#else
-				return(-1);
-#endif
 			}
+#endif
 
 			internal bool UpdateGameObject(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
@@ -1905,7 +1903,7 @@ public static partial class Library_SpriteStudio
 				/* Status Get */
 				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 				PartsIDNext = DataStatus.PartsIDNext;	/* Cache */
 #endif
 				BufferParameterParts.FlagHide = DataStatus.IsHide;
@@ -2488,7 +2486,7 @@ public static partial class Library_SpriteStudio
 
 					/* Set to Parts-Cluster */
 					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRoot;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 					DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, InstanceMaterial, KeyPriority);
 #else
 					DataPartsDrawManager.PartsSetDraw(InstanceRoot, InstanceMaterial, KeyPriority);
@@ -2496,7 +2494,7 @@ public static partial class Library_SpriteStudio
 				}
 				return(true);
 			}
-			
+
 			public void MeshRecalcSizeAndPivot(ref Vector2 Pivot, ref Vector2 Size, ref Vector2 RateScale, int FrameNo, Library_SpriteStudio.Data.Pack.Flyweight.Factory flyweight)
 			{
 				int FrameNoOrigin;
@@ -2908,6 +2906,8 @@ public static partial class Library_SpriteStudio
 				/* Update Instance */
 				InstanceRootUnderControl.LateUpdateMain();
 
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+#else
 				/* Draw Instance */
 				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager))
 				{
@@ -2928,9 +2928,41 @@ public static partial class Library_SpriteStudio
 						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
 					}
 				}
+#endif
 
 				return(true);
 			}
+
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+			internal bool DrawInstnace(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
+			{
+				/* Draw Instance */
+				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager))
+				{
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControl.FlagHideForce))
+					{
+						int IndexAttribute;
+						int FrameNoOrigin;
+
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControl.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
+
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControl;
+						DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, null, KeyPriority);
+					}
+				}
+
+				return(true);
+			}
+#endif
 
 			internal bool UpdateEffect(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
@@ -2983,10 +3015,12 @@ public static partial class Library_SpriteStudio
 					}
 				}
 
-				/* Update Instance */
+				/* Update Effect */
 				InstanceRootUnderControlEffect.LateUpdateMain();
 
-				/* Draw Instance */
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+#else
+				/* Draw Effect */
 				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager))
 				{
 					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControlEffect.FlagHideForce))
@@ -3006,8 +3040,40 @@ public static partial class Library_SpriteStudio
 						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
 					}
 				}
+#endif
 				return(true);
 			}
+
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+			internal bool DrawEffect(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
+			{
+				/* Draw Effect */
+				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager))
+				{
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControlEffect.FlagHideForce))
+					{
+						int IndexAttribute;
+						int FrameNoOrigin;
+
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
+
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
+						DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, null, KeyPriority);
+					}
+				}
+
+				return(true);
+			}
+#endif
 		}
 
 		internal struct ParameterParts
@@ -4428,7 +4494,7 @@ public static partial class Library_SpriteStudio
 			internal void CleanUp()
 			{
 				ChainCleanUp();
-				Data.Kind = KindParts.NON;
+				Data.Kind = (KindParts)(-1);	/* KindParts.NON */
 				Data.InstanceTransform = null;
 				Data.InstanceRoot = null;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = null;

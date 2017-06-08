@@ -4,7 +4,7 @@
 	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
-#define DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#define DRAWPARTS_ORDER_CALCULATEINADVANCE
 
 using UnityEngine;
 
@@ -328,10 +328,16 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			/* Transform/Collider Update */
 			InstanceControlParts.UpdateGameObject(this, FrameNoNow);
 
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
-			/* Draw-Parts */
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+			/* Update Parts */
 			switch(InstanceControlParts.DataParts.Kind)
 			{
+				case Library_SpriteStudio.KindParts.ROOT:
+				case Library_SpriteStudio.KindParts.NULL:
+				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
+				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
+					break;
+
 				case Library_SpriteStudio.KindParts.INSTANCE:
 					/* Instance Update */
 					InstanceControlParts.UpdateInstance(this, FrameNoNow);
@@ -341,14 +347,15 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 					/* Effect Update */
 					InstanceControlParts.UpdateEffect(this, FrameNoNow);
 					break;
-
-				default:
-					break;
 			}
 #else
-			/* Draw-Parts */
+			/* Update & Draw Parts */
 			switch(InstanceControlParts.DataParts.Kind)
 			{
+				case Library_SpriteStudio.KindParts.ROOT:
+				case Library_SpriteStudio.KindParts.NULL:
+					break;
+
 				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
 				case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
 					/* Mesh Data Update */
@@ -383,7 +390,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 			}
 		}
 
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 		if(false == FlagHideForce)
 		{
 			int PartIDGetDrawNext = ListControlParts[0].PartIDGetDrawNext(FrameNoNow);	/* Root-Parts */
@@ -394,16 +401,25 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 				/* Draw-Parts */
 				switch(InstanceControlParts.DataParts.Kind)
 				{
+					case Library_SpriteStudio.KindParts.ROOT:
+					case Library_SpriteStudio.KindParts.NULL:
+						break;
+
 					case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE2:
 					case Library_SpriteStudio.KindParts.NORMAL_TRIANGLE4:
-					/* Mesh Data Update */
+						/* Mesh Data Update & Draw */
 						if(null != InstanceControlParts.BufferParameterMesh)
 						{
 							InstanceControlParts.UpdateMesh(this, FrameNoNow);
 						}
 						break;
 
-					default:
+					case Library_SpriteStudio.KindParts.INSTANCE:
+						InstanceControlParts.DrawInstnace(this, FrameNoNow);
+						break;
+
+					case Library_SpriteStudio.KindParts.EFFECT:
+						InstanceControlParts.DrawEffect(this, FrameNoNow);
 						break;
 				}
 
