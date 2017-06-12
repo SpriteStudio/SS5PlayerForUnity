@@ -39,7 +39,7 @@ public partial class Script_SpriteStudio_DataAnimation : ScriptableObject
 					Count++;
 					break;
 
-				case Library_SpriteStudio.KindParts.NON:
+/*				case Library_SpriteStudio.KindParts.NON: */
 				case Library_SpriteStudio.KindParts.ROOT:
 				case Library_SpriteStudio.KindParts.NULL:
 					break;
