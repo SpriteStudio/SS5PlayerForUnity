@@ -4,7 +4,7 @@
 	Copyright(C) Web Technology Corp. 
 	All rights reserved.
 */
-#define DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#define DRAWPARTS_ORDER_CALCULATEINADVANCE
 #define DRAWPARTS_POOLEFFECT_GENERATEJUSTINTIME
 
 using UnityEngine;
@@ -43,7 +43,7 @@ public static partial class Library_SpriteStudio
 
 	public enum KindParts
 	{
-		NON = -1,				/* ERROR-Code */
+//		NON = -1,				/* ERROR-Code */
 
 		ROOT = 0,				/* Root-Parts (Subspecies of "NULL"-Parts) */
 		NULL,					/* NULL-Parts */
@@ -412,7 +412,7 @@ public static partial class Library_SpriteStudio
 				ID = -1;
 				IDParent = -1;
 
-				Kind = Library_SpriteStudio.KindParts.NON;
+				Kind = (Library_SpriteStudio.KindParts)(-1);	/* Library_SpriteStudio.KindParts.NON */
 				KindBlendTarget = Library_SpriteStudio.KindColorOperation.NON;
 				KindLabelColor = Library_SpriteStudio.KindColorLabel.NON;
 
@@ -1461,7 +1461,6 @@ public static partial class Library_SpriteStudio
 			{
 				VALID = 0x40000000,
 				RUNNING = 0x20000000,
-				REFRESH_INSTANCEUNDERCONTROL = 0x10000000,	/* disuse */
 
 				HIDEFORCE = 0x08000000,
 
@@ -1504,7 +1503,7 @@ public static partial class Library_SpriteStudio
 
 			public Library_SpriteStudio.Data.Parts DataParts;
 			internal Library_SpriteStudio.Data.AnimationParts DataAnimationParts;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 			internal int PartsIDNext;
 #endif
 
@@ -1540,7 +1539,7 @@ public static partial class Library_SpriteStudio
 
 				DataParts = null;
 //				DataAnimationParts =
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 //				PartsIDNext = 
 #endif
 				InstanceGameObject = null;
@@ -1573,7 +1572,7 @@ public static partial class Library_SpriteStudio
 
 //				DataParts =
 				DataAnimationParts = null;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 //				PartsIDNext = 
 #endif
 
@@ -1607,7 +1606,7 @@ public static partial class Library_SpriteStudio
 
 //				DataParts =
 //				DataAnimationParts =
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 				PartsIDNext = 0;
 #endif
 
@@ -1734,7 +1733,6 @@ public static partial class Library_SpriteStudio
 							{
 								NameAnimationUnderControl = DataParts.NameAnimationUnderControl;
 							}
-//							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 							RebootPrefabInstance(InstanceRootInitial, IDPartsInitial, false);
 						}
 						break;
@@ -1751,7 +1749,6 @@ public static partial class Library_SpriteStudio
 							{
 								PrefabUnderControl = (InstanceRootInitial.DataAnimation.DataGetParts(IDPartsInitial)).PrefabUnderControl;
 							}
-//							Status |= FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
 							RebootPrefabInstanceEffect(InstanceRootInitial, IDPartsInitial, false);
 						}
 						break;
@@ -1780,11 +1777,7 @@ public static partial class Library_SpriteStudio
 				if(null != PrefabUnderControl)
 				{
 					/* Create UnderControl-Instance */
-//					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
-//					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
-//						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-//					}
+					InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
 					if(null != InstanceGameObjectUnderControl)
 					{
 						InstanceRootUnderControl = InstanceGameObjectUnderControl.GetComponent<Script_SpriteStudio_Root>();
@@ -1806,11 +1799,7 @@ public static partial class Library_SpriteStudio
 				if(null != PrefabUnderControl)
 				{
 					/* Create UnderControl-Instance */
-//					if(0 != (Status & FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL))
-//					{
-						InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
-//						Status &= ~FlagBitStatus.REFRESH_INSTANCEUNDERCONTROL;
-//					}
+					InstanceGameObjectUnderControl = Library_SpriteStudio.Miscellaneousness.Asset.PrefabInstantiateChild(InstanceGameObject, (GameObject)PrefabUnderControl, InstanceGameObjectUnderControl, FlagRenew);
 					if(null != InstanceGameObjectUnderControl)
 					{
 						InstanceRootUnderControlEffect = InstanceGameObjectUnderControl.GetComponent<Script_SpriteStudio_RootEffect>();
@@ -1839,14 +1828,12 @@ public static partial class Library_SpriteStudio
 				return(true);
 			}
 
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 			internal int PartIDGetDrawNext(int FrameNo)
 			{
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
 				return(PartsIDNext);
-#else
-				return(0);
-#endif
 			}
+#endif
 
 			internal bool UpdateGameObject(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
@@ -1897,7 +1884,6 @@ public static partial class Library_SpriteStudio
 				{	/* Has Data */
 					if(IndexPreviousScaling != IndexAttribute)
 					{
-//						InstanceTransform.localScale = DataAnimationParts.Scaling.ListValue[IndexAttribute];
 						Vector3 VectorTemp = DataAnimationParts.Scaling.GetValue(InstanceRoot.DataAnimation.Flyweight, IndexAttribute);
 						VectorTemp.z = 1.0f;
 						InstanceTransform.localScale = VectorTemp;
@@ -1917,7 +1903,7 @@ public static partial class Library_SpriteStudio
 				/* Status Get */
 				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
 				Library_SpriteStudio.Data.AttributeStatus DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 				PartsIDNext = DataStatus.PartsIDNext;	/* Cache */
 #endif
 				BufferParameterParts.FlagHide = DataStatus.IsHide;
@@ -1957,9 +1943,6 @@ public static partial class Library_SpriteStudio
 						{
 							/* Cell Get */
 							/* MEMO: It is able to perform "Cell-Table Change" and "Cell Overwrite", only when data is "Plain" format. */
-#if false
-							IndexAttribute = DataAnimationParts.DataPlain.Cell.IndexGetValue(out FrameNoOrigin, FrameNo);
-#else
 							bool FlagCellOverwrite = (0 != (Status & (FlagBitStatus.OVERWRITE_CELL_IGNOREATTRIBUTE | FlagBitStatus.OVERWRITE_CELL_UNREFLECTED))) ? true : false;
 							Status &= ~FlagBitStatus.OVERWRITE_CELL_UNREFLECTED;
 							IndexAttribute = DataAnimationParts.DataPlain.Cell.IndexGetValue(out FrameNoOrigin, FrameNo);
@@ -1972,34 +1955,9 @@ public static partial class Library_SpriteStudio
 									IndexCellOverwrite = -1;
 								}
 							}
-#endif
+
 							if(0 <= IndexAttribute)
 							{
-#if false
-								Library_SpriteStudio.Data.AttributeCell AttributeCell = DataAnimationParts.DataPlain.Cell.ListValue[IndexAttribute];
-								BufferParameterParts.IndexCellMap = AttributeCell.IndexCellMap;
-								int IndexCell = AttributeCell.IndexCell;
-								Library_SpriteStudio.Data.CellMap DataCellMap = InstanceRoot.DataCellMap.DataGetCellMap(BufferParameterParts.IndexCellMap);
-								if(null != DataCellMap)
-								{
-									BufferParameterParts.SizeTextureOriginal = DataCellMap.SizeOriginal;
-
-									Library_SpriteStudio.Data.Cell DataCell = DataCellMap.DataGetCell(IndexCell);
-									BufferParameterParts.DataCell = DataCell;
-									if(null == DataCell)
-									{	/* Invalid */
-										BufferParameterParts.PivotMesh = Vector2.zero;
-										BufferParameterParts.SizePixelMesh.x = 64.0f;
-										BufferParameterParts.SizePixelMesh.y = 64.0f;
-									}
-									else
-									{	/* Valid */
-										BufferParameterParts.PivotMesh = DataCell.Pivot;
-										BufferParameterParts.SizePixelMesh.x = DataCell.Rectangle.width;
-										BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
-									}
-								}
-#else
 								int IndexCellMap = IndexCellMapOverwrite;
 								int IndexCell = IndexCellOverwrite;
 								if((0 > IndexCellMap) || (0 > IndexCell))
@@ -2052,7 +2010,6 @@ public static partial class Library_SpriteStudio
 									BufferParameterParts.SizePixelMesh.x = DataCell.Rectangle.width;
 									BufferParameterParts.SizePixelMesh.y = DataCell.Rectangle.height;
 								}
-#endif
 							}
 
 							/* Recalc Mesh Size & Pivot (Considering SizeForce-X/Y & OffsetPivot-X/Y) */
@@ -2257,7 +2214,6 @@ public static partial class Library_SpriteStudio
 						SizeTextureOriginal = BufferParameterParts.SizeTextureOriginal;
 
 						RectCell = BufferParameterParts.DataCell.Rectangle;
-//						PivotTexture = new Vector2(RectCell.width * 0.5f, RectCell.height * 0.5f);
 						PivotTexture.x = RectCell.width * 0.5f;
 						PivotTexture.y = RectCell.height * 0.5f;
 
@@ -2530,7 +2486,7 @@ public static partial class Library_SpriteStudio
 
 					/* Set to Parts-Cluster */
 					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRoot;
-#if DRAWPARTS_ORDER_SOLVINGJUSTINTIME
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
 					DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, InstanceMaterial, KeyPriority);
 #else
 					DataPartsDrawManager.PartsSetDraw(InstanceRoot, InstanceMaterial, KeyPriority);
@@ -2538,7 +2494,7 @@ public static partial class Library_SpriteStudio
 				}
 				return(true);
 			}
-			
+
 			public void MeshRecalcSizeAndPivot(ref Vector2 Pivot, ref Vector2 Size, ref Vector2 RateScale, int FrameNo, Library_SpriteStudio.Data.Pack.Flyweight.Factory flyweight)
 			{
 				int FrameNoOrigin;
@@ -2827,22 +2783,21 @@ public static partial class Library_SpriteStudio
 
 			internal bool UpdateInstance(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
+				if(null == InstanceRootUnderControl)
+				{
+					return(true);
+				}
+
 				int FrameNoOrigin;
 				int IndexAttribute;
-				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 				Library_SpriteStudio.Data.AttributeInstance DataInstance = null;
 				bool FlagDecode = InstanceRoot.StatusIsDecodeInstance;
 				bool FlagPlayIndependentNowInstance = (0 != (Status & FlagBitStatus.INSTANCE_PLAYINDEPENDENT)) ? true : false;
 				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
 				bool FlagPlayTurn = InstanceRoot.StatusIsPlayingTurn;
-				bool FlagTopFrame = false;	// (FrameNo == ((true == FlagPlayReverse) ? InstanceRoot.FrameNoEnd : InstanceRoot.FrameNoStart)) ? true : false;
+				bool FlagTopFrame = false;
 				bool FlagTimeWrap = false;
 				float TimeOffset = 0.0f;
-
-				if(null == InstanceRootUnderControl)
-				{
-					return(true);
-				}
 
 				/* Top Frame Check */
 				if (true == FlagPlayReverse)
@@ -2948,30 +2903,66 @@ public static partial class Library_SpriteStudio
 					}
 				}
 
-				/* Status-Data Get */
-				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
-				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
+				/* Update Instance */
+				InstanceRootUnderControl.LateUpdateMain();
 
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+#else
 				/* Draw Instance */
-				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager) && (false == DataStatus.IsHide))
+				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager))
 				{
-					/* Alpha Get */
-					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
-					InstanceRootUnderControl.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControl.FlagHideForce))
+					{
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControl.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
 
-					/* Priority Get */
-					IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
-					KeyPriority += (float)DataParts.ID * 0.00001f;
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
 
-					/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
-					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControl;
-					DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControl;
+						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+					}
+				}
+#endif
+
+				return(true);
+			}
+
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+			internal bool DrawInstnace(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
+			{
+				/* Draw Instance */
+				if((null != InstanceRootUnderControl) && (null != DataPartsDrawManager))
+				{
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControl.FlagHideForce))
+					{
+						int IndexAttribute;
+						int FrameNoOrigin;
+
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControl.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
+
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControl;
+						DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, null, KeyPriority);
+					}
 				}
 
 				return(true);
 			}
+#endif
 
 			internal bool UpdateEffect(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
@@ -2979,7 +2970,6 @@ public static partial class Library_SpriteStudio
 				/* Ver.SS5.7 */
 				int FrameNoOrigin;
 				int IndexAttribute;
-				Library_SpriteStudio.Data.AttributeStatus DataStatus = null;
 				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;
 				float TimeOffset = 0.0f;
 
@@ -2988,10 +2978,6 @@ public static partial class Library_SpriteStudio
 				{
 					FrameNoPreviousUpdateUnderControl = -1;
 				}
-
-				/* Status-Data Get */
-				IndexAttribute = DataAnimationParts.Status.IndexGetValue(out FrameNoOrigin, FrameNo);
-				DataStatus = (0 <= IndexAttribute) ? DataAnimationParts.Status.ListValue[IndexAttribute] : Library_SpriteStudio.Data.DummyStatus;
 
 				/* Decode Instance-Data */
 				if(true == InstanceRoot.StatusIsDecodeEffect)
@@ -3029,25 +3015,65 @@ public static partial class Library_SpriteStudio
 					}
 				}
 
-				/* Draw Instance */
-				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager) && (false == DataStatus.IsHide))
+				/* Update Effect */
+				InstanceRootUnderControlEffect.LateUpdateMain();
+
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+#else
+				/* Draw Effect */
+				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager))
 				{
-					/* Alpha Get */
-					IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
-					InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControlEffect.FlagHideForce))
+					{
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
 
-					/* Priority Get */
-					IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
-					float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
-					KeyPriority += (float)DataParts.ID * 0.00001f;
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
 
-					/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
-					DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
-					DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
+						DataPartsDrawManager.PartsSetDraw(InstanceRoot, null, KeyPriority);
+					}
 				}
+#endif
 				return(true);
 			}
+
+#if DRAWPARTS_ORDER_CALCULATEINADVANCE
+			internal bool DrawEffect(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
+			{
+				/* Draw Effect */
+				if((null != InstanceRootUnderControlEffect) && (null != DataPartsDrawManager))
+				{
+					if(false == (BufferParameterParts.FlagHide | InstanceRootUnderControlEffect.FlagHideForce))
+					{
+						int IndexAttribute;
+						int FrameNoOrigin;
+
+						/* Alpha Get */
+						IndexAttribute = DataAnimationParts.RateOpacity.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float RateOpacity = (0 <= IndexAttribute) ? DataAnimationParts.RateOpacity.ListValue[IndexAttribute] : 1.0f;
+						InstanceRootUnderControlEffect.RateOpacity = RateOpacity * InstanceRoot.RateOpacity;
+
+						/* Priority Get */
+						IndexAttribute = DataAnimationParts.Priority.IndexGetValue(out FrameNoOrigin, FrameNo);
+						float KeyPriority = (0 <= IndexAttribute) ? DataAnimationParts.Priority.ListValue[IndexAttribute] : 0.0f;
+						KeyPriority += (float)DataParts.ID * 0.00001f;
+
+						/* Set to Parts-Cluster ("Call Sub-Cluster" Set) */
+						DataPartsDrawManager.DrawParts.Data.InstanceRoot = InstanceRootUnderControlEffect;
+						DataPartsDrawManager.PartsSetDrawFixed(InstanceRoot, null, KeyPriority);
+					}
+				}
+
+				return(true);
+			}
+#endif
 		}
 
 		internal struct ParameterParts
@@ -4468,7 +4494,7 @@ public static partial class Library_SpriteStudio
 			internal void CleanUp()
 			{
 				ChainCleanUp();
-				Data.Kind = KindParts.NON;
+				Data.Kind = (KindParts)(-1);	/* KindParts.NON */
 				Data.InstanceTransform = null;
 				Data.InstanceRoot = null;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = null;
