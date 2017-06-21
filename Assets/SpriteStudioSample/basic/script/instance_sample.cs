@@ -53,9 +53,9 @@ public class instance_sample : MonoBehaviour {
 				break;
 			}
 			//参照アニメの切り替えはアニメーションを停止して行ってください。
-			ScriptRoot.AnimationStop();
+			ScriptRoot.AnimationPause(true);
 			ScriptRoot.InstanceChange(IDParts,null,NameAnimation);
-			ScriptRoot.AnimationPlay();	
+			ScriptRoot.AnimationPause(false);	
 		}
 	
 	}
