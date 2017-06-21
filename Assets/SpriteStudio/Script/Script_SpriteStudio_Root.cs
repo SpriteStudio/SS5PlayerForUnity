@@ -247,6 +247,11 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 	void Start()
 	{
+		if(0 != (Status & FlagBitStatus.VALID))
+		{	/* Already Started */
+			return;
+		}
+
 		/* Base Start */
 		CountPartsDraw = DataAnimation.CountGetPartsDraw();
 		StartBase(CountPartsDraw);
@@ -299,13 +304,13 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 	}
 	internal void LateUpdateMain()
 	{
-		Library_SpriteStudio.Control.Parts InstanceControlParts = null;
-
-		int CountParts = DataAnimation.CountGetParts();
 		if(0 == (Status & FlagBitStatus.VALID))
 		{	/* Not Start */
-			return;
+			Start();
 		}
+
+		Library_SpriteStudio.Control.Parts InstanceControlParts = null;
+		int CountParts = DataAnimation.CountGetParts();
 
 		/* DrawParts-Cluster Create */
 		LateUpdateBase();
@@ -1164,6 +1169,11 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 								int FrameRangeOffsetEnd = int.MaxValue
 							)
 	{
+		if(0 == (Status & FlagBitStatus.VALID))
+		{	/* Not Start */
+			Start();
+		}
+
 		/* Check Fatal-Error */
 		if((null == DataCellMap) || (null == DataAnimation))
 		{
@@ -1183,10 +1193,7 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 		Library_SpriteStudio.Data.Animation DataAnimationPlay = DataAnimation.DataGetAnimation(IndexAnimation);
 
 		/* Parts-WorkArea Setting */
-		if(0 != (Status & FlagBitStatus.VALID))
-		{
-			ControlSetAnimation();
-		}
+		ControlSetAnimation();
 
 		/* Initialize Playing-Status */
 		Status &= FlagBitStatus.VALID;	// Status = FlagBitStatus.CLEAR;
