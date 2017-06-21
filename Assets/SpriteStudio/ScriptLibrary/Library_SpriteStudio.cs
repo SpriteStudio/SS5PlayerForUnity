@@ -2968,6 +2968,11 @@ public static partial class Library_SpriteStudio
 			{
 				/* CAUTION!: Ver.SS5.6 Unsupported. */
 				/* Ver.SS5.7 */
+				if(null == InstanceRootUnderControlEffect)
+				{
+					return(true);
+				}
+
 				int FrameNoOrigin;
 				int IndexAttribute;
 				bool FlagPlayReverse = InstanceRoot.StatusIsPlayingReverse;

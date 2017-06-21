@@ -207,14 +207,27 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 
 	void Awake()
 	{
-		foreach(Material MaterialNow in TableMaterial)
+		/* Reassignment when shader lost */
+		int Count = (null != TableMaterial) ? TableMaterial.Length : 0;
+		Material InstanceMaterial = null;
+		for(int i=0; i<Count; i++)
 		{
-			MaterialNow.shader = Shader.Find(MaterialNow.shader.name);
+			InstanceMaterial = TableMaterial[i];
+			if(null != InstanceMaterial)
+			{
+				InstanceMaterial.shader = Shader.Find(InstanceMaterial.shader.name);
+			}
 		}
+		InstanceMaterial = null;
 	}
 
 	void Start()
 	{
+		if(0 != (Status & FlagBitStatus.VALID))
+		{	/* Already Started */
+			return;
+		}
+
 		/* Base Start */
 		StartBase((int)Constants.LIMIT_PARTICLE);
 
@@ -252,6 +265,11 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 	}
 	internal void LateUpdateMain()
 	{
+		if(0 == (Status & FlagBitStatus.VALID))
+		{	/* Not Start */
+			Start();
+		}
+
 		float TimeDelta = Time.deltaTime * RateSpeed;
 
 		if((null == DataEffect) || (null == DataCellMap))
@@ -424,6 +442,11 @@ public class Script_SpriteStudio_RootEffect : Library_SpriteStudio.Script.Root
 								float RateSpeedTimeProgress = 1.0f
 							)
 	{
+		if(0 == (Status & FlagBitStatus.VALID))
+		{	/* Not Start */
+			Start();
+		}
+
 		/* Check Fatal-Error */
 		if((null == DataCellMap) || (null == DataEffect))
 		{
