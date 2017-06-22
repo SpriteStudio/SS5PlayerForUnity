@@ -258,21 +258,6 @@ public partial class Script_SpriteStudio_Root : Library_SpriteStudio.Script.Root
 
 		/* Parts-WorkArea Start */
 		int CountParts = DataAnimation.CountGetParts();
-		if(null == ListControlParts)
-		{
-			GameObject[] ListGameObject = new GameObject[CountParts];
-			ListGameObject[0] = gameObject;
-			for(int i=1; i<CountParts; i++)
-			{
-				ListGameObject[i] = (transform.Find(DataAnimation.ListDataParts[i].Name)).gameObject;
-			}
-
-			for(int i=0; i<CountParts; i++)
-			{
-				ListControlParts[i] = new Library_SpriteStudio.Control.Parts();
-				ListControlParts[i].BootUp(this, i, ListGameObject[i]);
-			}
-		}
 		for(int i=0; i<CountParts; i++)
 		{
 			ListControlParts[i].BootUpRuntime(this, i);
