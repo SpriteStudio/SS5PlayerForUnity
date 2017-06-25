@@ -5101,7 +5101,18 @@ public static partial class Library_SpriteStudio
 			}
 
 			/* Create Combined Mesh */
-			Matrix4x4 MatrixCollect = (null != InstanceTrasnformDrawManager) ? InstanceTrasnformDrawManager.localToWorldMatrix.inverse : Matrix4x4.identity;
+			Matrix4x4 MatrixCollect;
+			bool MatrixCollectIsIdentity;
+			if(null != InstanceTrasnformDrawManager)
+			{
+				MatrixCollect = InstanceTrasnformDrawManager.localToWorldMatrix.inverse;
+				MatrixCollectIsIdentity = MatrixCollect.isIdentity;
+			}
+			else
+			{
+				MatrixCollect = Matrix4x4.identity;
+				MatrixCollectIsIdentity = true;
+			}
 
 			if((null == CombineMesh) || (CombineMesh.Length != CountMesh))
 			{
@@ -5153,7 +5164,14 @@ public static partial class Library_SpriteStudio
 					if(null != DataPartsNow.Data.InstanceMesh)
 					{
 						CombineMesh[Index].mesh = DataPartsNow.Data.InstanceMesh;
-						CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+						if(MatrixCollectIsIdentity)
+						{
+							CombineMesh[Index].transform = DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+						}
+						else
+						{
+							CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+						}
 						Index++;
 						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
 					}
