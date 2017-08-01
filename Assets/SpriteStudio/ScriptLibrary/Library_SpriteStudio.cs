@@ -2444,36 +2444,26 @@ public static partial class Library_SpriteStudio
 
 			UpdateMesh_End:;
 				/* Update Mesh */
-//				int[] TrianglesMesh = InstanceMesh.triangles;
-//				Object.DestroyImmediate(InstanceMesh);
-//				InstanceMesh = new Mesh();
-//				InstanceMesh.Clear();
-				bool updateCoordinateAlways = (nextCoordinate == InstanceParameterMesh.Coordinate);
-				if (updateCoordinateAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices != nextCoordinate)
+				if((InstanceParameterMesh.Coordinate == nextCoordinate) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices != nextCoordinate))
 				{
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices = nextCoordinate;
 					InstanceMesh.vertices = nextCoordinate;
 				}
-//				InstanceMesh.triangles = TrianglesMesh;
-				bool updateUVAlways = (nextUV == InstanceParameterMesh.UV);
-				if (updateUVAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshUv != nextUV)
+				if((InstanceParameterMesh.UV == nextUV) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshUv != nextUV))
 				{
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv = nextUV;
 					InstanceMesh.uv = nextUV;
 				}
-				bool updateUV2Always = (nextUV2 == InstanceParameterMesh.UV2);
-				if (updateUV2Always || DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 != nextUV2)
+				if((InstanceParameterMesh.UV2 == nextUV2) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 != nextUV2))
 				{
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 = nextUV2;
 					InstanceMesh.uv2 = nextUV2;
 				}
-				bool updateColorAlways = (nextColor == InstanceParameterMesh.ColorOverlay);
-				if (updateColorAlways || DataPartsDrawManager.DrawParts.Data.CurrentMeshColor != nextColor)
+				if((InstanceParameterMesh.ColorOverlay == nextColor) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshColor != nextColor))
 				{
 					DataPartsDrawManager.DrawParts.Data.CurrentMeshColor = nextColor;
 					InstanceMesh.colors32 = nextColor;
 				}
-//				InstanceMesh.RecalculateBounds();
 
 				/* Draw Mesh */
 				Material InstanceMaterial = InstanceRoot.MaterialGet(BufferParameterParts.IndexCellMap, DataParts.KindBlendTarget);
@@ -5101,7 +5091,18 @@ public static partial class Library_SpriteStudio
 			}
 
 			/* Create Combined Mesh */
-			Matrix4x4 MatrixCollect = (null != InstanceTrasnformDrawManager) ? InstanceTrasnformDrawManager.localToWorldMatrix.inverse : Matrix4x4.identity;
+			Matrix4x4 MatrixCollect;
+			bool FlagMatrixCollectIsIdentity;
+			if(null != InstanceTrasnformDrawManager)
+			{
+				MatrixCollect = InstanceTrasnformDrawManager.localToWorldMatrix.inverse;
+				FlagMatrixCollectIsIdentity = MatrixCollect.isIdentity;
+			}
+			else
+			{
+				MatrixCollect = Matrix4x4.identity;
+				FlagMatrixCollectIsIdentity = true;
+			}
 
 			if((null == CombineMesh) || (CombineMesh.Length != CountMesh))
 			{
@@ -5153,7 +5154,14 @@ public static partial class Library_SpriteStudio
 					if(null != DataPartsNow.Data.InstanceMesh)
 					{
 						CombineMesh[Index].mesh = DataPartsNow.Data.InstanceMesh;
-						CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+						if(true == FlagMatrixCollectIsIdentity)
+						{
+							CombineMesh[Index].transform = DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+						}
+						else
+						{
+							CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+						}
 						Index++;
 						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
 					}
