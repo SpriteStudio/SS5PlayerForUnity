@@ -3011,7 +3011,10 @@ public static partial class Library_SpriteStudio
 				}
 
 				/* Update Effect */
-				InstanceRootUnderControlEffect.LateUpdateMain();
+				if(false == BufferParameterParts.FlagHide)
+				{
+					InstanceRootUnderControlEffect.LateUpdateMain();
+				}
 
 #if DRAWPARTS_ORDER_CALCULATEINADVANCE
 #else
