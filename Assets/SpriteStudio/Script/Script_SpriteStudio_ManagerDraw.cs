@@ -26,7 +26,6 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 	private int IndexParameterMesh = -1;
 	private Mesh[] InstanceMesh = null;
 	private Material[][] InstanceMaterial = null;
-	private CombineInstance[] CombineInstanceCache = null;
 
 //	void Awake()
 //	{
@@ -107,7 +106,6 @@ public partial class Script_SpriteStudio_ManagerDraw : MonoBehaviour
 																ref InstanceMaterial[IndexParameterMeshWrite],
 																ref InstanceMesh[IndexParameterMeshDraw],
 																ref InstanceMaterial[IndexParameterMeshDraw],
-																ref CombineInstanceCache,
 																InstanceMeshRenderer,
 																InstanceMeshFilter,
 																InstanceTransform,

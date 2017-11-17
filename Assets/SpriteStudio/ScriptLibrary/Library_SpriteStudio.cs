@@ -2152,8 +2152,7 @@ public static partial class Library_SpriteStudio
 			internal bool UpdateMesh(Script_SpriteStudio_Root InstanceRoot, int FrameNo)
 			{
 				Library_SpriteStudio.Control.ColorBlendOverwrite DataColorBlendOverwrite = InstanceRoot.DataColorBlendOverwrite;
-				Mesh InstanceMesh = DataPartsDrawManager.DrawParts.Data.InstanceMesh;
-				if(null == InstanceMesh)
+				if(null == DataPartsDrawManager.DrawParts.Data.InstanceMesh.vertices)
 				{
 					return(false);
 				}
@@ -2444,26 +2443,10 @@ public static partial class Library_SpriteStudio
 
 			UpdateMesh_End:;
 				/* Update Mesh */
-				if((InstanceParameterMesh.Coordinate == nextCoordinate) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices != nextCoordinate))
-				{
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices = nextCoordinate;
-					InstanceMesh.vertices = nextCoordinate;
-				}
-				if((InstanceParameterMesh.UV == nextUV) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshUv != nextUV))
-				{
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv = nextUV;
-					InstanceMesh.uv = nextUV;
-				}
-				if((InstanceParameterMesh.UV2 == nextUV2) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 != nextUV2))
-				{
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 = nextUV2;
-					InstanceMesh.uv2 = nextUV2;
-				}
-				if((InstanceParameterMesh.ColorOverlay == nextColor) || (DataPartsDrawManager.DrawParts.Data.CurrentMeshColor != nextColor))
-				{
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshColor = nextColor;
-					InstanceMesh.colors32 = nextColor;
-				}
+				DataPartsDrawManager.DrawParts.Data.InstanceMesh.vertices = nextCoordinate;
+				DataPartsDrawManager.DrawParts.Data.InstanceMesh.uv = nextUV;
+				DataPartsDrawManager.DrawParts.Data.InstanceMesh.uv2 = nextUV2;
+				DataPartsDrawManager.DrawParts.Data.InstanceMesh.colors32 = nextColor;
 
 				/* Draw Mesh */
 				Material InstanceMaterial = InstanceRoot.MaterialGet(BufferParameterParts.IndexCellMap, DataParts.KindBlendTarget);
@@ -3271,16 +3254,10 @@ public static partial class Library_SpriteStudio
 					}
 #else
 #endif
-					Mesh InstanceMesh = DataPartsDrawManager.DrawParts.Data.InstanceMesh;
-					InstanceMesh.uv = UV;
-					InstanceMesh.uv2 = UV2;
-					InstanceMesh.colors32 = ColorVertex;
-					InstanceMesh.vertices = Coordinate;
-
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshVertices = Coordinate;
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv = UV;
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshUv2 = UV2;
-					DataPartsDrawManager.DrawParts.Data.CurrentMeshColor = ColorVertex;
+					DataPartsDrawManager.DrawParts.Data.InstanceMesh.uv = UV;
+					DataPartsDrawManager.DrawParts.Data.InstanceMesh.uv2 = UV2;
+					DataPartsDrawManager.DrawParts.Data.InstanceMesh.colors32 = ColorVertex;
+					DataPartsDrawManager.DrawParts.Data.InstanceMesh.vertices = Coordinate;
 
 					/* Draw Mesh */
 					Material InstanceMaterial = InstanceRoot.MaterialGet(InstanceEmitter.IndexCellMapParticle, InstanceEmitter.InstanceDataEmitter.KindBlendTarget);
@@ -4475,17 +4452,32 @@ public static partial class Library_SpriteStudio
 			5000,	// (TERMINATOR)
 		};
 
+		internal struct MeshStuff
+		{
+			public Vector3[] vertices;
+			public Vector2[] uv;
+			public Vector2[] uv2;
+			public Color32[] colors32;
+			public Vector3[] normals;
+			public int[] triangles;
+
+			public void Clear()
+			{
+				vertices = null;
+				uv = null;
+				colors32 = null;
+				normals = null;
+				triangles = null;
+			}
+		}
+
 		internal struct DataDrawParts
 		{
 			internal Library_SpriteStudio.KindParts Kind;
 			internal Transform InstanceTransform;
 			internal Library_SpriteStudio.Script.Root InstanceRoot;
 //			internal FragmentClusterDrawParts InstanceFragmentClusterDrawPartsPartsPair;
-			internal Mesh InstanceMesh;	/* null == Instance/Effect Parts */
-			internal Vector3[] CurrentMeshVertices;
-			internal Vector2[] CurrentMeshUv;
-			internal Vector2[] CurrentMeshUv2;
-			internal Color32[] CurrentMeshColor;
+			internal MeshStuff InstanceMesh;	/* null == Instance/Effect Parts */
 		}
 		internal class FragmentDrawParts : Miscellaneousness.Chain<DataDrawParts>.Fragment
 		{
@@ -4496,11 +4488,7 @@ public static partial class Library_SpriteStudio
 				Data.InstanceTransform = null;
 				Data.InstanceRoot = null;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = null;
-				Data.InstanceMesh = null;
-				Data.CurrentMeshVertices = null;
-				Data.CurrentMeshUv = null;
-				Data.CurrentMeshUv2 = null;
-				Data.CurrentMeshColor = null;
+				Data.InstanceMesh.Clear();
 			}
 
 			internal bool BootUp(	Library_SpriteStudio.Script.Root InstanceRootInitial,
@@ -4512,21 +4500,10 @@ public static partial class Library_SpriteStudio
 				Data.InstanceTransform = InstanceGameObjectInitial.transform;
 				Data.InstanceRoot = InstanceRootInitial;
 //				Data.InstanceFragmentClusterDrawPartsPartsPair = InstanceFragmentClusterDrawPartsPartsPairInitial;
-				Data.InstanceMesh = null;
-				Data.CurrentMeshVertices = null;
-				Data.CurrentMeshUv = null;
-				Data.CurrentMeshUv2 = null;
-				Data.CurrentMeshColor = null;
 
 				switch(KindParts)
 				{
 					case KindParts.NORMAL_TRIANGLE2:
-						Data.InstanceMesh = new Mesh();
-						if(null == Data.InstanceMesh)
-						{
-							goto BootUp_ErrorEnd;
-						}
-
 						Data.InstanceMesh.Clear();
 						Data.InstanceMesh.vertices = Library_SpriteStudio.ArrayCoordinate_Triangle2;
 //						Data.InstanceMesh.uv = Library_SpriteStudio.ArrayUVMappingUV0_Triangle2;
@@ -4538,12 +4515,6 @@ public static partial class Library_SpriteStudio
 						break;
 
 					case KindParts.NORMAL_TRIANGLE4:
-						Data.InstanceMesh = new Mesh();
-						if(null == Data.InstanceMesh)
-						{
-							goto BootUp_ErrorEnd;
-						}
-
 						Data.InstanceMesh.Clear();
 						Data.InstanceMesh.vertices = Library_SpriteStudio.ArrayCoordinate_Triangle4;
 //						Data.InstanceMesh.uv = Library_SpriteStudio.ArrayUVMappingUV0_Triangle4;
@@ -4555,13 +4526,10 @@ public static partial class Library_SpriteStudio
 						break;
 
 					default:
-						Data.InstanceMesh = null;
+						Data.InstanceMesh.Clear();
 						break;
 				}
 				return(true);
-
-			BootUp_ErrorEnd:;
-				return(false);
 			}
 		}
 		internal class TerminalDrawParts : Miscellaneousness.Chain<DataDrawParts>.Terminal
@@ -5033,21 +5001,18 @@ public static partial class Library_SpriteStudio
 			}
 		}
 
-#if UNITY_5_3_OR_NEWER
-		static System.WeakReference VertexNoTriangleBuffer;
-#endif
-#if UNITY_5_6_OR_NEWER
-/* Unity5.5.1p1 or newer*/
-		static System.WeakReference TriangleBuffer;
-#endif
 		static System.WeakReference TableIndexTriangleBuffer;
+		static System.WeakReference VerticesBuffer;
+		static System.WeakReference UVBuffer;
+		static System.WeakReference UV2Buffer;
+		static System.WeakReference ColorsBuffer;
+		static System.WeakReference TrianglesBuffer;
 
 		internal static void MeshCreate(	TerminalClusterDrawParts ClusterTerminal,
 											ref Mesh InstanceMeshWrite,
 											ref Material[] InstanceMaterialWrite,
 											ref Mesh InstanceMeshDraw,
 											ref Material[] InstanceMaterialDraw,
-											ref CombineInstance[] CombineMesh,
 											MeshRenderer InstanceMeshRenderer,
 											MeshFilter InstanceMeshFilter,
 											Transform InstanceTrasnformDrawManager,
@@ -5107,10 +5072,6 @@ public static partial class Library_SpriteStudio
 				FlagMatrixCollectIsIdentity = true;
 			}
 
-			if((null == CombineMesh) || (CombineMesh.Length != CountMesh))
-			{
-				CombineMesh = new CombineInstance[CountMesh];
-			}
 			List<int> TableIndexTriangle = null;
 			if(1 < CountMaterial)
 			{
@@ -5128,43 +5089,132 @@ public static partial class Library_SpriteStudio
 					TableIndexTriangle.Clear();
 				}
 			}
+			List<Vector3> vertices = null;
+			if (VerticesBuffer != null)
+			{
+				vertices = VerticesBuffer.Target as List<Vector3>;
+			}
+			if (vertices == null)
+			{
+				vertices = new List<Vector3>();
+				VerticesBuffer = new System.WeakReference(vertices);
+			}
+			else
+			{
+				vertices.Clear();
+			}
+
+			List<Vector2> uv = null;
+			if (UVBuffer != null)
+			{
+				uv = UVBuffer.Target as List<Vector2>;
+			}
+			if (uv == null)
+			{
+				uv = new List<Vector2>();
+				UVBuffer = new System.WeakReference(uv);
+			}
+			else
+			{
+				uv.Clear();
+			}
+
+			List<Vector2> uv2 = null;
+			if (UV2Buffer != null)
+			{
+				uv2 = UV2Buffer.Target as List<Vector2>;
+			}
+			if (uv2 == null)
+			{
+				uv2 = new List<Vector2>();
+				UV2Buffer = new System.WeakReference(uv2);
+			}
+			else
+			{
+				uv2.Clear();
+			}
+
+			List<int> triangles = null;
+			if (TrianglesBuffer != null)
+			{
+				triangles = TrianglesBuffer.Target as List<int>;
+			}
+			if (triangles == null)
+			{
+				triangles = new List<int>();
+				TrianglesBuffer = new System.WeakReference(triangles);
+			}
+			else
+			{
+				triangles.Clear();
+			}
+
+			List<Color32> colors32 = null;
+			if (ColorsBuffer != null)
+			{
+				colors32 = ColorsBuffer.Target as List<Color32>;
+			}
+			if (colors32 == null)
+			{
+				colors32 = new List<Color32>();
+				ColorsBuffer = new System.WeakReference(colors32);
+			}
+			else
+			{
+				colors32.Clear();
+			}
+
 			DataPartsNow = null;
 			ClusterNow = ClusterTerminal.ChainTop;
 			Index = 0;
 			int IndexTriangle = 0;
-			int MaxTriangleCountForSubmesh = 0;
-			for(int i=0; i<CountMaterial; i++)
+
+			for (int i=0; i<CountMaterial; i++)
 			{
 				DataPartsNow = ClusterNow.Data.ChainDrawParts.ChainTop;
 				if(TableIndexTriangle != null)
 				{
 					TableIndexTriangle.Add(IndexTriangle);
-					if(i == 0)
-					{
-						MaxTriangleCountForSubmesh = IndexTriangle;
-					}
-					else
-					{
-						if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2])
-						{
-							MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2];
-						}
-					}
 				}
 
 				while(null != DataPartsNow)
 				{
-					if(null != DataPartsNow.Data.InstanceMesh)
+					if(null != DataPartsNow.Data.InstanceMesh.vertices)
 					{
-						CombineMesh[Index].mesh = DataPartsNow.Data.InstanceMesh;
-						if(true == FlagMatrixCollectIsIdentity)
+						var vertexOffset = vertices.Count;
+
+						Matrix4x4 matrix;
+						if (true == FlagMatrixCollectIsIdentity)
 						{
-							CombineMesh[Index].transform = DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+							matrix = DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
 						}
 						else
 						{
-							CombineMesh[Index].transform = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
+							matrix = MatrixCollect * DataPartsNow.Data.InstanceTransform.localToWorldMatrix;
 						}
+						foreach (var vertex in DataPartsNow.Data.InstanceMesh.vertices)
+						{
+							vertices.Add(matrix.MultiplyPoint3x4(vertex));
+						}
+
+						foreach (var it in DataPartsNow.Data.InstanceMesh.uv)
+						{
+							uv.Add(it);
+						}
+						foreach (var it in DataPartsNow.Data.InstanceMesh.uv2)
+						{
+							uv2.Add(it);
+						}
+						foreach (var it in DataPartsNow.Data.InstanceMesh.colors32)
+						{
+							colors32.Add(it);
+						}
+
+						foreach (var it in DataPartsNow.Data.InstanceMesh.triangles)
+						{
+							triangles.Add(it + vertexOffset);
+						}
+
 						Index++;
 						IndexTriangle += (KindParts.NORMAL_TRIANGLE4 == DataPartsNow.Data.Kind) ? 4 : 2;    /* ArrayCoordinate_TriangleX.Length / 3 */
 					}
@@ -5174,86 +5224,14 @@ public static partial class Library_SpriteStudio
 				ClusterNow = ClusterNow.ChainNext;
 			}
 
-			for(int i=Index; i<CombineMesh.Length; i++)
-			{
-				CombineMesh[i].mesh = null;
-			}
-			InstanceMesh.CombineMeshes(CombineMesh);
-
-			if(TableIndexTriangle != null)
+			if (TableIndexTriangle != null)
 			{
 				TableIndexTriangle.Add(IndexTriangle);
-				if(MaxTriangleCountForSubmesh < IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2])
-				{
-					MaxTriangleCountForSubmesh = IndexTriangle - TableIndexTriangle[TableIndexTriangle.Count - 2];
-				}
 			}
 
-			/* SubMesh Construct */
-			if(1 < CountMaterial)
-			{
-#if UNITY_5_6_OR_NEWER
-/* Unity5.5.1p1 or newer*/
-				List<int> Triangles = null;
-				if (TriangleBuffer != null)
-				{
-					Triangles = TriangleBuffer.Target as List<int>;
-				}
-				if (Triangles == null)
-				{
-					Triangles = new List<int>(IndexTriangle * 3);
-					TriangleBuffer = new System.WeakReference(Triangles);
-				}
-				InstanceMesh.GetTriangles(Triangles, 0);
-#else
-				int[] Triangles = InstanceMesh.triangles;
-#endif
-
-#if UNITY_5_3_OR_NEWER
-				List<int> VertexNoTriangle = null;
-				if (VertexNoTriangleBuffer != null)
-				{
-					VertexNoTriangle = VertexNoTriangleBuffer.Target as List<int>;
-				}
-				if (VertexNoTriangle == null)
-				{
-					VertexNoTriangle = new List<int>(MaxTriangleCountForSubmesh * 3);
-					VertexNoTriangleBuffer = new System.WeakReference(VertexNoTriangle);
-				}
-#else
-				int[] VertexNoTriangle = null;
-				int intSize = sizeof(int);
-#endif
-				InstanceMesh.triangles = null;
-				InstanceMesh.subMeshCount = CountMaterial;
-				for (int i=0; i<CountMaterial; i++)
-				{
-#if UNITY_5_3_OR_NEWER
-					VertexNoTriangle.Clear();
-					for(int j = TableIndexTriangle[i]; j < TableIndexTriangle[i + 1]; ++j)
-					{
-						VertexNoTriangle.Add(Triangles[j * 3]);
-						VertexNoTriangle.Add(Triangles[j * 3 + 1]);
-						VertexNoTriangle.Add(Triangles[j * 3 + 2]);
-					}
-					InstanceMesh.SetTriangles(VertexNoTriangle, i);
-#else
-					CountMesh = TableIndexTriangle[i + 1] - TableIndexTriangle[i];
-					if (VertexNoTriangle == null || VertexNoTriangle.Length != CountMesh * 3)
-					{
-						VertexNoTriangle = new int[CountMesh * 3];
-					}
-					System.Buffer.BlockCopy(	Triangles, TableIndexTriangle[i] * 3 * intSize,
-												VertexNoTriangle, 0,
-												CountMesh * 3 * intSize
-											);
-					InstanceMesh.SetTriangles(VertexNoTriangle, i);
-#endif
-				}
-			}
+			MeshCombine(InstanceMesh, TableMaterial.Length, vertices, uv, uv2, colors32, triangles, TableIndexTriangle);
 
 			InstanceMesh.name = "BatchedMesh";
-//			InstanceMeshWrite = InstanceMesh;
 			InstanceMeshFilter.sharedMesh = InstanceMeshDraw;
 
 			/* Clear Draw-Entries */
@@ -5266,6 +5244,94 @@ public static partial class Library_SpriteStudio
 			/* Clear Draw-Entries */
 			ClusterTerminal.ChainCleanUp();
 			return;
+		}
+
+#if UNITY_5_3_OR_NEWER
+		static System.WeakReference VertexNoTriangleBuffer;
+#endif
+
+		static bool MeshCombine(Mesh mesh, int subMeshCount,
+			List<Vector3> ListCoordinate,
+			List<Vector2> ListUVTexture,
+			List<Vector2> ListParameterBlend,
+			List<Color32> ListColorParts,
+			List<int> Triangles,
+			List<int> TableIndexTriangle)
+		{	/* MEMO: Combine meshes by own processing in avoiding overhead. (unuse "Mesh.CombineMeshes") */
+
+			/* Create Mesh */
+			if (0 == subMeshCount)
+			{
+				mesh.Clear();
+			}
+			else {
+				/* MEMO: Caution that "SetXXXXX(array, n)" consumes managed-heap. ("SetXXXXX(List<int>, n)" does not) */
+				mesh.SetVertices(ListCoordinate);
+				mesh.SetUVs(0, ListUVTexture);
+				mesh.SetUVs(1, ListParameterBlend);
+				mesh.SetColors(ListColorParts);
+				mesh.subMeshCount = subMeshCount;
+
+#if UNITY_5_3_OR_NEWER
+				/* SubMesh Construct */
+				if (1 < subMeshCount)
+				{
+					List<int> VertexNoTriangle = null;
+					if (VertexNoTriangleBuffer != null)
+					{
+						VertexNoTriangle = VertexNoTriangleBuffer.Target as List<int>;
+					}
+					if (VertexNoTriangle == null)
+					{
+						VertexNoTriangle = new List<int>();
+						VertexNoTriangleBuffer = new System.WeakReference(VertexNoTriangle);
+					}
+					for (int i = 0; i < subMeshCount; i++)
+					{
+						VertexNoTriangle.Clear();
+						for (int j = TableIndexTriangle[i]; j < TableIndexTriangle[i + 1]; ++j)
+						{
+							VertexNoTriangle.Add(Triangles[j * 3]);
+							VertexNoTriangle.Add(Triangles[j * 3 + 1]);
+							VertexNoTriangle.Add(Triangles[j * 3 + 2]);
+						}
+						mesh.SetTriangles(VertexNoTriangle, i);
+					}
+				}
+				else
+				{
+					mesh.SetTriangles(Triangles, 0);
+				}
+#else
+				/* SubMesh Construct */
+				if (1 < subMeshCount)
+				{
+					int[] VertexNoTriangle = null;
+					for (int i = 0; i < subMeshCount; i++)
+					{
+						int CountMesh = TableIndexTriangle[i + 1] - TableIndexTriangle[i];
+						if (VertexNoTriangle == null || VertexNoTriangle.Length != CountMesh * 3)
+						{
+							VertexNoTriangle = new int[CountMesh * 3];
+						}
+						for (int j = 0; j < CountMesh; ++j)
+						{
+							VertexNoTriangle[j * 3] = Triangles[(j + TableIndexTriangle[i]) * 3];
+							VertexNoTriangle[j * 3 + 1] = Triangles[(j + TableIndexTriangle[i]) * 3 + 1];
+							VertexNoTriangle[j * 3 + 2] = Triangles[(j + TableIndexTriangle[i]) * 3 + 2];
+						}
+
+						mesh.SetTriangles(VertexNoTriangle, i);
+					}
+				}
+				else
+				{
+					mesh.SetTriangles(Triangles, 0);
+				}
+#endif
+			}
+
+			return (true);
 		}
 	}
 
