@@ -482,7 +482,7 @@ public sealed class MenuItem_SpriteStudio : EditorWindow
 	[MenuItem("Tools/SpriteStudio/About")]
 	static void About()
 	{
-		string VersionText = "1.5.17";
+		string VersionText = "1.6.0";
 		EditorUtility.DisplayDialog(	"SpriteStudio 5 Player for Unity",
 										"Version: " + VersionText
 										+ "\n\n"
